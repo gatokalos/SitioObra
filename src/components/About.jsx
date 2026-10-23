@@ -244,6 +244,9 @@ export const ProvocaSection = () => {
   const [likedVoicesStorageKey, setLikedVoicesStorageKey] = useState(null);
   const [pulseDeltaById, setPulseDeltaById] = useState({});
   const [provocaTitleTermIndex, setProvocaTitleTermIndex] = useState(0);
+  // La palabra de la obra que la persona eligió con el gato (D-45, 22 oct
+  // 2026): la pregunta deja de rotar y se detiene en ella.
+  const [terminoFijado, setTerminoFijado] = useState(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
   const pulseDeltaTimeoutsRef = useRef({});
@@ -263,7 +266,7 @@ export const ProvocaSection = () => {
   const isSendVoiceDisabled = isSubmittingVoice;
   const hasVoiceDraftText = voiceDraft.trim().length > 0;
   const isShareButtonInSendMode = isVoiceInputOpen && hasVoiceDraftText;
-  const currentProvocaTitleTerm = PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
+  const currentProvocaTitleTerm = terminoFijado ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
   const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
   const rankedVoicesPool = useMemo(() => {
@@ -371,14 +374,14 @@ export const ProvocaSection = () => {
     if (typeof window === 'undefined') return undefined;
 
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    if (prefersReducedMotion) return undefined;
+    if (prefersReducedMotion || terminoFijado) return undefined;
 
     const intervalId = window.setInterval(() => {
       setProvocaTitleTermIndex((previous) => (previous + 1) % PROVOCA_TITLE_TERMS.length);
     }, PROVOCA_TITLE_ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [terminoFijado]);
 
   useEffect(() => {
     audioDurationRef.current = silvestreAudioDuration;
@@ -479,6 +482,7 @@ export const ProvocaSection = () => {
       const parsed = JSON.parse(stored);
       if (parsed?.quote) setVoiceDraft(parsed.quote);
       if (parsed?.huella) setHuellaDeOrigen(parsed.huella);
+      if (parsed?.termino) setTerminoFijado(parsed.termino);
       if (parsed?.name) setVoiceName(parsed.name);
       if (parsed?.role) setVoiceRole(parsed.role);
       const hasDraft = parsed?.quote || parsed?.name || parsed?.role;
@@ -497,6 +501,7 @@ export const ProvocaSection = () => {
       const quote = e.detail?.quote ?? '';
       if (quote) setVoiceDraft(quote);
       if (e.detail?.huella) setHuellaDeOrigen(e.detail.huella);
+      if (e.detail?.termino) setTerminoFijado(e.detail.termino);
       setIsVoiceInputOpen(true);
       setTimeout(() => {
         document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -513,6 +518,7 @@ export const ProvocaSection = () => {
       name: voiceName.trim(),
       role: voiceRole.trim(),
       ...(huellaDeOrigen ? { huella: huellaDeOrigen } : {}),
+      ...(terminoFijado ? { termino: terminoFijado } : {}),
       updatedAt: new Date().toISOString(),
     };
     if (!payload.quote && !payload.name && !payload.role) {
@@ -520,7 +526,7 @@ export const ProvocaSection = () => {
       return;
     }
     safeSetItem(PROVOCA_DRAFT_KEY, JSON.stringify(payload));
-  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen]);
+  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen, terminoFijado]);
 
   useEffect(() => {
     let cancelled = false;
@@ -689,6 +695,7 @@ export const ProvocaSection = () => {
       // Lo retirado tampoco puede seguir esperando en el editor.
       setVoiceDraft('');
       setHuellaDeOrigen(null);
+      setTerminoFijado(null);
       safeRemoveItem(PROVOCA_DRAFT_KEY);
       try {
         const claves = [];
@@ -813,6 +820,7 @@ export const ProvocaSection = () => {
     // aquí ya no cambia sólo lo que se publica (D-38).
     void corregirHuellaGuardada(quote);
     setHuellaDeOrigen(null);
+    setTerminoFijado(null);
     safeRemoveItem(PROVOCA_DRAFT_KEY);
     const keepFormOpen = isProvocaDesktopViewport();
     if (keepFormOpen) {
@@ -1012,7 +1020,7 @@ export const ProvocaSection = () => {
                   {isShareButtonInSendMode ? (
                     <>
                       <Send size={18} />
-                      {isSubmittingVoice ? 'Enviando…' : 'Enviar mi comentario'}
+                      {isSubmittingVoice ? 'Dejando…' : 'Dejar mi réplica'}
                     </>
                   ) : (
                     'Comparte tu forma de decirlo'
@@ -1043,11 +1051,9 @@ export const ProvocaSection = () => {
                         reemplaza lo guardado— y retirar, que lo saca de todos los
                         corpus (D-38). Sin esto, editar aquí sólo cambiaba lo que se
                         iba a publicar y la huella seguía intacta. */}
+                    {/* Solo el enlace: la frase explicativa salió (Carlos, 22 oct 2026). */}
                     {huellaDeOrigen ? (
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-[0.7rem] leading-relaxed text-slate-400/80">
-                          Esto volvió de tu recorrido. Al publicarlo, también corriges lo que quedó guardado.
-                        </p>
+                      <div className="mt-2 flex justify-end">
                         <button
                           type="button"
                           onClick={() => {

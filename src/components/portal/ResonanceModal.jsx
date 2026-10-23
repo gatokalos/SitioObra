@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ChevronDown, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Bell, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -18,6 +18,7 @@ import FarewellVideoPanel from './FarewellVideoPanel';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
 import { getResonanceDramaturgy, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
+import { PALABRAS_DE_LA_OBRA, escribirBorradorDeReplica } from '@/lib/provocaDraft';
 
 export { readGlobalConsent, writeGlobalConsent };
 
@@ -479,6 +480,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // La huella (D-34): se abre al terminar En escena, y desde la Memoria
   // cuando la persona quiera volver a verla, corregirla o retirarla (D-38).
   const [huellaOpen, setHuellaOpen]                   = useState(false);
+  // La última pregunta del gato (D-45, diseño aprobado el 22 oct 2026): desde
+  // la Memoria, la persona abre al gato con lo que dejó, elige con qué palabra
+  // de la obra lo diría y se va al acto final con eso. `ultimaPregunta` lleva
+  // el texto y de dónde salió; `ultimaPreguntaVista` apaga el latido del
+  // emblema y de la puerta una vez que la abrió.
+  const [ultimaPregunta, setUltimaPregunta]           = useState(null);
+  const [terminoElegido, setTerminoElegido]           = useState(null);
+  const [ultimaPreguntaVista, setUltimaPreguntaVista] = useState(() => Boolean(lsRead(portal).ultima_pregunta_abierta));
+  const ultimaPreguntaOpen = Boolean(ultimaPregunta);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
   const [bitacoraOpen, setBitacoraOpen]               = useState(() => {
     const stored = lsRead(portal);
@@ -602,6 +612,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     seguir: 'Seguir',
   };
 
+  // La primera pregunta nombra la forma cuando la ventana es de una sola
+  // (Carlos, 22 oct 2026: «esta experiencia» no decía de qué volvía).
+  const formasDeLaVentana = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
+  const nombreDeLaForma = formasDeLaVentana.length === 1 ? getResonanceDramaturgy(formasDeLaVentana[0]).form : null;
+  const preguntaP1 = nombreDeLaForma
+    ? `¿Hay algo de ${nombreDeLaForma} que haya regresado por su cuenta?`
+    : '¿Hay algo de lo que viviste en la obra que haya regresado por su cuenta?';
+
   // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
   // de escritorio deben decir exactamente lo mismo.
   const preguntaDelPaso =
@@ -612,7 +630,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       : bitacoraStep === 'compartir'
       ? 'Lo que escribiste puede acompañar a alguien que se lo esté preguntando. ¿Dejas que lo encuentre, sin tu nombre?'
       : bitacoraStep === 'p1'
-      ? '¿Hay algo de esta experiencia que haya regresado por su cuenta?'
+      ? preguntaP1
       : bitacoraStep === 'p2'
         ? (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))
         : (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'));
@@ -1180,6 +1198,80 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setBitacoraStep('recordatorio');
   }, []);
 
+  // ── La última pregunta del gato ──────────────────────────────────────
+  // Desde la puerta «Dilo con tus palabras» de la Memoria. Fase 1 (sin
+  // backend): el gato devuelve el texto tal cual y la persona elige la palabra
+  // de la obra; la propuesta con «quizá» llega con el modelo, en la fase 3.
+  const abrirUltimaPregunta = useCallback((huella) => {
+    if (!huella?.texto) return;
+    lsPatch(portal, { ultima_pregunta_abierta: true });
+    setUltimaPreguntaVista(true);
+    setTerminoElegido(null);
+    setUltimaPregunta(huella);
+  }, [portal]);
+
+  const volverAlLibreto = useCallback(() => {
+    setUltimaPregunta(null);
+  }, []);
+
+  // Misma salida al sitio que usa la Memoria (ver onGoToSite abajo).
+  const irAlSitio = useCallback((hash) => {
+    setHuellaOpen(false);
+    handleClose();
+    onBeforeNavigate?.();
+    navigate(hash ? { pathname: '/', hash } : '/');
+  }, [navigate, onBeforeNavigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const irAlActoFinal = useCallback(() => {
+    if (!ultimaPregunta) return;
+    const termino = terminoElegido ?? null;
+    escribirBorradorDeReplica({
+      quote: ultimaPregunta.texto,
+      huella: {
+        anonId: ultimaPregunta.anonId,
+        sessionId: ultimaPregunta.sessionId,
+        campo: ultimaPregunta.campo,
+        original: ultimaPregunta.original,
+      },
+      termino,
+    });
+    setUltimaPregunta(null);
+    irAlSitio('#provoca');
+  }, [ultimaPregunta, terminoElegido, irAlSitio]);
+
+  // La hoja de la última pregunta: «Dilo con tus palabras», las siete palabras
+  // de la obra y una sola salida. En móvil va debajo del gato; en escritorio,
+  // en la columna izquierda mientras el gato habla a la derecha.
+  const renderUltimaPregunta = (variante) => (
+    <div className={`ultima-pregunta ultima-pregunta--${variante}`}>
+      <p className="ultima-pregunta__titulo">Dilo con tus palabras</p>
+      <div className="ultima-pregunta__palabras" role="group" aria-label="Las palabras de la obra">
+        {PALABRAS_DE_LA_OBRA.map((palabra) => (
+          <button
+            key={palabra}
+            type="button"
+            aria-pressed={terminoElegido === palabra}
+            onClick={() => setTerminoElegido((previo) => (previo === palabra ? null : palabra))}
+            className="palabra-de-la-obra"
+          >
+            {palabra}
+          </button>
+        ))}
+      </div>
+      <p className="ultima-pregunta__llegas">
+        {terminoElegido
+          ? <>Llegas a La Réplica con: <b>¿Qué te provoca {terminoElegido}?</b></>
+          : 'Elige una palabra, o llega sin ella y decídelo allá.'}
+      </p>
+      <button type="button" onClick={irAlActoFinal} className="ultima-pregunta__salida">
+        Ir al acto final
+      </button>
+      <button type="button" onClick={volverAlLibreto} className="ultima-pregunta__volver">
+        Volver al libreto
+      </button>
+    </div>
+  );
+
   // Las dos respuestas pasan por aquí: autorizar y no autorizar se guardan
   // igual, porque un "no" también es una decisión que hay que poder revocar.
   const responderCompartir = useCallback(async (autorizado) => {
@@ -1226,7 +1318,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // escenario es suyo y el gato mira desde la penumbra. Encenderlo sólo cuando
   // vuelven las preguntas de los tres días hace que el encendido signifique
   // algo — anuncia el relevo.
-  const cabinaEncendida = bitacoraOpen;
+  // Y también cuando el gato hace su última pregunta desde la Memoria (22 oct 2026).
+  const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -1573,6 +1666,27 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
+                ) : ultimaPreguntaOpen ? (
+                  /* ── La última pregunta del gato (escritorio): la hoja a la izquierda,
+                     el gato encendido a la derecha. En móvil va en su capa, abajo. ── */
+                  <motion.div
+                    key="ultima-pregunta"
+                    className="hidden h-full lg:flex lg:items-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="w-full px-8 py-14">
+                      <div className="mx-auto w-full max-w-[34rem]">
+                        <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">Memoria holográfica · {dramaturgy.form}</p>
+                        {ultimaPregunta?.texto ? (
+                          <p className="mt-3 text-sm leading-relaxed text-slate-200/90">«{ultimaPregunta.texto}»</p>
+                        ) : null}
+                        <div className="mt-6">{renderUltimaPregunta('escritorio')}</div>
+                      </div>
+                    </div>
+                  </motion.div>
                 ) : holograficoOpen ? (
                   /* ── Memoria holográfica: lo que queda después de En escena ── */
                   <motion.div
@@ -1592,6 +1706,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
+                      onUltimaPregunta={abrirUltimaPregunta}
+                      ultimaPreguntaVista={ultimaPreguntaVista}
                       recommendedFormatId={l3Rec?.recommended_format_id ?? null}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
                       /* En Desktop este modal vive DENTRO de la vitrina de
@@ -2165,16 +2281,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                         <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
                                                         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
                                                       </div>
+                                                      {/* Sin copy descriptivo: el título dialoga con las tres filas y
+                                                          cada fila dice lo suyo (Carlos, 22 oct 2026). */}
                                                       <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                                                        Entre bambalinas
+                                                        Retención
                                                       </p>
-                                                      {/* Placeholder aprobado (11 sep 2026), no copy final — y ahora carga
-                                                          más peso que antes, como título. */}
                                                       <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                                                        {dramaturgy.closingLine}
-                                                      </p>
-                                                      <p className="mx-auto mt-2 max-w-sm text-[0.7rem] leading-relaxed text-slate-400/80">
-                                                          {dramaturgy.returnBody}
+                                                        Entre bambalinas
                                                       </p>
                                                     </div>
                                                   </motion.div>
@@ -2193,7 +2306,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                           </span>
                                                           <span className="cabina-antesala-opcion__texto">
                                                             <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
-                                                              {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.returnDone}
+                                                              {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.closingLine.replace(/\.$/, '')}
                                                             </span>
                                                             <span className="cabina-antesala-opcion__detalle">
                                                               {bitacoraAvailable ? dramaturgy.returnBackNowHint : dramaturgy.returnDoneHint}
@@ -2206,19 +2319,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                           onClick={() => setShowPhoneInput(true)}
                                                           className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
                                                         >
-                                                          {/* El # dorado: dejar el número no es un depósito, es la promesa de que
-                                                              algo vuelve. La talega —con los # adentro— se fue a la fila de
-                                                              seguir otra forma, que es donde se siguen revelando (Carlos, 18 sep). */}
+                                                          {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
                                                           <span className="cabina-antesala-opcion__mirilla">
-                                                            <img
-                                                              src="/assets/laObraDorada.png"
-                                                              alt=""
-                                                              aria-hidden="true"
-                                                              className="cabina-antesala-opcion__imagen object-contain"
-                                                            />
+                                                            <Bell size={18} aria-hidden="true" />
                                                           </span>
-                                                          <span className="cabina-antesala-opcion__titulo">
-                                                            {dramaturgy.returnCta}
+                                                          <span className="cabina-antesala-opcion__texto">
+                                                            <span className="cabina-antesala-opcion__titulo">
+                                                              {dramaturgy.closingLine.replace(/\.$/, '')}
+                                                            </span>
+                                                            <span className="cabina-antesala-opcion__detalle">
+                                                              {dramaturgy.returnCta}
+                                                            </span>
                                                           </span>
                                                         </button>
                                                       ) : (
@@ -2259,16 +2370,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
                                                       <Check size={18} aria-hidden="true" />
                                                     </span>
-                                                  ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
+                                                  ) : (
                                                     <span className="cabina-antesala-opcion__mirilla">
-                                                      <img
-                                                        src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                                                        alt=""
-                                                        aria-hidden="true"
-                                                        className="cabina-antesala-opcion__imagen cabina-antesala-opcion__imagen--portal object-cover"
-                                                      />
+                                                      <Download size={18} aria-hidden="true" />
                                                     </span>
-                                                  ) : null}
+                                                  )}
                                                   <span className="cabina-antesala-opcion__texto">
                                                     <span className={`cabina-antesala-opcion__titulo${souvenirDeliveredAt ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>
                                                       {isSouvenirGenerating
@@ -2277,35 +2383,33 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                           ? 'Recuerdo entregado'
                                                           : dramaturgy.souvenirCta}
                                                     </span>
-                                                    {souvenirDeliveredAt && (
-                                                      <span className="cabina-antesala-opcion__detalle">
-                                                        Busca la imagen en tus descargas.
-                                                      </span>
-                                                    )}
+                                                    <span className="cabina-antesala-opcion__detalle">
+                                                      {souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint}
+                                                    </span>
                                                   </span>
                                                 </button>
                                                   </motion.div>
 
                                                   <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
-                                                {(!user || import.meta.env.DEV) && (
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => onRequireLogin?.()}
-                                                    className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
-                                                  >
-                                                    <span className="cabina-antesala-opcion__mirilla">
-                                                      <img
-                                                        src="/assets/logoapp.png"
-                                                        alt=""
-                                                        aria-hidden="true"
-                                                        className="cabina-antesala-opcion__imagen object-contain"
-                                                      />
-                                                    </span>
+                                                {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
+                                                    ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleClose()}
+                                                  className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
+                                                >
+                                                  <span className="cabina-antesala-opcion__mirilla">
+                                                    <Compass size={18} aria-hidden="true" />
+                                                  </span>
+                                                  <span className="cabina-antesala-opcion__texto">
                                                     <span className="cabina-antesala-opcion__titulo">
-                                                      Inicia sesión y sigue otra forma
+                                                      {dramaturgy.meanwhileTitle}
                                                     </span>
-                                                  </button>
-                                                )}
+                                                    <span className="cabina-antesala-opcion__detalle">
+                                                      {dramaturgy.meanwhileHint}
+                                                    </span>
+                                                  </span>
+                                                </button>
                                                   </motion.div>
                                                   </div>
 
@@ -2383,7 +2487,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 <img
                                                   src="/assets/header-logo.png"
                                                   alt="Emblema de #GatoEncerrado"
-                                                  className="h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28"
+                                                  className={`h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28${ultimaPreguntaVista ? '' : ' emblema-late'}`}
                                                 />
                                                 <span className="text-sm font-semibold tracking-wide text-purple-200">
                                                   Abrir mi memoria
@@ -2682,6 +2786,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 exactamente lo mismo. Aquí no se transforma en campo —el campo
                 vive del otro lado—, así que la pregunta sigue a la vista
                 mientras se escribe. */}
+            {ultimaPreguntaOpen && (
+              <div className="cabina-bubble cabina-bubble--escritorio">
+                <p className="cabina-bubble__preludio">El gato leyó lo que dejaste</p>
+                <p className="cabina-bubble__texto">«{ultimaPregunta.texto}»</p>
+                <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+              </div>
+            )}
             {bitacoraOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
                 <p className="cabina-bubble__preludio">La cabina te escucha</p>
@@ -2702,6 +2813,44 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       {enPantallaChica && typeof document !== 'undefined'
         ? createPortal(modal, document.body)
         : modal}
+      {/* ── La última pregunta del gato, en móvil: su propia capa, como la cabina
+          del regreso. El gato arriba con lo que la persona dejó; abajo, la hoja
+          con las palabras de la obra y la salida al acto final (22 oct 2026). */}
+      {open && ultimaPreguntaOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[300] overscroll-contain bg-[rgb(5,3,9)] lg:hidden"
+              style={{ height: '100dvh' }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Dilo con tus palabras"
+            >
+              <div className="capa-gato relative flex h-full flex-col overflow-hidden pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                <img
+                  src={CAT_CABINA_URL}
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-y-[6rem] inset-x-0 h-[calc(100%+12rem)] w-full object-cover object-top"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to bottom, rgba(5,3,9,0.55) 0%, rgba(5,3,9,0.12) 34%, rgba(5,3,9,0.9) 62%, rgb(5,3,9) 78%)' }}
+                />
+                <div className="cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0">
+                  <p className="cabina-bubble__preludio">El gato leyó lo que dejaste</p>
+                  <p className="cabina-bubble__texto">«{ultimaPregunta?.texto}»</p>
+                  <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+                </div>
+                <div aria-hidden="true" className="min-h-0 flex-1" />
+                <div className="relative z-10 mx-auto w-[min(360px,92vw)] shrink-0 overflow-y-auto">
+                  {renderUltimaPregunta('movil')}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
       {/* ── La cabina, en capa propia ───────────────────────────────────────
           Las preguntas del regreso no caben en la tarjeta: en móvil la tarjeta
           no tiene tope de alto —su `max-h` sólo aplica en escritorio—, así que

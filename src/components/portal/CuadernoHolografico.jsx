@@ -6,11 +6,10 @@ import {
   Flame,
   Sparkles,
   BookOpen,
-  ChevronDown,
   Download,
 } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import HuellaView from '@/components/portal/HuellaView';
+import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import IAInsightCard from '@/components/IAInsightCard';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
@@ -382,15 +381,10 @@ function CompletedScenePanel({
   entry,
   onDownloadSouvenir,
   souvenirGenerando,
-  huellaOpen,
-  huellaMounted,
-  onToggleHuella,
-  recommendedFormatId,
-  onNavigateToRecommendation,
   onGoToSite,
-  accordionRef,
+  onUltimaPregunta,
+  ultimaPreguntaVista,
 }) {
-  const [replicaPublicada, setReplicaPublicada] = useState(false);
 
   return (
     <div className="flex flex-col gap-5">
@@ -421,43 +415,15 @@ function CompletedScenePanel({
 
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
 
-      {/* La huella ya no abre otra plantilla: explica el siguiente paso dentro
-          del mapa y reserva el texto recuperado para La Réplica. */}
-      {onToggleHuella ? (
-        <section ref={accordionRef} className={`huella-acordeon${huellaOpen ? ' huella-acordeon--abierto' : ''}`}>
-        <button
-          type="button"
-          onClick={onToggleHuella}
-          aria-expanded={huellaOpen}
-          aria-controls="huella-acordeon-contenido"
-          className="huella-puerta"
-        >
-          <span className="huella-puerta__texto">
-            <span className="huella-puerta__eyebrow">{replicaPublicada ? 'Tu réplica' : 'Lo que dijiste al volver'}</span>
-            <span className="huella-puerta__titulo">{replicaPublicada ? 'Ya está en el acto final' : 'Llevarlo al acto final'}</span>
-          </span>
-          <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
-        </button>
-        <div
-          id="huella-acordeon-contenido"
-          className="huella-acordeon__cuerpo"
-          aria-hidden={!huellaOpen}
-        >
-          <div className="huella-acordeon__interior">
-            {huellaMounted ? (
-              <HuellaView
-                portal={portal}
-                onReplicaPublicada={setReplicaPublicada}
-                recommendedFormatId={recommendedFormatId}
-                onNavigateToRecommendation={onNavigateToRecommendation}
-                onGoToSite={onGoToSite}
-              />
-            ) : null}
-          </div>
-        </div>
-        </section>
-      ) : null}
-
+      {/* Lo que quedó y la puerta al gato (22 oct 2026): sustituye al acordeón
+          «Llevarlo al acto final», que prometía mostrar lo escrito y solo lo
+          mandaba crudo a La Réplica. */}
+      <LoQueQuedo
+        portal={portal}
+        late={!ultimaPreguntaVista}
+        onUltimaPregunta={onUltimaPregunta}
+        onGoToSite={onGoToSite}
+      />
     </div>
   );
 }
@@ -466,13 +432,11 @@ function HolograficoPanel({
   centerKey,
   homeKey,
   onStartBitacora,
-  huellaOpen,
-  huellaMounted,
-  onToggleHuella,
+  onUltimaPregunta,
+  ultimaPreguntaVista,
   recommendedFormatId,
   onNavigateToRecommendation,
   onGoToSite,
-  accordionRef,
   onOpenVideo,
   onRequireLogin,
   readOnly = false,
@@ -510,13 +474,11 @@ function HolograficoPanel({
               onDownloadSouvenir={onDownloadSouvenir}
               souvenirGenerando={souvenirGenerando}
               entry={entry}
-              huellaOpen={huellaOpen}
-              huellaMounted={huellaMounted}
-              onToggleHuella={onToggleHuella}
+              onUltimaPregunta={onUltimaPregunta}
+              ultimaPreguntaVista={ultimaPreguntaVista}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
-              accordionRef={accordionRef}
             />
           ) : (
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
@@ -549,13 +511,11 @@ function HolograficoPanel({
             onDownloadSouvenir={onDownloadSouvenir}
             souvenirGenerando={souvenirGenerando}
             entry={entry}
-            huellaOpen={huellaOpen}
-            huellaMounted={huellaMounted}
-            onToggleHuella={onToggleHuella}
+            onUltimaPregunta={onUltimaPregunta}
+            ultimaPreguntaVista={ultimaPreguntaVista}
             recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
-            accordionRef={accordionRef}
           />
         ) : (
           /* Satélite */
@@ -594,8 +554,8 @@ const CuadernoHolografico = ({
   onDownloadSouvenir = null,
   souvenirGenerando = false,
   onStartBitacora,
-  huellaOpen = false,
-  onHuellaOpenChange,
+  onUltimaPregunta,
+  ultimaPreguntaVista = true,
   recommendedFormatId,
   onNavigate,
   onGoToSite,
@@ -609,23 +569,11 @@ const CuadernoHolografico = ({
   const [centerKey, setCenterKey] = useState(portal);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoFormatId, setVideoFormatId] = useState(null);
-  // Después de abrirse una vez conservamos montada la huella para no perder
-  // una corrección sin guardar si la persona pliega el acordeón por accidente.
-  const [huellaMounted, setHuellaMounted] = useState(huellaOpen);
   const scrollContainerRef = useRef(null);
-  const huellaAccordionRef = useRef(null);
-  const huellaScrollTimersRef = useRef([]);
 
   useEffect(() => { onPosterChange?.(portal); }, []);
-  useEffect(() => {
-    if (huellaOpen) setHuellaMounted(true);
-  }, [huellaOpen]);
-  useEffect(() => () => {
-    huellaScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-  }, []);
 
   const handleSelect = (key) => {
-    if (key !== centerKey && huellaOpen) onHuellaOpenChange?.(false);
     setCenterKey(key);
     onPosterChange?.(key);
   };
@@ -655,39 +603,12 @@ const CuadernoHolografico = ({
 
   const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
-  const anchorHuellaInViewport = (behavior = 'smooth') => {
-    const container = scrollContainerRef.current;
-    const accordion = huellaAccordionRef.current;
-    if (!container || !accordion) return;
-    const containerRect = container.getBoundingClientRect();
-    const accordionRect = accordion.getBoundingClientRect();
-    const top = Math.max(0, container.scrollTop + accordionRect.top - containerRect.top - 72);
-    container.scrollTo({ top, behavior });
-  };
-
-  const handleToggleHuella = () => {
-    const next = !huellaOpen;
-    huellaScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-    huellaScrollTimersRef.current = [];
-    if (next) {
-      setHuellaMounted(true);
-      // El layout cambia de flex fijo a contenido desplazable al abrirse. Un
-      // primer anclaje acompaña el inicio y el segundo corrige la posición al
-      // terminar la expansión, sin sacar el toggle del viewport.
-      huellaScrollTimersRef.current.push(window.setTimeout(() => anchorHuellaInViewport(), 60));
-      huellaScrollTimersRef.current.push(window.setTimeout(() => anchorHuellaInViewport(), 430));
-    } else {
-      // El cierre vuelve al mapa; el navegador recupera su encuadre natural
-      // cuando desaparece el excedente vertical.
-      huellaScrollTimersRef.current.push(window.setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 360));
-    }
-    onHuellaOpenChange?.(next);
-  };
+  // La forma recorrida muestra lo que quedó y la puerta al gato: el panel
+  // crece y el mapa deja de ser la medida. En ese caso todo se desplaza.
+  const panelLargo = readResonanceProgress(centerKey).bitacoraDone;
 
   return (
-    <div ref={scrollContainerRef} className={`relative flex h-full flex-col ${huellaOpen ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+    <div ref={scrollContainerRef} className={`relative flex h-full flex-col ${panelLargo ? 'overflow-y-auto' : 'overflow-hidden'}`}>
 
       {/* Poster como fondo — mobile: visible, desktop: oculto (el modal ya lo muestra) */}
       <AnimatePresence>
@@ -728,7 +649,7 @@ const CuadernoHolografico = ({
 
       {/* Constelación */}
       <div
-        className={`relative p-4 lg:p-6 ${huellaOpen ? 'min-h-[28rem] flex-none lg:min-h-[24rem] lg:flex-1' : 'min-h-0 flex-1'}`}
+        className={`relative p-4 lg:p-6 ${panelLargo ? 'min-h-[24rem] flex-none lg:min-h-[22rem] lg:flex-1' : 'min-h-0 flex-1'}`}
         style={{ zIndex: 3 }}
       >
         <Constellation
@@ -748,13 +669,11 @@ const CuadernoHolografico = ({
           onDownloadSouvenir={onDownloadSouvenir}
           souvenirGenerando={souvenirGenerando}
           onStartBitacora={onStartBitacora}
-          huellaOpen={huellaOpen}
-          huellaMounted={huellaMounted}
-          onToggleHuella={handleToggleHuella}
+          onUltimaPregunta={onUltimaPregunta}
+          ultimaPreguntaVista={ultimaPreguntaVista}
           recommendedFormatId={recommendedFormatId}
           onNavigateToRecommendation={onNavigate}
           onGoToSite={onGoToSite}
-          accordionRef={huellaAccordionRef}
           onOpenVideo={handleOpenVideo}
           onRequireLogin={onRequireLogin}
           readOnly={readOnly}

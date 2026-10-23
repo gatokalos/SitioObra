@@ -17,14 +17,23 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // no sólo del aviso por WhatsApp, como cuando era la tarjeta de un solo CTA
   // (Carlos, 18 sep 2026).
   returnBody: 'Dentro de unos días, una nueva pregunta volverá a buscarte. Puedes dejar que te encuentre, llevarte una imagen de lo que ocurrió aquí, y guardar tu recorrido para seguir en otra forma.',
-  returnCta: 'Quiero que la pregunta vuelva →',
+  // 22 oct 2026: la fila se titula con la línea de la retención («La obra sigue
+  // en ti») y este es su detalle. La pregunta vuelve de todos modos; lo único
+  // que la persona decide es si quiere el aviso.
+  returnCta: 'Que me avise cuando vuelva la pregunta',
   // El aviso ya concedido no desaparece: se queda con el mismo gesto de
   // confirmación que el recuerdo entregado (Carlos, 18 sep 2026).
   returnDone: 'La pregunta volverá',
   returnDoneHint: 'Te buscará por WhatsApp cuando llegue el momento.',
   returnBackNow: 'La pregunta ya volvió',
   returnBackNowHint: 'Puedes entrar a escena.',
-  souvenirCta: 'Prefiero llevarme un recuerdo',
+  souvenirCta: 'Llevarme el recuerdo',
+  souvenirHint: 'Tu consigna y la fecha en que la pregunta vuelve',
+  // La tercera fila no manda a ningún lugar: dice que la casa está abierta
+  // (Carlos, 22 oct 2026). Lo que la persona haga en la espera se registra,
+  // no se sugiere.
+  meanwhileTitle: 'Mientras tanto',
+  meanwhileHint: 'Explora la obra a tu ritmo: otras formas, la taquilla, el acto final',
   entranceCoda: 'Ya forma parte de tu obra.',
   // Línea de la retención. "Pausa" detenía; la retención sostiene.
   // Placeholder aprobado por Carlos (11 sep 2026), no copy final.
