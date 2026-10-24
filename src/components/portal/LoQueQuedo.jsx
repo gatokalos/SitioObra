@@ -1,11 +1,12 @@
-// Lo que quedó: lo que la persona dijo antes de entrar y lo que respondió al
-// volver, con sus fechas, en plantilla y sin prosa sobre ello (D-34: la huella
-// se muestra después de las preguntas del regreso). Debajo, la puerta al
-// gato: «Dilo con tus palabras». Sustituye al acordeón «Llevarlo al acto
-// final», que prometía mostrar lo escrito y solo lo mandaba crudo a La
-// Réplica (prototipo aprobado por Carlos el 22 oct 2026).
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+// El acordeón de la Memoria (Carlos, 23 oct 2026): la visita ve los satélites,
+// la línea de la forma y este bloque, cerrado y latiendo: «Dilo con tus
+// palabras · El gato tiene una última pregunta para ti». Al abrirlo, adentro
+// están las tres frases, lo que quedó —lo que dijo antes de entrar y lo que
+// respondió al volver, con fechas, en plantilla (D-34)— y el paso al gato.
+// Sustituye al acordeón «Llevarlo al acto final», que prometía mostrar lo
+// escrito y solo lo mandaba crudo a La Réplica (prototipo aprobado el 22 oct).
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
@@ -58,12 +59,14 @@ const ultimaPalabra = (sesion) => {
   return { campo: elegido[0], texto: elegido[1].trim() };
 };
 
-const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
+const LoQueQuedo = ({ portal, frase = null, late = false, onUltimaPregunta, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
   const [replicas, setReplicas] = useState([]);
   const [retirando, setRetirando] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+  const seccionRef = useRef(null);
 
   const fetchHuella = useCallback(async () => {
     if (isDevAuth) { setSessions([{ ...SESION_DE_EJEMPLO, miniverso_id: portal }]); return; }
@@ -93,7 +96,19 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
   const palabra = useMemo(() => ultimaPalabra(sesion), [sesion]);
   const replicaPublicada = replicas.length > 0;
 
-  const abrirUltimaPregunta = () => {
+  // Al abrirse, el acordeón crece y el mapa deja de ser la medida: se trae a
+  // la vista para que lo desplegado no quede debajo del doblez.
+  const alternar = () => {
+    const siguiente = !abierto;
+    setAbierto(siguiente);
+    if (siguiente) {
+      window.setTimeout(() => {
+        seccionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }, 80);
+    }
+  };
+
+  const escucharAlGato = () => {
     if (!palabra) return;
     onUltimaPregunta?.({
       anonId,
@@ -148,10 +163,6 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
     }
   };
 
-  if (sessions === null) {
-    return <p className="text-xs text-slate-400/70">Leyendo lo que dejaste…</p>;
-  }
-
   const entrada = fechaCorta(sesion?.created_at);
   const regreso = fechaCorta(sesion?.bitacora_completed_at);
   const respuestas = sesion
@@ -159,55 +170,81 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
       .filter((v) => typeof v === 'string' && v.trim())
     : [];
   const dijoQueNo = sesion?.bitacora_p1_afirmativa === false && respuestas.length === 0;
+  const cargando = sessions === null;
 
   return (
-    <div className="flex flex-col gap-4">
-      {sesion ? (
-        <div className="lo-que-quedo">
-          {sesion.intuicion_answer ? (
-            <div className="lo-que-quedo__item">
-              <span className="lo-que-quedo__cuando">Antes de entrar{entrada ? ` · ${entrada}` : ''}</span>
-              <p className="lo-que-quedo__texto">«{sesion.intuicion_answer}»</p>
-            </div>
-          ) : null}
-          {(respuestas.length > 0 || dijoQueNo) ? (
-            <div className="lo-que-quedo__item">
-              <span className="lo-que-quedo__cuando">Al volver{regreso ? ` · ${regreso}` : ''}</span>
-              {dijoQueNo ? (
-                <p className="lo-que-quedo__texto lo-que-quedo__texto--nada">Nada había regresado todavía.</p>
-              ) : respuestas.map((texto, i) => (
-                <p key={i} className="lo-que-quedo__texto">«{texto}»</p>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {replicaPublicada ? (
-        <button type="button" className="huella-puerta" onClick={() => onGoToSite?.('#provoca')}>
-          <span className="huella-puerta__texto">
-            <span className="huella-puerta__eyebrow">Tu réplica</span>
-            <span className="huella-puerta__titulo">Ya está en el acto final</span>
-            <span className="huella-puerta__pista">Firmada como la dejaste</span>
-          </span>
-          <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
-        </button>
-      ) : palabra ? (
+    <div className="flex flex-col gap-3">
+      <section ref={seccionRef} className={`huella-acordeon${abierto ? ' huella-acordeon--abierto' : ''}`}>
         <button
           type="button"
-          className={`huella-puerta huella-puerta--gato${late ? ' huella-puerta--late' : ''}`}
-          onClick={abrirUltimaPregunta}
+          onClick={alternar}
+          aria-expanded={abierto}
+          aria-controls="memoria-acordeon-contenido"
+          className={`huella-puerta huella-puerta--gato${late && !abierto ? ' huella-puerta--late' : ''}`}
         >
           <span className="huella-puerta__esfera" aria-hidden="true">
             <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" />
           </span>
           <span className="huella-puerta__texto">
-            <span className="huella-puerta__titulo">Dilo con tus palabras</span>
-            <span className="huella-puerta__pista">El gato tiene una última pregunta para ti</span>
+            {replicaPublicada ? (
+              <>
+                <span className="huella-puerta__eyebrow">Tu réplica</span>
+                <span className="huella-puerta__titulo">Ya está en el acto final</span>
+                <span className="huella-puerta__pista">Firmada como la dejaste</span>
+              </>
+            ) : (
+              <>
+                <span className="huella-puerta__titulo">Dilo con tus palabras</span>
+                <span className="huella-puerta__pista">El gato tiene una última pregunta para ti</span>
+              </>
+            )}
           </span>
-          <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
+          <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
         </button>
-      ) : null}
+
+        <div id="memoria-acordeon-contenido" className="huella-acordeon__cuerpo" aria-hidden={!abierto}>
+          <div className="huella-acordeon__interior">
+            <div className="memoria-acordeon">
+              {frase}
+
+              {cargando ? (
+                <p className="text-xs text-slate-400/70">Leyendo lo que dejaste…</p>
+              ) : sesion ? (
+                <div className="lo-que-quedo lo-que-quedo--en-acordeon">
+                  {sesion.intuicion_answer ? (
+                    <div className="lo-que-quedo__item">
+                      <span className="lo-que-quedo__cuando">Antes de entrar{entrada ? ` · ${entrada}` : ''}</span>
+                      <p className="lo-que-quedo__texto">«{sesion.intuicion_answer}»</p>
+                    </div>
+                  ) : null}
+                  {(respuestas.length > 0 || dijoQueNo) ? (
+                    <div className="lo-que-quedo__item">
+                      <span className="lo-que-quedo__cuando">Al volver{regreso ? ` · ${regreso}` : ''}</span>
+                      {dijoQueNo ? (
+                        <p className="lo-que-quedo__texto lo-que-quedo__texto--nada">Nada había regresado todavía.</p>
+                      ) : respuestas.map((texto, i) => (
+                        <p key={i} className="lo-que-quedo__texto">«{texto}»</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400/70">No encontramos lo que escribiste en este navegador.</p>
+              )}
+
+              {replicaPublicada ? (
+                <button type="button" onClick={() => onGoToSite?.('#provoca')} className="ultima-pregunta__salida">
+                  Ver el acto final
+                </button>
+              ) : palabra ? (
+                <button type="button" onClick={escucharAlGato} className="ultima-pregunta__salida">
+                  Escuchar al gato
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {(sesion || replicaPublicada) ? (
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">

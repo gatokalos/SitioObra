@@ -48,7 +48,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
       role="img"
       aria-label={
         enEscena
-          ? 'En el foco, tres días entre bambalinas, En escena y Memoria: completo'
+          ? 'En el foco y En escena ya ocurrieron; estás en la Memoria'
           : focoCompleto
             ? 'En el foco completo. En escena sigue abierta'
             : enFoco ? 'En el foco, en curso' : 'Sin empezar'
@@ -83,40 +83,44 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
         </span>
       </div>
 
-      {/* En escena — el clímax. Si no ocurrió queda vacía, no apagada. */}
+      {/* En escena — el clímax. Si no ocurrió queda vacía, no apagada. Encendido
+          lo que está pasando, no lo que ya pasó (Carlos, 23 oct 2026): cuando el
+          regreso ya ocurrió, En escena queda cerrada y el punto vivo es Memoria. */}
       <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
         <span className="relative flex h-12 w-12 items-center justify-center">
-          {enEscena ? (
-            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
-          ) : null}
           <span
-            className={`relative flex h-12 w-12 items-center justify-center rounded-full transition ${
+            className={`relative flex items-center justify-center rounded-full transition ${
               enEscena
-                ? `bg-gradient-to-br ${gradient} shadow-[0_6px_22px_rgba(0,0,0,0.45)]`
+                ? `h-9 w-9 bg-gradient-to-br ${gradient} shadow-[0_4px_14px_rgba(0,0,0,0.4)]`
                 : focoCompleto
-                  ? 'border-2 border-white/40 bg-transparent'
-                  : 'border border-dashed border-white/15 bg-white/[0.03]'
+                  ? 'h-12 w-12 border-2 border-white/40 bg-transparent'
+                  : 'h-12 w-12 border border-dashed border-white/15 bg-white/[0.03]'
             }`}
           >
-            <Flame size={20} className={enEscena ? 'text-white drop-shadow-sm' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
+            <Flame size={enEscena ? 15 : 20} className={enEscena ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
-        <span className={`${rotulo(enEscena || focoCompleto)} font-semibold`}>En escena</span>
+        <span className={`${rotulo(enEscena || focoCompleto)} ${enEscena ? '' : 'font-semibold'}`}>En escena</span>
       </div>
 
       <span className="flex h-12 w-5 shrink-0 items-center">
         <span className={`w-full border-t ${enEscena ? 'border-white/35' : 'border-white/10'}`} />
       </span>
 
-      {/* Memoria — abierta: es donde la persona está parada ahora */}
+      {/* Memoria — donde la persona está parada ahora: el punto vivo. */}
       <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
-        <span className="flex h-12 items-center">
+        <span className="relative flex h-12 w-12 items-center justify-center">
+          {enEscena ? (
+            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+          ) : null}
           <span
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              enEscena ? 'border-2 border-white/70' : 'border border-dashed border-white/15'
+            className={`relative flex items-center justify-center rounded-full transition ${
+              enEscena
+                ? `h-12 w-12 bg-gradient-to-br ${gradient} shadow-[0_6px_22px_rgba(0,0,0,0.45)]`
+                : 'h-8 w-8 border border-dashed border-white/15'
             }`}
           >
-            <BookOpen size={13} className={enEscena ? 'text-white' : 'text-slate-600'} />
+            <BookOpen size={enEscena ? 20 : 13} className={enEscena ? 'text-white drop-shadow-sm' : 'text-slate-600'} />
           </span>
         </span>
         <span className={rotulo(enEscena)}>Memoria</span>
@@ -410,16 +414,17 @@ function CompletedScenePanel({
             </button>
           ) : null}
         </div>
-        <FraseDeMemoria portal={portal} enEscena />
       </div>
 
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
 
-      {/* Lo que quedó y la puerta al gato (22 oct 2026): sustituye al acordeón
-          «Llevarlo al acto final», que prometía mostrar lo escrito y solo lo
-          mandaba crudo a La Réplica. */}
+      {/* Lo que la visita ve: los satélites, la línea y el acordeón (Carlos,
+          23 oct 2026). Adentro del acordeón van las tres frases, lo que quedó y
+          el paso al gato. Sustituye al acordeón «Llevarlo al acto final», que
+          prometía mostrar lo escrito y solo lo mandaba crudo a La Réplica. */}
       <LoQueQuedo
         portal={portal}
+        frase={<FraseDeMemoria portal={portal} enEscena />}
         late={!ultimaPreguntaVista}
         onUltimaPregunta={onUltimaPregunta}
         onGoToSite={onGoToSite}

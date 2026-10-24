@@ -5426,3 +5426,28 @@ body {
     animation: none;
   }
 }
+
+/* El acordeón de la Memoria (23 oct 2026): adentro, las tres frases, lo que
+   quedó y el paso al gato. La esfera deja de latir cuando está abierto. */
+.memoria-acordeon {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem 1.1rem;
+}
+.memoria-acordeon .frase-de-memoria,
+.memoria-acordeon > p:first-child {
+  margin: 0;
+}
+.lo-que-quedo--en-acordeon {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  gap: 0.9rem;
+}
+.huella-acordeon--abierto .huella-puerta--gato .huella-puerta__esfera {
+  animation: none;
+}
+.huella-acordeon--abierto .huella-puerta--gato {
+  padding-bottom: 0.9rem;
+}
