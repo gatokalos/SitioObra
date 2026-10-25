@@ -247,6 +247,9 @@ export const ProvocaSection = () => {
   // La palabra de la obra que la persona eligió con el gato (D-45, 22 oct
   // 2026): la pregunta deja de rotar y se detiene en ella.
   const [terminoFijado, setTerminoFijado] = useState(null);
+  // El borrador que el gato propuso (replica_borradores): al publicar se guarda
+  // lo publicado junto a lo propuesto (D-45: dos versiones).
+  const [borradorId, setBorradorId] = useState(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
   const pulseDeltaTimeoutsRef = useRef({});
@@ -483,6 +486,7 @@ export const ProvocaSection = () => {
       if (parsed?.quote) setVoiceDraft(parsed.quote);
       if (parsed?.huella) setHuellaDeOrigen(parsed.huella);
       if (parsed?.termino) setTerminoFijado(parsed.termino);
+      if (parsed?.borradorId) setBorradorId(parsed.borradorId);
       if (parsed?.name) setVoiceName(parsed.name);
       if (parsed?.role) setVoiceRole(parsed.role);
       const hasDraft = parsed?.quote || parsed?.name || parsed?.role;
@@ -502,6 +506,7 @@ export const ProvocaSection = () => {
       if (quote) setVoiceDraft(quote);
       if (e.detail?.huella) setHuellaDeOrigen(e.detail.huella);
       if (e.detail?.termino) setTerminoFijado(e.detail.termino);
+      if (e.detail?.borradorId) setBorradorId(e.detail.borradorId);
       setIsVoiceInputOpen(true);
       setTimeout(() => {
         document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -519,6 +524,7 @@ export const ProvocaSection = () => {
       role: voiceRole.trim(),
       ...(huellaDeOrigen ? { huella: huellaDeOrigen } : {}),
       ...(terminoFijado ? { termino: terminoFijado } : {}),
+      ...(borradorId ? { borradorId } : {}),
       updatedAt: new Date().toISOString(),
     };
     if (!payload.quote && !payload.name && !payload.role) {
@@ -526,7 +532,7 @@ export const ProvocaSection = () => {
       return;
     }
     safeSetItem(PROVOCA_DRAFT_KEY, JSON.stringify(payload));
-  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen, terminoFijado]);
+  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen, terminoFijado, borradorId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -683,6 +689,24 @@ export const ProvocaSection = () => {
     }
   }, [huellaDeOrigen]);
 
+  // La segunda versión del dato (D-45, 25 oct 2026): lo que publicó, guardado
+  // junto a lo que el gato propuso. Si falla, lo publicado sigue en pie.
+  const registrarPublicadoEnBorrador = useCallback(async (textoPublicado, perspectiveId = null) => {
+    if (!borradorId || !huellaDeOrigen?.anonId || !textoPublicado) return;
+    try {
+      await fetch(`${OBRA_API_URL}/api/huella/ultima-pregunta/${encodeURIComponent(borradorId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id: huellaDeOrigen.anonId,
+          publicado_texto: textoPublicado,
+          publicado_termino: terminoFijado,
+          ...(perspectiveId ? { perspective_id: perspectiveId } : {}),
+        }),
+      });
+    } catch {}
+  }, [borradorId, huellaDeOrigen, terminoFijado]);
+
   const retirarHuellaGuardada = useCallback(async () => {
     if (!huellaDeOrigen?.anonId) return;
     try {
@@ -696,6 +720,7 @@ export const ProvocaSection = () => {
       setVoiceDraft('');
       setHuellaDeOrigen(null);
       setTerminoFijado(null);
+      setBorradorId(null);
       safeRemoveItem(PROVOCA_DRAFT_KEY);
       try {
         const claves = [];
@@ -773,8 +798,9 @@ export const ProvocaSection = () => {
 
     setIsSubmittingVoice(true);
     let submitError = null;
+    let perspectivePublicadaId = null;
     try {
-      const { error } = await submitAudiencePerspective({
+      const { data, error } = await submitAudiencePerspective({
         quote,
         authorName,
         authorRole: authorRole || null,
@@ -783,9 +809,12 @@ export const ProvocaSection = () => {
           source: 'provoca_section',
           user_id: user?.id ?? null,
           anon_id: ensureAnonId() ?? null,
+          ...(borradorId ? { borrador_id: borradorId } : {}),
+          ...(terminoFijado ? { termino: terminoFijado } : {}),
         },
       });
       submitError = error;
+      if (!error) perspectivePublicadaId = typeof data === 'string' ? data : (data?.id ?? null);
     } catch (error) {
       submitError = error;
     } finally {
@@ -819,8 +848,10 @@ export const ProvocaSection = () => {
     // Lo que se publicó es también la versión corregida de la huella: editar
     // aquí ya no cambia sólo lo que se publica (D-38).
     void corregirHuellaGuardada(quote);
+    void registrarPublicadoEnBorrador(quote, perspectivePublicadaId);
     setHuellaDeOrigen(null);
     setTerminoFijado(null);
+    setBorradorId(null);
     safeRemoveItem(PROVOCA_DRAFT_KEY);
     const keepFormOpen = isProvocaDesktopViewport();
     if (keepFormOpen) {
@@ -829,6 +860,7 @@ export const ProvocaSection = () => {
     setIsVoiceInputOpen(keepFormOpen);
   }, [
     corregirHuellaGuardada,
+    registrarPublicadoEnBorrador,
     fireProvocaConfetti,
     huellaDeOrigen,
     isSubmittingVoice,

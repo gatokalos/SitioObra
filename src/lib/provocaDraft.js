@@ -18,7 +18,7 @@ export const PALABRAS_DE_LA_OBRA = [
   'querer estar bien',
 ];
 
-export function escribirBorradorDeReplica({ quote, huella, termino }) {
+export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null }) {
   const texto = typeof quote === 'string' ? quote.slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
   if (!texto) return;
   try {
@@ -29,10 +29,11 @@ export function escribirBorradorDeReplica({ quote, huella, termino }) {
       quote: texto,
       huella,
       ...(termino ? { termino } : {}),
+      ...(borradorId ? { borradorId } : {}),
       updatedAt: new Date().toISOString(),
     }));
   } catch {}
   try {
-    window.dispatchEvent(new CustomEvent('gatoencerrado:provoca-draft', { detail: { quote: texto, huella, termino } }));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:provoca-draft', { detail: { quote: texto, huella, termino, borradorId } }));
   } catch {}
 }

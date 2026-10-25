@@ -1202,13 +1202,53 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Desde la puerta «Dilo con tus palabras» de la Memoria. Fase 1 (sin
   // backend): el gato devuelve el texto tal cual y la persona elige la palabra
   // de la obra; la propuesta con «quizá» llega con el modelo, en la fase 3.
-  const abrirUltimaPregunta = useCallback((huella) => {
+  // Fase 3 (25 oct 2026): el gato arma la pregunta con todo el recorrido y
+  // propone uno o dos términos con «quizá» (POST /api/huella/ultima-pregunta).
+  // Mientras llega, «Leyendo lo que dejaste…»; si falla, su texto tal cual.
+  const abrirUltimaPregunta = useCallback(async (huella) => {
     if (!huella?.texto) return;
     lsPatch(portal, { ultima_pregunta_abierta: true });
     setUltimaPreguntaVista(true);
     setTerminoElegido(null);
-    setUltimaPregunta(huella);
-  }, [portal]);
+    setUltimaPregunta({ ...huella, cargando: !isDevAuth });
+    if (isDevAuth) {
+      // Vista previa: el ejemplo del prototipo, para recorrer el beat sin registro.
+      const ejemplo = {
+        pregunta: 'Dijiste que no es que no quepas en ningún lado, sino que no te quedas el tiempo suficiente. ¿Quizá eso es la desconexión? ¿O la búsqueda de sentido?',
+        terminos: ['la desconexión', 'la búsqueda de sentido'],
+        respuestas: {
+          'la desconexión': 'Quizá lo que me provoca la desconexión es no quedarme el tiempo suficiente en ningún lado.',
+          'la búsqueda de sentido': 'Quizá lo que me provoca la búsqueda de sentido es no quedarme el tiempo suficiente en ningún lado.',
+        },
+        borradorId: null,
+      };
+      setUltimaPregunta({ ...huella, ...ejemplo, cargando: false });
+      setTerminoElegido(ejemplo.terminos[0]);
+      return;
+    }
+    try {
+      const res = await fetch(`${OBRA_API_URL}/api/huella/ultima-pregunta`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anon_id: huella.anonId, miniverso_id: portal }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error();
+      const terminos = Array.isArray(data.terminos) ? data.terminos : [];
+      setUltimaPregunta((previo) => (previo ? {
+        ...previo,
+        pregunta: data.pregunta ?? null,
+        terminos,
+        respuestas: data.respuestas ?? {},
+        borradorId: data.borrador_id ?? null,
+        fallback: Boolean(data.fallback),
+        cargando: false,
+      } : previo));
+      if (terminos[0]) setTerminoElegido(terminos[0]);
+    } catch {
+      setUltimaPregunta((previo) => (previo ? { ...previo, cargando: false } : previo));
+    }
+  }, [portal, isDevAuth]);
 
   const volverAlLibreto = useCallback(() => {
     setUltimaPregunta(null);
@@ -1225,8 +1265,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const irAlActoFinal = useCallback(() => {
     if (!ultimaPregunta) return;
     const termino = terminoElegido ?? null;
+    // La caja de La Réplica recibe la respuesta tentativa con «quizá» del
+    // término elegido (D-45, 22 oct); si no hay propuesta, su texto tal cual.
+    const quote = (termino && ultimaPregunta.respuestas?.[termino]) || ultimaPregunta.texto;
     escribirBorradorDeReplica({
-      quote: ultimaPregunta.texto,
+      quote,
+      borradorId: ultimaPregunta.borradorId ?? null,
       huella: {
         anonId: ultimaPregunta.anonId,
         sessionId: ultimaPregunta.sessionId,
@@ -1251,6 +1295,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             key={palabra}
             type="button"
             aria-pressed={terminoElegido === palabra}
+            data-quiza={(ultimaPregunta?.terminos ?? []).includes(palabra) ? 1 : 0}
             onClick={() => setTerminoElegido((previo) => (previo === palabra ? null : palabra))}
             className="palabra-de-la-obra"
           >
@@ -1261,7 +1306,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       <p className="ultima-pregunta__llegas">
         {terminoElegido
           ? <>Llegas a La Réplica con: <b>¿Qué te provoca {terminoElegido}?</b></>
-          : 'Elige una palabra, o llega sin ella y decídelo allá.'}
+          : (ultimaPregunta?.terminos?.length ? 'Elige una palabra, o deja la que el gato propuso.' : 'Elige una palabra, o llega sin ella y decídelo allá.')}
       </p>
       <button type="button" onClick={irAlActoFinal} className="ultima-pregunta__salida">
         Ir al acto final
@@ -2789,8 +2834,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             {ultimaPreguntaOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
                 <p className="cabina-bubble__preludio">El gato leyó lo que dejaste</p>
-                <p className="cabina-bubble__texto">«{ultimaPregunta.texto}»</p>
-                <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+                {ultimaPregunta.cargando ? (
+                  <p className="cabina-bubble__texto cabina-bubble__texto--leyendo">Leyendo lo que dejaste…</p>
+                ) : ultimaPregunta.pregunta ? (
+                  <p className="cabina-bubble__texto">{ultimaPregunta.pregunta}</p>
+                ) : (
+                  <>
+                    <p className="cabina-bubble__texto">«{ultimaPregunta.texto}»</p>
+                    <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+                  </>
+                )}
               </div>
             )}
             {bitacoraOpen && (
@@ -2839,8 +2892,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 />
                 <div className="cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0">
                   <p className="cabina-bubble__preludio">El gato leyó lo que dejaste</p>
-                  <p className="cabina-bubble__texto">«{ultimaPregunta?.texto}»</p>
-                  <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+                  {ultimaPregunta?.cargando ? (
+                    <p className="cabina-bubble__texto cabina-bubble__texto--leyendo">Leyendo lo que dejaste…</p>
+                  ) : ultimaPregunta?.pregunta ? (
+                    <p className="cabina-bubble__texto">{ultimaPregunta.pregunta}</p>
+                  ) : (
+                    <>
+                      <p className="cabina-bubble__texto">«{ultimaPregunta?.texto}»</p>
+                      <p className="cabina-bubble__instruccion">¿Con qué palabra de la obra lo dirías?</p>
+                    </>
+                  )}
                 </div>
                 <div aria-hidden="true" className="min-h-0 flex-1" />
                 <div className="relative z-10 mx-auto w-[min(360px,92vw)] shrink-0 overflow-y-auto">
