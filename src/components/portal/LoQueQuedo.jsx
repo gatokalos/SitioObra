@@ -1,16 +1,15 @@
-// El cuadro de la Memoria que lleva al gato (Carlos, 27 oct 2026): la Memoria
-// no muestra texto ni pide decisiones. Un solo cuadro, cerrado y latiendo, «El
-// gato te lleva al acto final». Al tocarlo, un paso previo elige la palabra de
-// la obra con la que se va a decir («Por lo que dijiste, podrías decirlo
-// con…», lo que el gato propuso y «otra palabra»). Y después, en la cabina, el
-// gato cuenta en tres momentos lo que dejó, lo que volvió y adónde va. Nada que
-// escoger allá. Lo que quedó se lee después de las preguntas del regreso
-// (D-34), pero lo dice el gato, no un cuadro.
+// El bloque de la forma recorrida en la Memoria (Carlos, 27 oct 2026): su
+// categoría y su nombre, su verso en tres renglones, y la fila «Lo que falta ·
+// Contestarle a la obra». Al abrirla, el paso previo elige la palabra de la
+// obra con la que se va a decir («Falta una palabra para decirlo. / Por lo que
+// dijiste, quizá sea …, / o ….») y «Escuchar al gato» lleva a la cabina, donde
+// el gato cuenta en tres momentos lo que dejó, lo que volvió y adónde va. Nada
+// se escoge allá. Lo que quedó se lee después de las preguntas del regreso
+// (D-34), y lo dice el gato.
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { PALABRAS_DE_LA_OBRA } from '@/lib/provocaDraft';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
@@ -19,7 +18,7 @@ const CONFIRMA_RETIRO_REPLICA = 'Se retira tu réplica del acto final. Lo que es
 const CONFIRMA_RETIRO_TODO = 'Se borra todo lo que escribiste en tu recorrido, aquí y en la investigación. No se puede deshacer.';
 
 // En la vista previa DEV no hay registro de nadie: un ejemplo, marcado, para
-// poder recorrer el beat completo (como en el prototipo).
+// poder recorrer el beat completo.
 const SESION_DE_EJEMPLO = {
   id: 'ejemplo',
   created_at: '2026-10-12T18:00:00Z',
@@ -95,13 +94,13 @@ const momentosDe = (sesion, termino) => {
   ];
 };
 
-const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
+const LoQueQuedo = ({ portal, entry, chip = null, verso = null, late = false, onUltimaPregunta, onGoToSite, onAbiertoChange }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
   const [replicas, setReplicas] = useState([]);
   const [retirando, setRetirando] = useState(false);
-  // el paso previo: cerrado → palabra
+  // la fila cerrada → el paso previo abierto
   const [abierto, setAbierto] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [propuesta, setPropuesta] = useState(null); // { terminos, respuestas, borradorId }
@@ -136,10 +135,9 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
   const palabra = useMemo(() => ultimaPalabra(sesion), [sesion]);
   const replicaPublicada = replicas.length > 0;
 
-  // Al abrir el cuadro, el gato lee el recorrido y propone una o dos palabras
+  // Al abrir la fila, el gato lee el recorrido y propone una o dos palabras
   // (POST /api/huella/ultima-pregunta). Si falla, las siete palabras y nada más.
-  const abrirPalabra = async () => {
-    setAbierto(true);
+  const cargarPropuesta = async () => {
     if (propuesta || cargando) return;
     if (isDevAuth) { setPropuesta(PROPUESTA_DE_EJEMPLO); setTermino(PROPUESTA_DE_EJEMPLO.terminos[0]); return; }
     setCargando(true);
@@ -161,6 +159,13 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
     } finally {
       setCargando(false);
     }
+  };
+
+  const alternar = () => {
+    const siguiente = !abierto;
+    setAbierto(siguiente);
+    onAbiertoChange?.(siguiente);
+    if (siguiente) void cargarPropuesta();
   };
 
   const escucharAlGato = () => {
@@ -225,93 +230,103 @@ const LoQueQuedo = ({ portal, late = false, onUltimaPregunta, onGoToSite }) => {
   const cargandoSesion = sessions === null;
   const terminosPropuestos = propuesta?.terminos ?? [];
   const terminosVisibles = otras || terminosPropuestos.length === 0 ? PALABRAS_DE_LA_OBRA : terminosPropuestos;
-  const lineaDePropuesta = terminosPropuestos.length === 2
-    ? <>Por lo que dijiste, podrías decirlo con <b>{terminosPropuestos[0]}</b> o con <b>{terminosPropuestos[1]}</b>. Elige una, o busca otra.</>
-    : terminosPropuestos.length === 1
-      ? <>Por lo que dijiste, podrías decirlo con <b>{terminosPropuestos[0]}</b>. Elige esa, o busca otra.</>
-      : <>¿Con qué palabra de la obra lo dirías?</>;
+
+  // «Falta una palabra para decirlo. / Por lo que dijiste, quizá sea …, / o ….»
+  // Sigue el verso de arriba (Carlos, 27 oct: opción B).
+  const lineasDelPaso = cargando
+    ? ['Falta una palabra para decirlo.', 'El gato está leyendo lo que dejaste…']
+    : terminosPropuestos.length === 2
+      ? ['Falta una palabra para decirlo.', `Por lo que dijiste, quizá sea ${terminosPropuestos[0]},`, `o ${terminosPropuestos[1]}.`]
+      : terminosPropuestos.length === 1
+        ? ['Falta una palabra para decirlo.', `Por lo que dijiste, quizá sea ${terminosPropuestos[0]}.`]
+        : ['Falta una palabra para decirlo.', 'Elige con cuál.'];
 
   return (
-    <div className="flex flex-col gap-3">
-      {replicaPublicada ? (
-        <button type="button" className="huella-puerta huella-puerta--gato" onClick={() => onGoToSite?.('#provoca')}>
-          <span className="huella-puerta__esfera" aria-hidden="true">
-            <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" />
-          </span>
-          <span className="huella-puerta__texto">
-            <span className="huella-puerta__titulo">Ya está en el acto final</span>
-            <span className="huella-puerta__pista">Tu réplica, firmada como la dejaste</span>
-          </span>
-          <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
-        </button>
-      ) : !abierto ? (
-        <button
-          type="button"
-          className={`huella-puerta huella-puerta--gato${late ? ' huella-puerta--late' : ''}`}
-          onClick={() => void abrirPalabra()}
-          disabled={cargandoSesion || !sesion}
-        >
-          <span className="huella-puerta__esfera" aria-hidden="true">
-            <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" />
-          </span>
-          <span className="huella-puerta__texto">
-            <span className="huella-puerta__titulo">El gato te lleva al acto final</span>
-            <span className="huella-puerta__pista">
-              {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Te cuenta lo que dejaste y te acompaña' : 'No encontramos lo que escribiste en este navegador.'}
-            </span>
-          </span>
-          <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
-        </button>
-      ) : (
-        <div className="palabra-previa">
-          <p className="palabra-previa__eyebrow">Antes de pasar con el gato</p>
-          {cargando ? (
-            <p className="palabra-previa__linea palabra-previa__linea--leyendo">El gato está leyendo lo que dejaste…</p>
-          ) : (
-            <>
-              <p className="palabra-previa__linea">{lineaDePropuesta}</p>
-              <div className="ultima-pregunta__palabras" role="group" aria-label="Las palabras de la obra">
-                {terminosVisibles.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    aria-pressed={termino === p}
-                    data-quiza={terminosPropuestos.includes(p) ? 1 : 0}
-                    onClick={() => setTermino(p)}
-                    className="palabra-de-la-obra"
-                  >
-                    {p}
-                  </button>
-                ))}
-                {!otras && terminosPropuestos.length > 0 ? (
-                  <button type="button" onClick={() => setOtras(true)} className="palabra-de-la-obra palabra-de-la-obra--otra">
-                    otra palabra…
-                  </button>
-                ) : null}
-              </div>
-              <button type="button" onClick={escucharAlGato} disabled={!termino} className="ultima-pregunta__salida">
-                Escuchar al gato
-              </button>
-            </>
-          )}
+    <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
+      <div className="bloque-forma__cabecera">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry?.eyebrow}</p>
+          <h2 className={`font-display text-2xl leading-snug mt-1 ${entry?.color ?? ''}`}>{entry?.form ?? entry?.name}</h2>
         </div>
-      )}
+        {chip}
+      </div>
+      {verso}
 
-      {(sesion || replicaPublicada) ? (
-        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
-          {replicaPublicada ? (
-            <button type="button" onClick={() => void retirarReplica()} className="lo-que-quedo__enlace">
-              Retirar mi réplica
-            </button>
+      {replicaPublicada ? (
+        <>
+          <button type="button" className="huella-puerta" onClick={() => onGoToSite?.('#provoca')}>
+            <span className="huella-puerta__texto">
+              <span className="huella-puerta__eyebrow">Tu réplica</span>
+              <span className="huella-puerta__titulo">Ya está en el acto final</span>
+            </span>
+            <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
+          </button>
+          <div className="flex justify-end pb-3">
+            <button type="button" onClick={() => void retirarReplica()} className="lo-que-quedo__enlace">Retirar mi réplica</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={alternar}
+            aria-expanded={abierto}
+            aria-controls="memoria-paso-previo"
+            disabled={cargandoSesion || !sesion}
+            className={`huella-puerta${late && !abierto ? ' huella-puerta--late' : ''}`}
+          >
+            <span className="huella-puerta__texto">
+              <span className="huella-puerta__eyebrow">Lo que falta</span>
+              <span className="huella-puerta__titulo">
+                {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Contestarle a la obra' : 'No encontramos lo que escribiste en este navegador'}
+              </span>
+            </span>
+            <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
+          </button>
+
+          {abierto ? (
+            <div id="memoria-paso-previo" className="bloque-forma__abierto">
+              <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">
+                {lineasDelPaso.map((linea) => <span key={linea} className="block">{linea}</span>)}
+              </p>
+              {!cargando ? (
+                <>
+                  <div className="ultima-pregunta__palabras" role="group" aria-label="Las palabras de la obra">
+                    {terminosVisibles.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        aria-pressed={termino === p}
+                        data-quiza={terminosPropuestos.includes(p) ? 1 : 0}
+                        onClick={() => setTermino(p)}
+                        className="palabra-de-la-obra"
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    {!otras && terminosPropuestos.length > 0 ? (
+                      <button type="button" onClick={() => setOtras(true)} className="palabra-de-la-obra palabra-de-la-obra--otra">
+                        otra palabra…
+                      </button>
+                    ) : null}
+                  </div>
+                  <button type="button" onClick={escucharAlGato} disabled={!termino} className="ultima-pregunta__salida">
+                    Escuchar al gato
+                  </button>
+                </>
+              ) : null}
+              {sesion ? (
+                <div className="flex justify-end">
+                  <button type="button" disabled={retirando} onClick={() => void retirarTodo()} className="lo-que-quedo__enlace">
+                    {retirando ? 'Retirando…' : 'Retirar lo que escribí'}
+                  </button>
+                </div>
+              ) : null}
+            </div>
           ) : null}
-          {sesion ? (
-            <button type="button" disabled={retirando} onClick={() => void retirarTodo()} className="lo-que-quedo__enlace">
-              {retirando ? 'Retirando…' : 'Retirar lo que escribí'}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+        </>
+      )}
+    </section>
   );
 };
 

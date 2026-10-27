@@ -380,6 +380,25 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
+// Un solo bloque por forma al centro (Carlos, 27 oct 2026): su categoría y su
+// nombre, su verso, y una fila de acción. Nada queda suelto entre la
+// constelación y el bloque; la línea de la forma va arriba de él.
+function BloqueDeForma({ entry, chip = null, verso = null, abierto = false, children }) {
+  return (
+    <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
+      <div className="bloque-forma__cabecera">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+          <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
+        </div>
+        {chip}
+      </div>
+      {verso}
+      {children}
+    </section>
+  );
+}
+
 function CompletedScenePanel({
   portal,
   entry,
@@ -388,50 +407,37 @@ function CompletedScenePanel({
   onGoToSite,
   onUltimaPregunta,
   ultimaPreguntaVista,
+  onAbiertoChange,
 }) {
+  // El recuerdo comparte renglón con el nombre de la forma (Carlos, 20 sep
+  // 2026). En escritorio vive al pie de la cabina.
+  const chip = onDownloadSouvenir ? (
+    <button
+      type="button"
+      onClick={() => void onDownloadSouvenir()}
+      disabled={souvenirGenerando}
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[0.62rem] text-slate-200/90 transition hover:border-white/30 hover:text-white disabled:opacity-50 lg:hidden"
+    >
+      <Download size={12} aria-hidden="true" />
+      {souvenirGenerando ? 'Preparando…' : 'Mi recuerdo'}
+    </button>
+  ) : null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
-        {/* El recuerdo comparte renglón con el nombre de la forma: en su propia
-            fila robaba alto en pantalla chica y hacía saltar el bloque al
-            cambiar de satélite, porque los satélites no lo llevan (Carlos,
-            20 sep 2026). En escritorio vive al pie de la cabina. */}
-        <div className="mt-1 flex items-center justify-between gap-3">
-          <h2 className={`font-display text-2xl leading-snug ${entry.color}`}>
-            {entry.form ?? entry.name}
-          </h2>
-          {onDownloadSouvenir ? (
-            <button
-              type="button"
-              onClick={() => void onDownloadSouvenir()}
-              disabled={souvenirGenerando}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[0.62rem] text-slate-200/90 transition hover:border-white/30 hover:text-white disabled:opacity-50 lg:hidden"
-            >
-              <Download size={12} aria-hidden="true" />
-              {souvenirGenerando ? 'Preparando…' : 'Mi recuerdo'}
-            </button>
-          ) : null}
-        </div>
-        {/* El verso de la forma recorrida, en sus tres renglones, como lo
-            escribió Carlos: es la introducción de la Memoria. Lo quité el 23 y
-            el 27 de octubre y lo pidió de vuelta (27 oct). El gato, en la
-            cabina, lo cuenta después con sus palabras. */}
-        <FraseDeMemoria portal={portal} enEscena />
-      </div>
-
+    <div className="flex flex-col gap-4">
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
-
-      {/* Lo que la visita ve: los satélites, la línea y el acordeón (Carlos,
-          23 oct 2026). Adentro del acordeón van las tres frases, lo que quedó y
-          el paso al gato. Sustituye al acordeón «Llevarlo al acto final», que
-          prometía mostrar lo escrito y solo lo mandaba crudo a La Réplica. */}
+      {/* El bloque: su nombre, su verso en tres renglones (Carlos), y la fila
+          «Lo que falta · Contestarle a la obra». Al abrirla, el paso previo
+          elige la palabra y «Escuchar al gato» lleva a la cabina. */}
       <LoQueQuedo
         portal={portal}
+        entry={entry}
+        chip={chip}
+        verso={<FraseDeMemoria portal={portal} enEscena />}
         late={!ultimaPreguntaVista}
         onUltimaPregunta={onUltimaPregunta}
         onGoToSite={onGoToSite}
+        onAbiertoChange={onAbiertoChange}
       />
     </div>
   );
@@ -443,6 +449,7 @@ function HolograficoPanel({
   onStartBitacora,
   onUltimaPregunta,
   ultimaPreguntaVista,
+  onAbiertoChange,
   recommendedFormatId,
   onNavigateToRecommendation,
   onGoToSite,
@@ -485,6 +492,7 @@ function HolograficoPanel({
               entry={entry}
               onUltimaPregunta={onUltimaPregunta}
               ultimaPreguntaVista={ultimaPreguntaVista}
+              onAbiertoChange={onAbiertoChange}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
@@ -522,33 +530,36 @@ function HolograficoPanel({
             entry={entry}
             onUltimaPregunta={onUltimaPregunta}
             ultimaPreguntaVista={ultimaPreguntaVista}
+            onAbiertoChange={onAbiertoChange}
             recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
           />
         ) : (
-          /* Satélite */
-          <div className="flex flex-col gap-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
-              <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
-              <p className="memoria-descripcion mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-300/80">
-                {verse}
-              </p>
-            </div>
+          /* Satélite: la línea y un bloque con su nombre, su verso y la fila de viaje */
+          <div className="flex flex-col gap-4">
             <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
-            {showcaseDefinitions[entry.showcase]?.iaProfile ? (
-              <IAInsightCard
-                {...showcaseDefinitions[entry.showcase].iaProfile}
-                compact
-                onRequireLogin={onRequireLogin}
-                travelEyebrow={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-                travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
-                travelFormLabel={entry.form ?? entry.name}
-                onTravel={() => onOpenVideo(entry.showcase)}
-                travelCtaOnly={!hasBitacora}
-              />
-            ) : null}
+            <BloqueDeForma
+              entry={entry}
+              verso={(
+                <p className="memoria-descripcion mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-300/80">
+                  {verse}
+                </p>
+              )}
+            >
+              {showcaseDefinitions[entry.showcase]?.iaProfile ? (
+                <IAInsightCard
+                  {...showcaseDefinitions[entry.showcase].iaProfile}
+                  compact
+                  onRequireLogin={onRequireLogin}
+                  travelEyebrow={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
+                  travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
+                  travelFormLabel={entry.form ?? entry.name}
+                  onTravel={() => onOpenVideo(entry.showcase)}
+                  travelCtaOnly={!hasBitacora}
+                />
+              ) : null}
+            </BloqueDeForma>
           </div>
         )}
       </motion.div>
@@ -612,12 +623,13 @@ const CuadernoHolografico = ({
 
   const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
-  // La forma recorrida muestra lo que quedó y la puerta al gato: el panel
-  // crece y el mapa deja de ser la medida. En ese caso todo se desplaza.
-  const panelLargo = readResonanceProgress(centerKey).bitacoraDone;
+  // Cuando el bloque se abre, la constelación se encoge para que quepa todo
+  // sin desplazar (Carlos, 27 oct 2026).
+  const [bloqueAbierto, setBloqueAbierto] = useState(false);
+  useEffect(() => { setBloqueAbierto(false); }, [centerKey]);
 
   return (
-    <div ref={scrollContainerRef} className={`relative flex h-full flex-col ${panelLargo ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+    <div ref={scrollContainerRef} className="relative flex h-full flex-col overflow-hidden">
 
       {/* Poster como fondo — mobile: visible, desktop: oculto (el modal ya lo muestra) */}
       <AnimatePresence>
@@ -658,7 +670,7 @@ const CuadernoHolografico = ({
 
       {/* Constelación */}
       <div
-        className={`relative p-4 lg:p-6 ${panelLargo ? 'min-h-[24rem] flex-none lg:min-h-[22rem] lg:flex-1' : 'min-h-0 flex-1'}`}
+        className={`relative p-4 transition-[height] duration-300 lg:p-6 ${bloqueAbierto ? 'h-[11rem] flex-none lg:h-[14rem]' : 'min-h-0 flex-1'}`}
         style={{ zIndex: 3 }}
       >
         <Constellation
@@ -671,7 +683,7 @@ const CuadernoHolografico = ({
       <div aria-hidden className="mx-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ zIndex: 3 }} />
 
       {/* Panel */}
-      <div className="shrink-0" style={{ zIndex: 3 }}>
+      <div className={bloqueAbierto ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0'} style={{ zIndex: 3 }}>
         <HolograficoPanel
           centerKey={centerKey}
           homeKey={portal}
@@ -680,6 +692,7 @@ const CuadernoHolografico = ({
           onStartBitacora={onStartBitacora}
           onUltimaPregunta={onUltimaPregunta}
           ultimaPreguntaVista={ultimaPreguntaVista}
+          onAbiertoChange={setBloqueAbierto}
           recommendedFormatId={recommendedFormatId}
           onNavigateToRecommendation={onNavigate}
           onGoToSite={onGoToSite}

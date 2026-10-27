@@ -5531,3 +5531,66 @@ body {
   opacity: 0.6;
   cursor: default;
 }
+
+/* 27 oct 2026: un solo bloque por forma en la Memoria. Su fila de acción es
+   la puerta de siempre, pero plana, dentro del bloque. */
+.bloque-forma {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem 0.35rem;
+  border: 1px solid rgba(194, 152, 211, 0.38);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 14% 35%, rgba(174, 103, 204, 0.16), transparent 32%),
+    linear-gradient(120deg, rgba(26, 13, 36, 0.92), rgba(7, 8, 16, 0.96));
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 239, 255, 0.1);
+}
+.bloque-forma__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.bloque-forma .memoria-descripcion {
+  margin-top: 0;
+}
+.bloque-forma .huella-puerta {
+  padding: 0.95rem 0 0.95rem;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.bloque-forma .huella-puerta::after {
+  display: none;
+}
+.bloque-forma .huella-puerta:hover,
+.bloque-forma .huella-puerta:focus-visible {
+  filter: none;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+.bloque-forma .huella-puerta:hover .huella-puerta__titulo,
+.bloque-forma .huella-puerta:focus-visible .huella-puerta__titulo {
+  color: #fff;
+}
+.bloque-forma__abierto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-bottom: 0.9rem;
+}
+.bloque-forma--abierto .huella-puerta__flecha {
+  transform: rotate(180deg);
+}
+.bloque-forma .huella-puerta--late .huella-puerta__texto {
+  animation: puerta-latido-texto 1.6s ease-in-out infinite;
+}
+@keyframes puerta-latido-texto {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bloque-forma .huella-puerta--late .huella-puerta__texto { animation: none; }
+}
