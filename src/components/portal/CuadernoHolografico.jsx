@@ -414,6 +414,11 @@ function CompletedScenePanel({
             </button>
           ) : null}
         </div>
+        {/* El verso de la forma recorrida, en sus tres renglones, como lo
+            escribió Carlos: es la introducción de la Memoria. Lo quité el 23 y
+            el 27 de octubre y lo pidió de vuelta (27 oct). El gato, en la
+            cabina, lo cuenta después con sus palabras. */}
+        <FraseDeMemoria portal={portal} enEscena />
       </div>
 
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
@@ -424,7 +429,6 @@ function CompletedScenePanel({
           prometía mostrar lo escrito y solo lo mandaba crudo a La Réplica. */}
       <LoQueQuedo
         portal={portal}
-        frase={<FraseDeMemoria portal={portal} enEscena />}
         late={!ultimaPreguntaVista}
         onUltimaPregunta={onUltimaPregunta}
         onGoToSite={onGoToSite}
