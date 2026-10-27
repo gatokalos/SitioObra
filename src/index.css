@@ -5477,3 +5477,57 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .cabina-bubble__texto--leyendo { animation: none; }
 }
+
+/* 27 oct 2026: el cuadro de la Memoria lleva al gato; el paso previo elige la
+   palabra; el gato cuenta en tres momentos. */
+.palabra-previa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 1rem;
+  border: 1px solid rgba(194, 152, 211, 0.38);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 14% 35%, rgba(174, 103, 204, 0.2), transparent 32%),
+    linear-gradient(120deg, rgba(26, 13, 36, 0.92), rgba(7, 8, 16, 0.96));
+}
+.palabra-previa__eyebrow {
+  margin: 0;
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(180, 165, 199, 0.74);
+}
+.palabra-previa__linea {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(241, 236, 248, 0.95);
+}
+.palabra-previa__linea b {
+  font-weight: 600;
+  color: #efe0ff;
+}
+.palabra-previa__linea--leyendo {
+  color: rgba(226, 232, 240, 0.65);
+  animation: cabina-leyendo 1.4s ease-in-out infinite;
+}
+.palabra-de-la-obra--otra {
+  border-style: dashed;
+  color: rgba(226, 232, 240, 0.5);
+}
+.ultima-pregunta__salida:disabled {
+  opacity: 0.45;
+  cursor: default;
+  filter: none;
+}
+.ultima-pregunta__contador {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: rgba(226, 232, 240, 0.6);
+}
+.huella-puerta--gato:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
