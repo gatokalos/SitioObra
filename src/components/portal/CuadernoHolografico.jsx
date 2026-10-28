@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Eye,
-  Flame,
+  MessageCircle,
   Sparkles,
   BookOpen,
   Download,
@@ -39,6 +38,11 @@ export { CATALOG };
 // clímax: la única esfera que pesa) y lo que queda (Memoria, abierta porque de
 // aquí se sale al acto final). Los tres niveles quedan plegados en el foco:
 // para quien recorre fueron una sola cosa.
+// Iconos (Carlos, 27 oct 2026: «¿Te cuadra el timeline con el dashboard?»; no
+// cuadraba): cada nodo lleva el icono que ese momento ya tiene en el libreto y
+// en las insignias de la vitrina —chispas para En el foco, libro para Memoria—
+// y En escena recibe uno propio, la burbuja de la cabina, donde ocurre. Antes
+// el ojo era el de Primera intuición y la llama la de Preparación de escena.
 const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;
@@ -66,7 +70,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
                   : 'border border-dashed border-white/15 bg-white/[0.03]'
             }`}
           >
-            <Eye size={14} className={focoCompleto ? 'text-white' : enFoco ? 'text-slate-300' : 'text-slate-600'} />
+            <Sparkles size={14} className={focoCompleto ? 'text-white' : enFoco ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
         <span className={rotulo(enFoco)}>En el foco</span>
@@ -97,7 +101,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
                   : 'h-12 w-12 border border-dashed border-white/15 bg-white/[0.03]'
             }`}
           >
-            <Flame size={enEscena ? 15 : 20} className={enEscena ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
+            <MessageCircle size={enEscena ? 15 : 20} className={enEscena ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
         <span className={`${rotulo(enEscena || focoCompleto)} ${enEscena ? '' : 'font-semibold'}`}>En escena</span>

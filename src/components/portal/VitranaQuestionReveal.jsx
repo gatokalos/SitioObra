@@ -104,7 +104,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.46 }}
-                title="En escena, respondida"
+                title="Memoria"
               >
                 <BookOpen size={20} className="text-white drop-shadow-sm" />
               </motion.div>

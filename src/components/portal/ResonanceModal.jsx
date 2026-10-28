@@ -2046,10 +2046,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             }`}>
                               {/* La pastilla ya no anuncia el estado —eso lo hace el bloque—,
                                   así que baja a la esquina y pierde el latido, que se fue al
-                                  icono. Se queda para nombrar lo que se ve. */}
+                                  icono. Se queda para nombrar lo que se ve. Decía «Escena
+                                  activa», que chocaba con el nodo «En escena» de la línea de
+                                  la forma (Carlos, 27 oct 2026). */}
                               {isAvailable && (
                                 <span className="pointer-events-none absolute bottom-2 right-3 text-[0.52rem] uppercase tracking-[0.16em] text-sky-200/70">
-                                  Escena activa
+                                  Aquí vas
                                 </span>
                               )}
 
