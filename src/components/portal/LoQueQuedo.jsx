@@ -24,9 +24,11 @@ const SESION_DE_EJEMPLO = {
   id: 'ejemplo',
   created_at: '2026-10-12T18:00:00Z',
   bitacora_completed_at: '2026-10-16T19:30:00Z',
+  intuicion_question: '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
   intuicion_answer: 'Esperaba encontrar algo que me explicara por qué me cuesta tanto quedarme en un lugar.',
   bitacora_p1_afirmativa: true,
-  bitacora_p1_response: 'Sí. Una frase del párrafo se me quedó pegada varios días.',
+  // En el sitio la primera respuesta del regreso es el botón, no palabras suyas.
+  bitacora_p1_response: 'Sí, regresó algo',
   bitacora_p2_response: 'En el camión, de regreso del trabajo, cuando no estaba pensando en nada.',
   bitacora_p3_response: 'Que no es que no quepa en ningún lado; es que no me quedo el tiempo suficiente.',
 };
@@ -68,31 +70,65 @@ const ultimaPalabra = (sesion) => {
   return { campo: elegido[0], texto: elegido[1].trim() };
 };
 
-// Los tres momentos del gato, en plantilla: nada que no haya dicho la persona.
-const momentosDe = (sesion, termino) => {
+// Los momentos del gato, en plantilla: nada que no haya dicho la persona, y
+// cada respuesta en su propio globo, precedida de lo que se le preguntó
+// (Carlos, 28 oct 2026: «dos respuestas del usuario se junten en un solo
+// globo… se pierde el sentido si el gato no le da contexto»). Las preguntas
+// segunda y tercera del regreso las redacta el modelo y no quedan guardadas, así
+// que el gato las dice en su voz, por su tema: dónde lo encontró, qué se movió.
+// La primera respuesta del regreso es el botón «Sí, regresó algo» / «Todavía
+// no», no palabras suyas: el gato lo cuenta, no lo cita.
+const ETIQUETA_SI = /^s[ií][.,]?\s*regres[oó] algo\.?$/i;
+const momentosDe = (sesion, termino, nombreForma = 'la obra') => {
   const entrada = fechaCorta(sesion.created_at);
   const regreso = fechaCorta(sesion.bitacora_completed_at);
-  const respuestas = [sesion.bitacora_p1_response, sesion.bitacora_p2_response, sesion.bitacora_p3_response]
-    .filter((v) => typeof v === 'string' && v.trim());
-  const dijoQueNo = sesion.bitacora_p1_afirmativa === false && respuestas.length === 0;
+  const limpio = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
   // Sus palabras van entre comillas; el punto final lo pone la frase del gato.
-  const cita = (s) => `«${s.trim().replace(/[.\s]+$/, '')}»`;
-  const antes = sesion.intuicion_answer
-    ? `${entrada ? `El ${entrada} entraste` : 'Entraste'} con esto: ${cita(sesion.intuicion_answer)}.`
-    : `${entrada ? `El ${entrada} entraste` : 'Entraste'} con una intuición.`;
-  const despues = dijoQueNo
-    ? `${regreso ? `Volviste el ${regreso}` : 'Volviste días después'} y dijiste que nada había regresado todavía.`
-    : respuestas.length
-      ? `${regreso ? `Volviste el ${regreso}` : 'Volviste días después'} y dijiste: ${respuestas.map(cita).join(' ')}.`
-      : `${regreso ? `Volviste el ${regreso}` : 'Volviste días después'}.`;
-  const sigue = termino
-    ? `Lo que te quedó quizá es ${termino}. Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.`
-    : 'Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.';
-  return [
-    { preludio: 'Lo que dejaste', texto: antes },
-    { preludio: 'Lo que volvió', texto: despues },
-    { preludio: 'Lo que sigue', texto: sigue },
-  ];
+  const cita = (s) => `«${s.replace(/[.\s]+$/, '')}»`;
+  const momentos = [];
+
+  // Lo que dejaste: la pregunta que contestó antes de entrar, y su respuesta.
+  const pregunta = limpio(sesion.intuicion_question);
+  const intuicion = limpio(sesion.intuicion_answer);
+  const antesDeEntrar = entrada ? `El ${entrada}, antes de entrar,` : 'Antes de entrar,';
+  momentos.push({
+    preludio: 'Lo que dejaste',
+    texto: intuicion
+      ? pregunta
+        ? `${antesDeEntrar} te pregunté: ${cita(pregunta)}. Dijiste: ${cita(intuicion)}.`
+        : `${antesDeEntrar} dejaste esto: ${cita(intuicion)}.`
+      : `${antesDeEntrar} dejaste una intuición.`,
+  });
+
+  // Lo que volvió: la primera pregunta del regreso y, si hubo, las otras dos.
+  const volviste = regreso ? `Volviste el ${regreso}.` : 'Volviste días después.';
+  const preguntaP1 = `Te pregunté si algo de ${nombreForma} había regresado por su cuenta`;
+  const p1 = limpio(sesion.bitacora_p1_response);
+  const p2 = limpio(sesion.bitacora_p2_response);
+  const p3 = limpio(sesion.bitacora_p3_response);
+  if (sesion.bitacora_p1_afirmativa === false) {
+    momentos.push({ preludio: 'Lo que volvió', texto: `${volviste} ${preguntaP1}, y dijiste que todavía no.` });
+  } else if (sesion.bitacora_p1_afirmativa === true || p1 || p2 || p3) {
+    momentos.push({
+      preludio: 'Lo que volvió',
+      texto: p1 && !ETIQUETA_SI.test(p1)
+        ? `${volviste} ${preguntaP1}. Dijiste: ${cita(p1)}.`
+        : `${volviste} ${preguntaP1}, y dijiste que sí.`,
+    });
+    if (p2) momentos.push({ preludio: 'Dónde te encontró', texto: `Te pregunté dónde te había encontrado. Dijiste: ${cita(p2)}.` });
+    if (p3) momentos.push({ preludio: 'Lo que se movió', texto: `Te pregunté si ahora veías algo de otra manera. Dijiste: ${cita(p3)}.` });
+  } else {
+    momentos.push({ preludio: 'Lo que volvió', texto: volviste });
+  }
+
+  // Lo que sigue: la palabra, si la hay, y el acto final.
+  momentos.push({
+    preludio: 'Lo que sigue',
+    texto: termino
+      ? `Lo que te quedó quizá es ${termino}. Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.`
+      : 'Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.',
+  });
+  return momentos;
 };
 
 const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta, onGoToSite }) => {
@@ -177,7 +213,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta
       termino,
       respuestas: propuesta?.respuestas ?? {},
       borradorId: propuesta?.borradorId ?? null,
-      momentos: momentosDe(sesion, termino),
+      momentos: momentosDe(sesion, termino, entry?.form ?? entry?.name ?? 'la obra'),
     });
   };
 
