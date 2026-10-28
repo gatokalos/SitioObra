@@ -234,12 +234,6 @@ const PORTAL_APP_ICON_URL = {
   oraculo:     `${MERCH_BASE}/el_oraculo.png`,
 };
 
-const LIBRETO_REENTRY_COPY =
-  'Solo cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que la Memoria holográfica conserve lo que permanezca contigo.';
-
-const getVitrinaVerse = (showcaseId) =>
-  formats.find((format) => format.id === showcaseId)?.vitrinaCopy ?? LIBRETO_REENTRY_COPY;
-
 const PORTAL_POSTER = {
   obra:        `${BASE_POSTER}/poster_obra.png`,
   artesanias:  `${BASE_POSTER}/poster_artesanias.png`,
@@ -384,20 +378,17 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-// Un solo bloque por forma al centro (Carlos, 27 oct 2026): su categoría y su
-// nombre, su verso, y una fila de acción. Nada queda suelto entre la
+// Un solo bloque por forma al centro (Carlos, 27 oct 2026): su nombre y una
+// fila de acción. Sin categoría ni verso (Carlos, 28 oct 2026: «Simplifiqué el
+// bloque, quitando la ceja y los tres versos»). Nada queda suelto entre la
 // constelación y el bloque; la línea de la forma va arriba de él.
-function BloqueDeForma({ entry, chip = null, verso = null, abierto = false, children }) {
+function BloqueDeForma({ entry, chip = null, abierto = false, children }) {
   return (
     <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
       <div className="bloque-forma__cabecera">
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
-          <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
-        </div>
+        <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
         {chip}
       </div>
-      {verso}
       {children}
     </section>
   );
@@ -411,7 +402,6 @@ function CompletedScenePanel({
   onGoToSite,
   onUltimaPregunta,
   ultimaPreguntaVista,
-  onAbiertoChange,
 }) {
   // El recuerdo comparte renglón con el nombre de la forma (Carlos, 20 sep
   // 2026). En escritorio vive al pie de la cabina.
@@ -430,18 +420,16 @@ function CompletedScenePanel({
   return (
     <div className="flex flex-col gap-4">
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
-      {/* El bloque: su nombre, su verso en tres renglones (Carlos), y la fila
-          «Lo que falta · Contestarle a la obra». Al abrirla, el paso previo
-          elige la palabra y «Escuchar al gato» lleva a la cabina. */}
+      {/* El bloque: su nombre y la fila «Lo que falta · Contestarle a la obra».
+          Al abrirla, el gato propone la palabra dentro de la frase y «Pasar al
+          acto final» lleva a la cabina. */}
       <LoQueQuedo
         portal={portal}
         entry={entry}
         chip={chip}
-        verso={<FraseDeMemoria portal={portal} enEscena />}
         late={!ultimaPreguntaVista}
         onUltimaPregunta={onUltimaPregunta}
         onGoToSite={onGoToSite}
-        onAbiertoChange={onAbiertoChange}
       />
     </div>
   );
@@ -453,7 +441,6 @@ function HolograficoPanel({
   onStartBitacora,
   onUltimaPregunta,
   ultimaPreguntaVista,
-  onAbiertoChange,
   recommendedFormatId,
   onNavigateToRecommendation,
   onGoToSite,
@@ -470,7 +457,6 @@ function HolograficoPanel({
   const hasL2 = progress.l2Done;
   const hasL3 = progress.l3Done;
   const hasBitacora = progress.bitacoraDone;
-  const verse = getVitrinaVerse(entry.showcase);
 
   const homeProgress = readResonanceProgress(homeKey);
   const homeL2 = homeProgress.l2Done;
@@ -496,7 +482,6 @@ function HolograficoPanel({
               entry={entry}
               onUltimaPregunta={onUltimaPregunta}
               ultimaPreguntaVista={ultimaPreguntaVista}
-              onAbiertoChange={onAbiertoChange}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
@@ -534,23 +519,15 @@ function HolograficoPanel({
             entry={entry}
             onUltimaPregunta={onUltimaPregunta}
             ultimaPreguntaVista={ultimaPreguntaVista}
-            onAbiertoChange={onAbiertoChange}
             recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
           />
         ) : (
-          /* Satélite: la línea y un bloque con su nombre, su verso y la fila de viaje */
+          /* Satélite: la línea y un bloque con su nombre y la fila de viaje */
           <div className="flex flex-col gap-4">
             <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
-            <BloqueDeForma
-              entry={entry}
-              verso={(
-                <p className="memoria-descripcion mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-300/80">
-                  {verse}
-                </p>
-              )}
-            >
+            <BloqueDeForma entry={entry}>
               {showcaseDefinitions[entry.showcase]?.iaProfile ? (
                 <IAInsightCard
                   {...showcaseDefinitions[entry.showcase].iaProfile}
@@ -627,10 +604,22 @@ const CuadernoHolografico = ({
 
   const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
-  // Cuando el bloque se abre, la constelación se encoge para que quepa todo
-  // sin desplazar (Carlos, 27 oct 2026).
-  const [bloqueAbierto, setBloqueAbierto] = useState(false);
-  useEffect(() => { setBloqueAbierto(false); }, [centerKey]);
+  // La constelación ocupa lo que el bloque deja libre, siempre en un cuadrado
+  // (el lado menor del marco), para que las nueve esferas no se aplasten cuando
+  // el bloque se abre y le quita altura (Carlos, 28 oct 2026: «se aplasta la
+  // constelación»).
+  const marcoRef = useRef(null);
+  const [lado, setLado] = useState(0);
+  useEffect(() => {
+    const el = marcoRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver((entries) => {
+      const caja = entries[0]?.contentRect;
+      if (caja) setLado(Math.max(0, Math.floor(Math.min(caja.width, caja.height))));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <div ref={scrollContainerRef} className="relative flex h-full flex-col overflow-hidden">
@@ -672,22 +661,28 @@ const CuadernoHolografico = ({
         ))}
       </div>
 
-      {/* Constelación */}
+      {/* Constelación: un cuadrado centrado en el espacio que queda */}
       <div
-        className={`relative p-4 transition-[height] duration-300 lg:p-6 ${bloqueAbierto ? 'h-[11rem] flex-none lg:h-[14rem]' : 'min-h-0 flex-1'}`}
+        ref={marcoRef}
+        className="relative flex min-h-[8rem] flex-1 items-center justify-center p-4 lg:p-6"
         style={{ zIndex: 3 }}
       >
-        <Constellation
-          centerKey={centerKey}
-          onSelect={handleSelect}
-        />
+        <div
+          className="relative"
+          style={{ width: lado || '100%', height: lado || '100%', transition: 'width 0.3s ease, height 0.3s ease' }}
+        >
+          <Constellation
+            centerKey={centerKey}
+            onSelect={handleSelect}
+          />
+        </div>
       </div>
 
       {/* Separador */}
       <div aria-hidden className="mx-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ zIndex: 3 }} />
 
       {/* Panel */}
-      <div className={bloqueAbierto ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0'} style={{ zIndex: 3 }}>
+      <div className="min-h-0 overflow-y-auto" style={{ zIndex: 3 }}>
         <HolograficoPanel
           centerKey={centerKey}
           homeKey={portal}
@@ -696,7 +691,6 @@ const CuadernoHolografico = ({
           onStartBitacora={onStartBitacora}
           onUltimaPregunta={onUltimaPregunta}
           ultimaPreguntaVista={ultimaPreguntaVista}
-          onAbiertoChange={setBloqueAbierto}
           recommendedFormatId={recommendedFormatId}
           onNavigateToRecommendation={onNavigate}
           onGoToSite={onGoToSite}
