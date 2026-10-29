@@ -1043,9 +1043,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const fetchNextBitacoraQuestion = useCallback(async (step, p1, p2 = null) => {
     setBitacoraQuestionLoading(true);
     if (isDevAuth) {
+      // Ejemplos para la vista previa: sin modelo. Deben respetar las reglas que
+      // el servidor le impone al modelo (sin «resonancia» ni «experiencia», sin
+      // presuponer que algo permaneció o cambió); los anteriores no las
+      // respetaban y confundieron la prueba del 28 oct 2026.
       const question = step === 'p2'
-        ? '¿En qué momento notaste que esa resonancia seguía contigo?'
-        : '¿Qué nombre le darías ahora a lo que permaneció?';
+        ? '¿Recuerdas cuándo o en qué situación volvió?'
+        : '¿Hay algo que ahora veas o sientas distinto?';
       if (step === 'p2') setBitacoraP2Question(question);
       else setBitacoraP3Question(question);
       setBitacoraQuestionLoading(false);
