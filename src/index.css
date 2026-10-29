@@ -3821,6 +3821,18 @@ body {
 .cabina-bubble__campo {
   text-align: left;
 }
+/* La orientación, en gris: el mismo tono que el placeholder del campo. */
+.cabina-bubble__pista {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(27, 29, 34, 0.45);
+  text-align: left;
+}
+/* El zócalo solo, sin campo encima (primera pregunta, permiso, el gato). */
+.bitacora-escritorio-escritura--sin-campo .bitacora-escritorio-escritura__zocalo {
+  border-top: 0;
+}
 
 /* Las decisiones forman parte del mueble: un zócalo de obsidiana y latón,
    no dos controles web flotando sobre la ilustración. */

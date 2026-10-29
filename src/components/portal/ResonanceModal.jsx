@@ -627,13 +627,32 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // respuesta. Estas líneas sacan la orientación del placeholder para que no
   // desaparezca en cuanto la persona empieza a escribir.
   const instruccionDelPaso =
-    bitacoraStep === 'p2'
+    bitacoraStep === 'p1'
+      ? 'Puede ser un recuerdo, una frase, una imagen… o nada.'
+      : bitacoraStep === 'p2'
       ? 'Puede ser un lugar, una persona o lo que estabas haciendo.'
       : bitacoraStep === 'p3'
         ? 'También puede ser que nada haya cambiado.'
         : bitacoraStep === 'compartir'
           ? 'Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.'
           : null;
+
+  // Un solo estilo en toda la cabina del regreso (Carlos, 28 oct 2026: «dos
+  // botones para avanzar para algo tan simple… ya tenemos el otro estilo de
+  // letras negras y grises que sirven de hint. No mezclemos»): la burbuja gris
+  // pregunta y orienta; el avance es el botoncito oscuro dentro de ella; lo que
+  // se declina es el texto gris bajo el gato. Los botones dorados quedan para
+  // escoger la palabra, cuando eso viva en la cabina.
+  const etiquetaDeAvance =
+    bitacoraStep === 'p1' ? 'Sí, algo regresó'
+      : bitacoraStep === 'p2' ? 'Continuar'
+        : bitacoraStep === 'p3' ? 'Terminar'
+          : 'Que lo encuentre';
+  const etiquetaDeSalida =
+    bitacoraStep === 'p1' ? 'No, por ahora'
+      : bitacoraStep === 'p2' ? 'Prefiero no contarlo'
+        : bitacoraStep === 'p3' ? 'Nada de esto se movió esta vez'
+          : 'Prefiero que no';
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -1260,6 +1279,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Debajo del gato: en qué momento va y un solo paso a la vez. En móvil va
   // debajo del gato; en escritorio, en la columna izquierda mientras el gato
   // habla a la derecha.
+  const avanceDelGato = (
+    <button
+      type="button"
+      onClick={esUltimoMomento ? irAlActoFinal : seguirConElGato}
+      className="cabina-escritura-accion"
+    >
+      {esUltimoMomento ? 'Ir al acto final' : 'Seguir'}
+      <span aria-hidden="true">→</span>
+    </button>
+  );
   const renderUltimaPregunta = (variante) => (
     <div className={`ultima-pregunta ultima-pregunta--${variante}`}>
       <p className="ultima-pregunta__contador">
@@ -1269,21 +1298,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             : 'lo que dejaste, lo que sigue'
         }
       </p>
-      {/* Los mismos botones que el resto de la cabina (Carlos, 28 oct 2026:
-          «los botones dejaron de ser los mismos que al inicio»). */}
-      <div className="cabina-respuesta-panel cabina-respuesta-panel--una">
-        <button
-          type="button"
-          onClick={esUltimoMomento ? irAlActoFinal : seguirConElGato}
-          className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-        >
-          <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-          <span>{esUltimoMomento ? 'Ir al acto final' : 'Seguir'}</span>
+      {/* El mismo estilo que el resto de la cabina del regreso (Carlos, 28 oct
+          2026): en móvil el avance va dentro de la burbuja del gato; aquí, en
+          escritorio, en el zócalo de la columna. */}
+      {variante === 'escritorio' ? (
+        <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
+          <div className="bitacora-escritorio-escritura__zocalo">
+            <button type="button" onClick={volverAlLibreto} className="bitacora-escritorio-escritura__salida">
+              Volver al libreto
+            </button>
+            {avanceDelGato}
+          </div>
+        </div>
+      ) : (
+        <button type="button" onClick={volverAlLibreto} className="cabina-respuesta-salida">
+          Volver al libreto
         </button>
-      </div>
-      <button type="button" onClick={volverAlLibreto} className="cabina-respuesta-salida">
-        Volver al libreto
-      </button>
+      )}
     </div>
   );
 
@@ -1323,6 +1354,34 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     // tenerlo aquí, este callback guardaba el de antes de escribirla y la
     // tercera respuesta se mandaba vacía (hallado el 28 oct 2026).
   }, [bitacoraStep, bitacoraP1, bitacoraP2, fetchNextBitacoraQuestion, handleBitacoraSubmit]);
+
+  // La primera pregunta: sí (sigue a la segunda) o no, por ahora (cierra).
+  const responderP1Si = () => {
+    const response = 'Sí, regresó algo';
+    setBitacoraP1(response);
+    setBitacoraAfirmativa(true);
+    setBitacoraStep('p2');
+    void fetchNextBitacoraQuestion('p2', response);
+  };
+  const responderP1No = () => {
+    setBitacoraP1('');
+    setBitacoraAfirmativa(false);
+    void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
+  };
+  // El avance por paso, en móvil dentro de la burbuja y en escritorio en el zócalo.
+  const avanzarPaso = () => {
+    if (bitacoraStep === 'p1') return responderP1Si();
+    if (bitacoraStep === 'compartir') return void responderCompartir(true);
+    return avanzarDesdePregunta();
+  };
+  const declinarPaso = () => {
+    if (bitacoraStep === 'p1') return responderP1No();
+    if (bitacoraStep === 'compartir') return void responderCompartir(false);
+    return avanzarDesdePregunta({ saltando: true });
+  };
+  const avanceDeshabilitado = bitacoraSubmitting || bitacoraQuestionLoading
+    || (bitacoraStep === 'p2' && !bitacoraP2.trim())
+    || (bitacoraStep === 'p3' && !bitacoraP3.trim());
 
   /* ── render ── */
   // Gatea la revelación ambiental del gato en la columna derecha (ver más
@@ -1797,34 +1856,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 siguiente, la Memoria holográfica. No alterar
                                 todavía su comportamiento ni el flujo. */}
                             {bitacoraStep === 'p1' && (
-                              <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const response = 'Sí, regresó algo';
-                                    setBitacoraP1(response);
-                                    setBitacoraAfirmativa(true);
-                                    setBitacoraStep('p2');
-                                    void fetchNextBitacoraQuestion('p2', response);
-                                  }}
-                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-                                >
-                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                                  <span>Algo regresó</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={bitacoraSubmitting}
-                                  onClick={() => {
-                                    setBitacoraP1('');
-                                    setBitacoraAfirmativa(false);
-                                    void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
-                                  }}
-                                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
-                                >
-                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                                  <span>Aún no</span>
-                                </button>
+                              <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
+                                <div className="bitacora-escritorio-escritura__zocalo">
+                                  <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
+                                    {etiquetaDeSalida}
+                                  </button>
+                                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+                                    {etiquetaDeAvance}
+                                    <span aria-hidden="true">→</span>
+                                  </button>
+                                </div>
                               </div>
                             )}
 
@@ -1846,7 +1887,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                     onClick={() => avanzarDesdePregunta({ saltando: true })}
                                     className="bitacora-escritorio-escritura__salida"
                                   >
-                                    {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
+                                    {etiquetaDeSalida}
                                   </button>
                                   <button
                                     type="button"
@@ -1863,25 +1904,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                             {/* El permiso final usa el mismo tablero de decisiones. */}
                             {bitacoraStep === 'compartir' && (
-                              <div className="cabina-respuesta-panel" role="group" aria-label="¿Dejas que otros lo encuentren?">
-                                <button
-                                  type="button"
-                                  disabled={bitacoraSubmitting}
-                                  onClick={() => void responderCompartir(true)}
-                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-                                >
-                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                                  <span>Que lo encuentre</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={bitacoraSubmitting}
-                                  onClick={() => void responderCompartir(false)}
-                                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
-                                >
-                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                                  <span>Prefiero que no</span>
-                                </button>
+                              <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
+                                <div className="bitacora-escritorio-escritura__zocalo">
+                                  <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
+                                    {etiquetaDeSalida}
+                                  </button>
+                                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+                                    {etiquetaDeAvance}
+                                    <span aria-hidden="true">→</span>
+                                  </button>
+                                </div>
                               </div>
                             )}
                             </motion.div>
@@ -2827,6 +2859,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <>
                       <p className="cabina-bubble__preludio">{momentoActual.preludio}</p>
                       <p className="cabina-bubble__texto">{momentoActual.texto}</p>
+                      <div className="mt-3 flex justify-end">{avanceDelGato}</div>
                     </>
                   ) : null}
                 </div>
@@ -2883,17 +2916,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               requiera un botón de seguir»). La pregunta se queda a la vista
               mientras se escribe; el placeholder sólo orienta y se va al
               escribir. Sin autoFocus: que primero se lea la pregunta. */}
-          <div className={`cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0 ${
-            bitacoraEscribiendo ? 'cabina-bubble--escribiendo' : ''
-          }`}>
-            {bitacoraEscribiendo ? (
-              <div className="flex flex-col gap-2">
-                <p
-                  className={`cabina-bubble__pregunta${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
-                  style={{ whiteSpace: 'pre-line' }}
-                >
-                  {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
-                </p>
+          <div className="cabina-bubble cabina-bubble--en-flujo cabina-bubble--escribiendo relative z-10 mt-3 shrink-0">
+            <div className="flex flex-col gap-2">
+              <p
+                className={`cabina-bubble__pregunta${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
+                style={{ whiteSpace: 'pre-line' }}
+              >
+                {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
+              </p>
+              {bitacoraEscribiendo ? (
                 <textarea
                   disabled={bitacoraQuestionLoading}
                   aria-label={preguntaDelPaso}
@@ -2903,26 +2934,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
                   className="cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50"
                 />
-                {/* El avance vive dentro del campo: con el teclado abierto, lo de
-                    abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
-                    onClick={() => avanzarDesdePregunta()}
-                    className="cabina-escritura-accion"
-                  >
-                    {bitacoraStep === 'p2' ? 'Continuar' : 'Terminar'}
-                    <span aria-hidden="true">→</span>
-                  </button>
-                </div>
+              ) : instruccionDelPaso ? (
+                <p className="cabina-bubble__pista">{instruccionDelPaso}</p>
+              ) : null}
+              {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
+                  abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
+              <div className="flex justify-end">
+                <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+                  {etiquetaDeAvance}
+                  <span aria-hidden="true">→</span>
+                </button>
               </div>
-            ) : (
-              <>
-                <p className="cabina-bubble__preludio">La cabina te escucha</p>
-                <p className="cabina-bubble__texto" style={{ whiteSpace: 'pre-line' }}>{preguntaDelPaso}</p>
-              </>
-            )}
+            </div>
           </div>
 
           {/* El gato ocupa lo que sobre entre la burbuja y las
@@ -2931,75 +2954,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
           {/* Donde estaba el chevron: aquí se responde. */}
           <div className="cabina-respuestas-zona relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
-            {bitacoraStep === 'compartir' ? (
-              <>
-                <div className="cabina-respuesta-panel" role="group" aria-label="¿Dejas que otros lo encuentren?">
-                  <button
-                    type="button"
-                    disabled={bitacoraSubmitting}
-                    onClick={() => void responderCompartir(true)}
-                    className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-                  >
-                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                    <span>Que lo encuentre</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={bitacoraSubmitting}
-                    onClick={() => void responderCompartir(false)}
-                    className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
-                  >
-                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                    <span>Prefiero que no</span>
-                  </button>
-                </div>
-                <p className="px-1 text-center text-[0.62rem] leading-relaxed text-white/55">
-                  Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.
-                </p>
-              </>
-            ) : bitacoraStep === 'p1' ? (
-              <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const response = 'Sí, regresó algo';
-                    setBitacoraP1(response);
-                    setBitacoraAfirmativa(true);
-                    setBitacoraStep('p2');
-                    void fetchNextBitacoraQuestion('p2', response);
-                  }}
-                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-                >
-                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                  <span>Algo regresó</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={bitacoraSubmitting}
-                  onClick={() => {
-                    setBitacoraP1('');
-                    setBitacoraAfirmativa(false);
-                    void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
-                  }}
-                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
-                >
-                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                  <span>Aún no</span>
-                </button>
-              </div>
-            ) : (
-              /* Se contesta arriba, en la burbuja. Aquí sólo queda la salida de
-                 no contestar (Carlos, 28 oct 2026; antes, 18 sep: responder y
-                 saltar a la vista desde el principio). */
-              <button
-                type="button"
-                disabled={bitacoraSubmitting || bitacoraQuestionLoading}
-                onClick={() => avanzarDesdePregunta({ saltando: true })}
-                className="cabina-respuesta-salida"
-              >
-                {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={bitacoraSubmitting || bitacoraQuestionLoading}
+              onClick={declinarPaso}
+              className="cabina-respuesta-salida"
+            >
+              {etiquetaDeSalida}
+            </button>
           </div>
         </div>
 
