@@ -536,7 +536,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // 2026): mientras no se escribe, sostiene la pregunta; al tocarla, la pregunta
   // sube al lugar del preludio y el cuerpo se vuelve textarea. Así no hay un
   // formulario debajo de una ilustración: hay alguien preguntando.
-  const [bitacoraEscribiendo, setBitacoraEscribiendo] = useState(false);
+  // 28 oct 2026: el regreso acaba de terminar en esta misma visita. Con eso la
+  // Memoria abre el bloque sola y el gato no repite lo que se acaba de decir
+  // (Carlos: «está raro regresar a la constelación después de contestar todo y
+  // que tenga que volver a leerlo»). Se olvida al cerrar la tarjeta: quien
+  // vuelve otro día sí recibe el recuento completo.
+  const [regresoRecien, setRegresoRecien] = useState(false);
+  useEffect(() => { if (!open) setRegresoRecien(false); }, [open]);
 
   // En móvil el modal se dibuja anclado a la pantalla, no dentro de la tarjeta.
   // La tarjeta que lo hospeda no tiene tope de alto ahí —su `max-h` sólo aplica
@@ -601,6 +607,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const preguntaP1 = nombreDeLaForma
     ? `${lapso}, ¿hay algo de ${nombreDeLaForma} que haya regresado por su cuenta?`
     : `${lapso}, ¿hay algo de lo que viviste en la obra que haya regresado por su cuenta?`;
+
+  // En móvil, la segunda y la tercera pregunta se contestan en la misma
+  // burbuja, sin paso de «Responder» (Carlos, 28 oct 2026).
+  const bitacoraEscribiendo = bitacoraStep === 'p2' || bitacoraStep === 'p3';
 
   // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
   // de escritorio deben decir exactamente lo mismo.
@@ -753,6 +763,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     lsPatch(portal, {
       l1: Date.now(),
       l1_answer: formData.respuesta,
+      // La pregunta tal como se mostró, para que el gato la cite también desde
+      // este navegador (D-67; 28 oct 2026).
+      l1_question: question ?? null,
       l1_acknowledgment: acknowledgment,
       dashboard_active_level: 1,
       l2_calibration_open: false,
@@ -1149,10 +1162,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       } catch (_) {}
     }
     const portalsDone = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
-    portalsDone.forEach((p) => lsPatch(p, { bitacora_completed: true, dashboard_active_level: 3 }));
+    // Lo contestado queda también en este navegador (28 oct 2026): en la vista
+    // previa DEV es la única fuente, y así el gato cuenta lo que se escribió
+    // aquí y no un ejemplo (Carlos: «se quedó grabado el machote y no las que
+    // pongo en local»); en el sitio permite citar las preguntas segunda y
+    // tercera tal como se mostraron, que el servidor todavía no guarda.
+    portalsDone.forEach((p) => lsPatch(p, {
+      bitacora_completed: true,
+      bitacora_completed_at: new Date().toISOString(),
+      bitacora_p1_response: p1Response ?? null,
+      bitacora_p1_afirmativa: p1Afirmativa,
+      bitacora_p2_response: bitacoraP2 || null,
+      bitacora_p3_response: bitacoraP3 || null,
+      bitacora_p2_question: bitacoraP2 ? (bitacoraP2Question || null) : null,
+      bitacora_p3_question: bitacoraP3 ? (bitacoraP3Question || null) : null,
+      dashboard_active_level: 3,
+    }));
     setBitacoraCompleted(true);
     setDashboardActiveLevel(3);
-    setBitacoraEscribiendo(false);
+    setRegresoRecien(true);
     setBitacoraSubmitting(false);
     // D-37 §3.2 · el permiso de compartir vuelve a existir (20 sep 2026).
     // Perdió su casilla con el rediseño del 19 y, sin él, nadie podía
@@ -1161,7 +1189,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     // acto, en la misma cabina que hizo las otras tres. Es el único momento en
     // que todo el mundo está y acaba de escribir lo que se va a compartir.
     setBitacoraStep('compartir');
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth, user?.id, bitacoraVentana]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, bitacoraP2Question, bitacoraP3Question, isDevAuth, user?.id, bitacoraVentana]);
 
   // El cierre que antes ocurría al guardar: vuelve primero a la Memoria, y la
   // huella queda disponible dentro de ese mapa para cuando ella quiera abrirla.
@@ -1231,7 +1259,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const renderUltimaPregunta = (variante) => (
     <div className={`ultima-pregunta ultima-pregunta--${variante}`}>
       <p className="ultima-pregunta__contador">
-        {momento + 1} de {ultimaPregunta?.momentos?.length ?? 3} · lo que dejaste, lo que volvió, lo que sigue
+        {momento + 1} de {ultimaPregunta?.momentos?.length ?? 3} · {
+          ultimaPregunta?.momentos?.some((m) => m.preludio === 'Lo que volvió')
+            ? 'lo que dejaste, lo que volvió, lo que sigue'
+            : 'lo que dejaste, lo que sigue'
+        }
       </p>
       {/* Los mismos botones que el resto de la cabina (Carlos, 28 oct 2026:
           «los botones dejaron de ser los mismos que al inicio»). */}
@@ -1278,13 +1310,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (bitacoraStep === 'p2') {
       if (saltando) setBitacoraP2('');
       setBitacoraStep('p3');
-      setBitacoraEscribiendo(false);
       void fetchNextBitacoraQuestion('p3', bitacoraP1, saltando ? '' : bitacoraP2);
       return;
     }
     if (saltando) setBitacoraP3('');
     void handleBitacoraSubmit();
-  }, [bitacoraStep, bitacoraP1, bitacoraP2]);
+    // handleBitacoraSubmit cambia con cada letra de la tercera respuesta; sin
+    // tenerlo aquí, este callback guardaba el de antes de escribirla y la
+    // tercera respuesta se mandaba vacía (hallado el 28 oct 2026).
+  }, [bitacoraStep, bitacoraP1, bitacoraP2, fetchNextBitacoraQuestion, handleBitacoraSubmit]);
 
   /* ── render ── */
   // Gatea la revelación ambiental del gato en la columna derecha (ver más
@@ -1685,6 +1719,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onHuellaOpenChange={setHuellaOpen}
                       onUltimaPregunta={abrirUltimaPregunta}
                       ultimaPreguntaVista={ultimaPreguntaVista}
+                      regresoRecien={regresoRecien}
                       recommendedFormatId={l3Rec?.recommended_format_id ?? null}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
                       /* En Desktop este modal vive DENTRO de la vitrina de
@@ -2836,18 +2871,33 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             style={{ background: 'linear-gradient(to bottom, rgba(5,3,9,0.55) 0%, rgba(5,3,9,0.12) 38%, rgba(5,3,9,0.88) 100%)' }}
           />
 
+          {/* En la segunda y la tercera pregunta la burbuja es ya el campo: la
+              pregunta arriba, en gris, y debajo el lugar para contestarla. Sin
+              «Responder» de por medio y sin otra pregunta escrita en el campo
+              (Carlos, 28 oct 2026: «se están chocando los alcances de las
+              burbujas… que las preguntas estén en modo gris/opaco y que no
+              requiera un botón de seguir»). La pregunta se queda a la vista
+              mientras se escribe; el placeholder sólo orienta y se va al
+              escribir. Sin autoFocus: que primero se lea la pregunta. */}
           <div className={`cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0 ${
             bitacoraEscribiendo ? 'cabina-bubble--escribiendo' : ''
           }`}>
             {bitacoraEscribiendo ? (
               <div className="flex flex-col gap-2">
+                <p
+                  className={`cabina-bubble__pregunta${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
+                  style={{ whiteSpace: 'pre-line' }}
+                >
+                  {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
+                </p>
                 <textarea
-                  autoFocus
+                  disabled={bitacoraQuestionLoading}
+                  aria-label={preguntaDelPaso}
                   value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
                   onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
-                  rows={4}
-                  placeholder={bitacoraStep === 'p2' ? '¿Qué estabas haciendo o con quién estabas?' : 'También puede ser que nada haya cambiado…'}
-                  className="w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45"
+                  rows={3}
+                  placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
+                  className="cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50"
                 />
                 {/* El avance vive dentro del campo: con el teclado abierto, lo de
                     abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
@@ -2912,7 +2962,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     setBitacoraP1(response);
                     setBitacoraAfirmativa(true);
                     setBitacoraStep('p2');
-                    setBitacoraEscribiendo(false);
                     void fetchNextBitacoraQuestion('p2', response);
                   }}
                   className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
@@ -2934,31 +2983,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   <span>Aún no</span>
                 </button>
               </div>
-            ) : !bitacoraEscribiendo ? (
-              /* Responder y saltar, juntos desde el principio: antes había que
-                 tocar "Responder" para enterarse de que se podía no responder,
-                 y eso obligaba a confirmar dos veces (Carlos, 18 sep 2026). */
-              <>
-                <div className="cabina-respuesta-panel cabina-respuesta-panel--una">
-                  <button
-                    type="button"
-                    onClick={() => setBitacoraEscribiendo(true)}
-                    className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
-                  >
-                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
-                    <span>Responder</span>
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  disabled={bitacoraSubmitting}
-                  onClick={() => avanzarDesdePregunta({ saltando: true })}
-                  className="cabina-respuesta-salida"
-                >
-                  {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
-                </button>
-              </>
-            ) : null}
+            ) : (
+              /* Se contesta arriba, en la burbuja. Aquí sólo queda la salida de
+                 no contestar (Carlos, 28 oct 2026; antes, 18 sep: responder y
+                 saltar a la vista desde el principio). */
+              <button
+                type="button"
+                disabled={bitacoraSubmitting || bitacoraQuestionLoading}
+                onClick={() => avanzarDesdePregunta({ saltando: true })}
+                className="cabina-respuesta-salida"
+              >
+                {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
+              </button>
+            )}
           </div>
         </div>
 

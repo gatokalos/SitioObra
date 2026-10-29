@@ -3807,6 +3807,21 @@ body {
   display: none;
 }
 
+/* La pregunta dentro de la burbuja-campo (28 oct 2026): en gris, quieta, y
+   debajo el lugar para contestarla. Una sola burbuja, una sola pregunta. */
+.cabina-bubble__pregunta {
+  margin: 0;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(27, 29, 34, 0.13);
+  font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+  line-height: 1.45;
+  color: rgba(27, 29, 34, 0.74);
+  text-align: left;
+}
+.cabina-bubble__campo {
+  text-align: left;
+}
+
 /* Las decisiones forman parte del mueble: un zócalo de obsidiana y latón,
    no dos controles web flotando sobre la ilustración. */
 .cabina-respuestas-zona {

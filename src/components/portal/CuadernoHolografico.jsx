@@ -402,6 +402,7 @@ function CompletedScenePanel({
   onGoToSite,
   onUltimaPregunta,
   ultimaPreguntaVista,
+  regresoRecien = false,
 }) {
   // El recuerdo comparte renglón con el nombre de la forma (Carlos, 20 sep
   // 2026). En escritorio vive al pie de la cabina.
@@ -428,6 +429,7 @@ function CompletedScenePanel({
         entry={entry}
         chip={chip}
         late={!ultimaPreguntaVista}
+        regresoRecien={regresoRecien}
         onUltimaPregunta={onUltimaPregunta}
         onGoToSite={onGoToSite}
       />
@@ -441,6 +443,7 @@ function HolograficoPanel({
   onStartBitacora,
   onUltimaPregunta,
   ultimaPreguntaVista,
+  regresoRecien = false,
   recommendedFormatId,
   onNavigateToRecommendation,
   onGoToSite,
@@ -482,6 +485,7 @@ function HolograficoPanel({
               entry={entry}
               onUltimaPregunta={onUltimaPregunta}
               ultimaPreguntaVista={ultimaPreguntaVista}
+              regresoRecien={regresoRecien}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
@@ -519,6 +523,7 @@ function HolograficoPanel({
             entry={entry}
             onUltimaPregunta={onUltimaPregunta}
             ultimaPreguntaVista={ultimaPreguntaVista}
+            regresoRecien={regresoRecien}
             recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
@@ -557,6 +562,7 @@ const CuadernoHolografico = ({
   onStartBitacora,
   onUltimaPregunta,
   ultimaPreguntaVista = true,
+  regresoRecien = false,
   recommendedFormatId,
   onNavigate,
   onGoToSite,
@@ -691,6 +697,7 @@ const CuadernoHolografico = ({
           onStartBitacora={onStartBitacora}
           onUltimaPregunta={onUltimaPregunta}
           ultimaPreguntaVista={ultimaPreguntaVista}
+          regresoRecien={regresoRecien}
           recommendedFormatId={recommendedFormatId}
           onNavigateToRecommendation={onNavigate}
           onGoToSite={onGoToSite}

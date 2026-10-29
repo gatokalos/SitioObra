@@ -8,7 +8,7 @@
 // momentos lo que dejó, lo que volvió y adónde va. Nada se escoge allá. Lo que
 // quedó se lee después de las preguntas del regreso (D-34), y lo dice el gato.
 // «Retirar lo que escribí» vive en La Réplica (D-38), no aquí.
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -39,6 +39,50 @@ const PROPUESTA_DE_EJEMPLO = {
     'la búsqueda de sentido': 'Quizá lo que me provoca la búsqueda de sentido es no quedarme el tiempo suficiente en ningún lado.',
   },
   borradorId: null,
+};
+
+// Lo que este navegador guardó del recorrido (la misma llave que usa
+// ResonanceModal). En la vista previa DEV no hay servidor: lo que se escribió
+// aquí es la única fuente, y el gato debe contar eso y no un ejemplo (Carlos,
+// 28 oct 2026: «se quedó grabado el machote y no las que pongo en local»). En
+// el sitio sirve para citar las preguntas segunda y tercera tal como se
+// mostraron, que el servidor aún no guarda.
+const registroLocal = (portal) => {
+  try { return JSON.parse(localStorage.getItem(`gatoencerrado:resonance:${portal}`)) ?? {}; }
+  catch { return {}; }
+};
+const sesionLocal = (portal) => {
+  const r = registroLocal(portal);
+  const aIso = (ms) => (typeof ms === 'number' && ms > 0 ? new Date(ms).toISOString() : null);
+  const sesion = {
+    id: 'local',
+    miniverso_id: portal,
+    created_at: aIso(r.l1) ?? aIso(r.l2_ts),
+    intuicion_question: r.l1_question ?? null,
+    intuicion_answer: r.l1_answer ?? null,
+    bitacora_completed_at: r.bitacora_completed_at ?? null,
+    bitacora_p1_afirmativa: typeof r.bitacora_p1_afirmativa === 'boolean' ? r.bitacora_p1_afirmativa : null,
+    bitacora_p1_response: r.bitacora_p1_response ?? null,
+    bitacora_p2_response: r.bitacora_p2_response ?? null,
+    bitacora_p3_response: r.bitacora_p3_response ?? null,
+    bitacora_p2_question: r.bitacora_p2_question ?? null,
+    bitacora_p3_question: r.bitacora_p3_question ?? null,
+  };
+  const conPalabras = [sesion.intuicion_answer, sesion.bitacora_p1_response, sesion.bitacora_p2_response, sesion.bitacora_p3_response]
+    .some((v) => typeof v === 'string' && v.trim());
+  return conPalabras ? sesion : null;
+};
+// Las preguntas que el servidor no guarda, desde este navegador si las tiene.
+const conPreguntasLocales = (sesiones, portal) => {
+  const r = registroLocal(portal);
+  if (!r.bitacora_p2_question && !r.bitacora_p3_question) return sesiones;
+  return sesiones.map((s) => (s.miniverso_id === portal
+    ? {
+      ...s,
+      bitacora_p2_question: s.bitacora_p2_question ?? r.bitacora_p2_question ?? null,
+      bitacora_p3_question: s.bitacora_p3_question ?? r.bitacora_p3_question ?? null,
+    }
+    : s));
 };
 
 const fechaCorta = (iso) => {
@@ -74,12 +118,14 @@ const ultimaPalabra = (sesion) => {
 // cada respuesta en su propio globo, precedida de lo que se le preguntó
 // (Carlos, 28 oct 2026: «dos respuestas del usuario se junten en un solo
 // globo… se pierde el sentido si el gato no le da contexto»). Las preguntas
-// segunda y tercera del regreso las redacta el modelo y no quedan guardadas, así
-// que el gato las dice en su voz, por su tema: dónde lo encontró, qué se movió.
-// La primera respuesta del regreso es el botón «Sí, regresó algo» / «Todavía
-// no», no palabras suyas: el gato lo cuenta, no lo cita.
+// segunda y tercera del regreso las redacta el modelo; si este navegador las
+// guardó, el gato las cita tal cual; si no, las dice en su voz, por su tema:
+// dónde lo encontró, qué se movió. La primera respuesta del regreso es el botón
+// «Sí, regresó algo» / «Todavía no», no palabras suyas: el gato lo cuenta, no
+// lo cita. Y si el regreso acaba de terminar en esta misma visita (`recien`),
+// lo que volvió no se repite: se acaba de decir (Carlos, 28 oct 2026).
 const ETIQUETA_SI = /^s[ií][.,]?\s*regres[oó] algo\.?$/i;
-const momentosDe = (sesion, termino, nombreForma = 'la obra') => {
+const momentosDe = (sesion, termino, nombreForma = 'la obra', { recien = false } = {}) => {
   const entrada = fechaCorta(sesion.created_at);
   const regreso = fechaCorta(sesion.bitacora_completed_at);
   const limpio = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
@@ -106,7 +152,11 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra') => {
   const p1 = limpio(sesion.bitacora_p1_response);
   const p2 = limpio(sesion.bitacora_p2_response);
   const p3 = limpio(sesion.bitacora_p3_response);
-  if (sesion.bitacora_p1_afirmativa === false) {
+  const q2 = limpio(sesion.bitacora_p2_question);
+  const q3 = limpio(sesion.bitacora_p3_question);
+  if (recien) {
+    // Se acaba de contestar en esta visita: no se vuelve a leer.
+  } else if (sesion.bitacora_p1_afirmativa === false) {
     momentos.push({ preludio: 'Lo que volvió', texto: `${volviste} ${preguntaP1}, y dijiste que todavía no.` });
   } else if (sesion.bitacora_p1_afirmativa === true || p1 || p2 || p3) {
     momentos.push({
@@ -115,23 +165,38 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra') => {
         ? `${volviste} ${preguntaP1}. Dijiste: ${cita(p1)}.`
         : `${volviste} ${preguntaP1}, y dijiste que sí.`,
     });
-    if (p2) momentos.push({ preludio: 'Dónde te encontró', texto: `Te pregunté dónde te había encontrado. Dijiste: ${cita(p2)}.` });
-    if (p3) momentos.push({ preludio: 'Lo que se movió', texto: `Te pregunté si ahora veías algo de otra manera. Dijiste: ${cita(p3)}.` });
+    if (p2) {
+      momentos.push({
+        preludio: 'Dónde te encontró',
+        texto: q2
+          ? `Te pregunté: ${cita(q2)}. Dijiste: ${cita(p2)}.`
+          : `Te pregunté dónde te había encontrado. Dijiste: ${cita(p2)}.`,
+      });
+    }
+    if (p3) {
+      momentos.push({
+        preludio: 'Lo que se movió',
+        texto: q3
+          ? `Te pregunté: ${cita(q3)}. Dijiste: ${cita(p3)}.`
+          : `Te pregunté si ahora veías algo de otra manera. Dijiste: ${cita(p3)}.`,
+      });
+    }
   } else {
     momentos.push({ preludio: 'Lo que volvió', texto: volviste });
   }
 
   // Lo que sigue: la palabra, si la hay, y el acto final.
+  const acabas = recien ? 'Lo que volvió me lo acabas de contar. ' : '';
   momentos.push({
     preludio: 'Lo que sigue',
     texto: termino
-      ? `Lo que te quedó quizá es ${termino}. Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.`
-      : 'Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.',
+      ? `${acabas}Lo que te quedó quizá es ${termino}. Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.`
+      : `${acabas}Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras. Te llevo.`,
   });
   return momentos;
 };
 
-const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta, onGoToSite }) => {
+const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, onUltimaPregunta, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -143,12 +208,16 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta
   const [termino, setTermino] = useState(null);
 
   const fetchHuella = useCallback(async () => {
-    if (isDevAuth) { setSessions([{ ...SESION_DE_EJEMPLO, miniverso_id: portal }]); return; }
+    if (isDevAuth) {
+      // Lo que se escribió en este navegador; el ejemplo sólo si no hay nada.
+      setSessions([sesionLocal(portal) ?? { ...SESION_DE_EJEMPLO, miniverso_id: portal }]);
+      return;
+    }
     try {
       const response = await fetch(`${OBRA_API_URL}/api/huella?anon_id=${encodeURIComponent(anonId)}`);
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error();
-      setSessions(data.sesiones ?? []);
+      setSessions(conPreguntasLocales(data.sesiones ?? [], portal));
     } catch {
       setSessions([]);
     }
@@ -202,6 +271,16 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta
     if (siguiente) void cargarPropuesta();
   };
 
+  // Si el regreso acaba de terminar en esta visita, la fila se abre sola: lo
+  // que sigue está a un paso y no hay nada que volver a leer (28 oct 2026).
+  const abiertoSolo = useRef(false);
+  useEffect(() => {
+    if (!regresoRecien || abiertoSolo.current || !sesion || replicaPublicada) return;
+    abiertoSolo.current = true;
+    setAbierto(true);
+    void cargarPropuesta();
+  }, [regresoRecien, sesion, replicaPublicada]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const pasarAlActoFinal = () => {
     if (!sesion || !palabra) return;
     onUltimaPregunta?.({
@@ -213,7 +292,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, onUltimaPregunta
       termino,
       respuestas: propuesta?.respuestas ?? {},
       borradorId: propuesta?.borradorId ?? null,
-      momentos: momentosDe(sesion, termino, entry?.form ?? entry?.name ?? 'la obra'),
+      momentos: momentosDe(sesion, termino, entry?.form ?? entry?.name ?? 'la obra', { recien: regresoRecien }),
     });
   };
 
