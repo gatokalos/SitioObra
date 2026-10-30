@@ -1132,7 +1132,7 @@ export const ProvocaSection = () => {
                   <span className="flex items-center gap-3">
                     <HeartHandshake size={16} className="text-emerald-200" />
                     <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si alguna te movió más de lo esperado...
+                      Si algo se te mueve más de lo esperado...
                     </span>
                   </span>
                   <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">

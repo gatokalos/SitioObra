@@ -8,6 +8,7 @@ const HERO_AUDIO_ENABLED_PREF_KEY = 'gatoencerrado:hero-audio-enabled';
 
 let sharedAudio = null;
 let fallbackApplied = false;
+let sourceAttached = false;
 const _initMuted = (() => {
   if (typeof window === 'undefined') return false;
   try { return window.localStorage?.getItem(HERO_AUDIO_ENABLED_PREF_KEY) === 'false'; } catch { return false; }
@@ -39,6 +40,16 @@ const restorePlaybackState = (audio, { muted, volume }) => {
   if (!audio) return;
   audio.muted = Boolean(muted);
   audio.volume = muted ? 0 : volume;
+};
+
+// Crear el elemento de audio no debe iniciar una descarga de varios MB.
+// La fuente se conecta únicamente cuando una acción real solicita reproducirla.
+const ensureAudioSource = (audio) => {
+  if (!audio || sourceAttached) return;
+  sourceAttached = true;
+  audio.preload = 'auto';
+  audio.src = resolveAudioSource(audio);
+  audio.load();
 };
 
 export const readHeroAudioEnabledPreference = () => {
@@ -76,10 +87,8 @@ export const getHeroAmbientAudio = () => {
 
   const audio = new Audio();
   audio.loop = true;
-  audio.preload = 'auto';
+  audio.preload = 'none';
   audio.playsInline = true;
-  audio.src = resolveAudioSource(audio);
-  audio.load();
 
   audio.addEventListener('canplay', () => {
     sharedState = { ...sharedState, isReady: true };
@@ -120,6 +129,8 @@ export const resumeHeroAmbientPlayback = async (
 ) => {
   const audio = getHeroAmbientAudio();
   if (!audio) return false;
+
+  ensureAudioSource(audio);
 
   const previousState = {
     muted: Boolean(audio.muted),

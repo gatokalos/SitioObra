@@ -164,7 +164,7 @@ const BlogSection = ({ showBuscador = false }) => {
 const HERO_BACKGROUND_VARIANTS = {
   guest: {
     alt: 'Cabina de adivinación con cortinas rojas y un gato dentro',
-    src: '/assets/gato-cabina.webp',
+    src: '/assets/gato-cabina-desktop-v1.webp',
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
@@ -183,6 +183,8 @@ const HERO_BACKGROUND_VARIANTS = {
     },
   },
 };
+
+const HERO_GUEST_CABINA_MOBILE_SRC = '/assets/gato-cabina-mobile-v1.webp';
 
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
@@ -265,19 +267,38 @@ const HeroBackground = ({ isAuthenticated = false }) => {
           <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-pink-900/50 via-transparent to-transparent blur-4xl"></div>
           <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
         </div>
-        <img
-          className={`${backgroundVariant.className} ${isGuestCabina ? 'hero-guest-cabina' : ''}`}
-          style={{
-            ...backgroundVariant.style,
-            opacity: backgroundImageOpacity,
-            filter: backgroundImageFilter,
-            transition: 'opacity 2.2s ease, filter 2.2s ease',
-          }}
-          alt={backgroundVariant.alt}
-          src={backgroundVariant.src}
-          decoding="async"
-          fetchpriority="low"
-        />
+        {isGuestCabina ? (
+          <picture>
+            <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_SRC} />
+            <img
+              className={`${backgroundVariant.className} hero-guest-cabina`}
+              style={{
+                ...backgroundVariant.style,
+                opacity: backgroundImageOpacity,
+                filter: backgroundImageFilter,
+                transition: 'opacity 2.2s ease, filter 2.2s ease',
+              }}
+              alt={backgroundVariant.alt}
+              src={backgroundVariant.src}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+        ) : (
+          <img
+            className={backgroundVariant.className}
+            style={{
+              ...backgroundVariant.style,
+              opacity: backgroundImageOpacity,
+              filter: backgroundImageFilter,
+              transition: 'opacity 2.2s ease, filter 2.2s ease',
+            }}
+            alt={backgroundVariant.alt}
+            src={backgroundVariant.src}
+            decoding="async"
+          />
+        )}
         {/* Velo escénico: antes del clic oculta la cabina; después se abre la escena. */}
         <div
           aria-hidden="true"
@@ -298,24 +319,28 @@ const HeroBackground = ({ isAuthenticated = false }) => {
                   'linear-gradient(rgba(2, 3, 10, 0.98) 0%, rgba(2, 3, 10, 0.94) 10%, rgba(2, 3, 10, 0.78) 23%, rgba(2, 3, 10, 0.22) 68%, rgba(2, 3, 10, 0) 100%)',
               }}
             />
-            <img
-              className="hero-guest-cabina absolute inset-0 h-full w-full object-cover pointer-events-none"
-              style={{
-                ...backgroundVariant.style,
-                opacity: softFocusOpacity,
-                filter: isHeroSceneRevealed
-                  ? 'blur(18px) brightness(34%) saturate(82%)'
-                  : 'blur(18px) brightness(22%) saturate(68%)',
-                WebkitMaskImage: HERO_GUEST_SOFT_FOCUS_MASK,
-                maskImage: HERO_GUEST_SOFT_FOCUS_MASK,
-                transition: 'opacity 2.2s ease, filter 2.2s ease',
-              }}
-              alt=""
-              aria-hidden="true"
-              src={backgroundVariant.src}
-              decoding="async"
-              fetchpriority="low"
-            />
+            <picture>
+              <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_SRC} />
+              <img
+                className="hero-guest-cabina absolute inset-0 h-full w-full object-cover pointer-events-none"
+                style={{
+                  ...backgroundVariant.style,
+                  opacity: softFocusOpacity,
+                  filter: isHeroSceneRevealed
+                    ? 'blur(18px) brightness(34%) saturate(82%)'
+                    : 'blur(18px) brightness(22%) saturate(68%)',
+                  WebkitMaskImage: HERO_GUEST_SOFT_FOCUS_MASK,
+                  maskImage: HERO_GUEST_SOFT_FOCUS_MASK,
+                  transition: 'opacity 2.2s ease, filter 2.2s ease',
+                }}
+                alt=""
+                aria-hidden="true"
+                src={backgroundVariant.src}
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+              />
+            </picture>
             <div
               aria-hidden="true"
               className="absolute inset-0"

@@ -228,5 +228,3 @@ export default function HashtagButton3D({
     </div>
   );
 }
-
-useGLTF.preload('/models/hashtag_black-draco.glb');

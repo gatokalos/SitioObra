@@ -5,11 +5,7 @@ const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchase
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
-const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
-// DIAGNÓSTICO TEMPORAL — quitar tras medir. Permite desmontar el #3D con
-// ?diag-no-3d en la URL para aislar su costo real de CPU/GPU (auditoría Hero/WebGL).
-const DIAG_HIDE_3D = typeof window !== 'undefined'
-  && new URLSearchParams(window.location.search).has('diag-no-3d');
+const heroHashtagObsidianWebp = '/assets/hero-hashtag-obsidian-v1.webp';
 import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
 import PWAFirstLaunchWelcome from '@/components/PWAFirstLaunchWelcome';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
@@ -316,7 +312,6 @@ const Hero = () => {
   const hashtagAnchorRef = useRef(null);
   const userActivatedRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
   const audioActivatedOnceRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
-  const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
   const [pwaHashWhisper, setPwaHashWhisper] = useState(null);
@@ -808,12 +803,12 @@ const Hero = () => {
       audio.volume = nextMuted ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
       if (nextMuted && !audio.paused) {
         audio.pause();
-      } else if (!nextMuted && audio.paused) {
+      } else if (!nextMuted && hasActivatedAudio && audio.paused) {
         void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       }
     }
     return undefined;
-  }, [isAuthLoading, isMobileViewport]);
+  }, [hasActivatedAudio, isAuthLoading, isMobileViewport]);
 
   // Sincroniza heroAudioMutedRef con el estado compartido de la lib
   // para que el idle-retry no intente reproducir audio muteado desde Header
@@ -991,10 +986,6 @@ const Hero = () => {
     handleIsotipoClick();
   }, [handleIsotipoClick]);
 
-  const handleHeroHashReady = useCallback(() => {
-    setIsHeroHashReady(true);
-  }, []);
-
   const handleHeroHashKeyDown = useCallback((event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
@@ -1053,8 +1044,8 @@ const Hero = () => {
 
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
-      // Guest users: audio is gated until the isotipo is explicitly clicked.
-      if (!user && !userActivatedRef.current) return;
+      // Ninguna audiencia descarga audio antes de activar la escena.
+      if (!userActivatedRef.current) return;
       if (isInBackground) return;
       if (!fromUserGesture && document.visibilityState !== 'visible') return;
       if (isShowcaseForegroundActive()) return;
@@ -1425,7 +1416,9 @@ const Hero = () => {
                   <span
                     className="hero-title hero-title--pre-scene hero-title-layer hero-title-layer--pre"
                     style={{
-                      opacity: hasActivatedAudio ? 0 : 0.98,
+                      // La antesala no repite la marca: el nombre aparece al
+                      // abrir la escena. La capa de medida evita saltos.
+                      opacity: 0,
                       filter: 'brightness(0.84) contrast(1.08)',
                     }}
                     aria-hidden="true"
@@ -1504,10 +1497,10 @@ const Hero = () => {
                 <div className="hero-central-spacer relative mt-5 h-12 sm:mt-2" aria-hidden="true" />
               </div>
 
-              {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
+              {/* BOTTOM HALF — objeto de obsidiana (gatillo de activación) */}
               <div className="flex-1 flex flex-col items-center justify-start pt-2">
 
-              {/* Hash 3D — gatillo de activación; al activarse se desvanece rápido para
+              {/* Hash prerenderizado — al activarse se desvanece rápido para
                   dar paso al # plano que "transmigra" hacia el botón de índice, sin que
                   ambos coexistan visiblemente */}
               <motion.div
@@ -1550,7 +1543,7 @@ const Hero = () => {
                 onKeyDown={handleHeroHashKeyDown}
                 aria-hidden={hasActivatedAudio}
                 aria-label="Activar escena"
-                onClick={!isHeroHashReady ? handleHeroHashClick : undefined}
+                onClick={handleHeroHashClick}
               >
                 <div className="hero-pwa-hash-whisper-anchor" aria-live="polite">
                   <AnimatePresence mode="wait">
@@ -1571,30 +1564,14 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
+                {/* La apariencia 3D permanece, pero ya no existe un canvas WebGL
+                    en la antesala. El movimiento y la luz son CSS liviano. */}
                 <span
                   aria-hidden="true"
-                  className={`hero-hashtag-fallback ${isHeroHashReady ? 'hero-hashtag-fallback--ready' : ''}`}
+                  className={`hero-hashtag-prerendered ${hasHintGlowRevealed || isHeroPwaInstructionsOpen ? 'hero-hashtag-prerendered--awake' : ''}`}
                 >
-                  #
+                  <img src={heroHashtagObsidianWebp} alt="" draggable="false" />
                 </span>
-                {/* Se ve una vez, y listo (ver isHashtag3DRetired arriba): un solo
-                    mount, un solo unmount real por sesión — no un ciclo de
-                    ocultar/mostrar. El dispose real del contexto WebGL ya pasa
-                    solo, en el efecto de cleanup dentro de HashtagButton3D.jsx. */}
-                {!isHashtag3DRetired && !DIAG_HIDE_3D && (
-                  <Suspense fallback={null}>
-                    <HashtagButton3D
-                      onClick={handleHeroHashClick}
-                      onReady={handleHeroHashReady}
-                      height="var(--hero-title-mark-size)"
-                      contentScale={isMobileViewport ? 0.92 : 1}
-                      style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                      showGlow={hasHintGlowRevealed || isHeroPwaInstructionsOpen}
-                      glowPulseKey={pwaHashWhisper?.id ?? 0}
-                      active={isHeroInViewport}
-                    />
-                  </Suspense>
-                )}
               </motion.div>
 
               {/* El mismo # del gatillo de activación "transmigra" directo a su
