@@ -582,16 +582,35 @@ const Hero = () => {
         nextIsUmbralReveal = true;
       }
       setIsUmbralReveal(nextIsUmbralReveal);
-      // Este salvaguarda solo ocurre UNA VEZ en toda la experiencia del
-      // usuario (el Handshake bienvenida→sitio) — no hay "próxima vez" para
-      // corregirlo, así que debe ganar siempre, sin esperar a ver si el HUB
-      // también quiere abrirse. Antes se posponía el reveal si el HUB ya
-      // estaba abierto (ver git blame); ya no hace falta: su z-index (600)
-      // ya está por encima del HUB (90), así que igual queda visible arriba
-      // aunque el HUB también esté montado detrás.
-      setIsGatokensModalOpen(true);
+      if (nextIsUmbralReveal) {
+        // Desde el 30 oct 2026 la talega ya no se abre aquí. La frase («Quizás
+        // haya un gato encerrado también en ti…») y «Libera su energía» los
+        // dice el gato de la cabina, en el pozo, antes de volver; repetirlos
+        // en la portada era el doble «continuar» que Carlos señaló. Lo que el
+        // cierre del modal hacía por debajo se conserva: el pozo de la portada
+        // se da por revelado y el viewport baja a la galería, donde la vitrina
+        // recomendada ya quedó marcada arriba.
+        if (!user) {
+          safeSetItem(POZO_HERO_REVEAL_KEY, '1');
+          window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
+        }
+        if (showcaseId) {
+          window.setTimeout(() => {
+            document.querySelector('#transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 600);
+        }
+      } else {
+        // Panel de energía (sin pasar por la Bienvenida): sigue abriéndose.
+        setIsGatokensModalOpen(true);
+      }
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
+        // Al siguiente tick: en una carga desde cero este efecto corre antes
+        // de que App registre su oyente (los efectos del hijo van primero) y
+        // el evento se perdía; en el regreso normal, por navegación interna,
+        // el oyente ya existe y no cambia nada.
+        window.setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
+        }, 0);
       }
       if (hasGatokensRevealParam) {
         params.delete('gatokens');
