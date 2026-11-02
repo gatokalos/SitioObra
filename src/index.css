@@ -689,169 +689,117 @@ body {
   z-index: 2;
 }
 
-/* Fase Cero: la instrucción llega desde el fondo como un eco temporal. La
-   frase frontal sigue siendo la única instrucción dominante; las demás
-   construyen profundidad sin competir con el #3D. */
+/* Fase Cero: una cinta tipográfica continua sale del [#] y se pierde en el
+   vacío. Dos textPath cercanos le dan cuerpo felino: uno es la señal y el otro
+   su persistencia de fósforo, no dos renglones de interfaz. */
 .hero-inactive-signal {
   position: absolute;
-  inset: auto 0 0;
+  inset: 0;
   z-index: 2;
-  display: flex;
-  width: min(100%, 64rem);
-  height: min(56vh, 40rem);
-  margin-inline: auto;
-  padding: clamp(0.5rem, 2vh, 1.5rem) 0 clamp(0.85rem, 2.4vh, 1.65rem);
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: clamp(0.18rem, 1.25vh, 0.78rem);
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   overflow: visible;
   pointer-events: none;
-  perspective: 900px;
-  transform-origin: 50% 100%;
-  will-change: transform, opacity;
+  transform-origin: 50% var(--hero-signal-center-y, 40vh);
+  will-change: transform, opacity, filter;
 }
 
-.hero-inactive-signal__line {
-  position: relative;
-  display: block;
-  flex: 0 0 auto;
-  max-width: 100%;
-  color: rgb(203 213 225);
-  font-family: "Inter", sans-serif;
-  font-weight: 400;
-  line-height: 1.08;
-  white-space: nowrap;
-  text-align: center;
-  text-shadow:
-    0 0 8px rgb(203 213 225 / var(--hero-echo-glow-alpha)),
-    0 0 22px rgb(139 92 246 / var(--hero-echo-violet-alpha));
-}
-
-.hero-inactive-signal__copy {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  animation: hero-inactive-signal-drift 13s ease-in-out infinite;
-  animation-delay: var(--hero-echo-delay);
-  will-change: transform;
-}
-
-.hero-inactive-signal__line--near {
-  color: rgb(226 232 240);
-  font-weight: 500;
-  text-shadow:
-    0 0 7px rgb(226 232 240 / 0.2),
-    0 0 24px rgb(148 163 184 / 0.11);
-}
-
-/* Microinterferencia poco frecuente en el eco más próximo. La frase maestra
-   vive debajo del título y conserva intacta su disolución blur original. */
-.hero-inactive-signal__line--near .hero-inactive-signal__copy::before {
-  content: attr(data-text);
+.hero-inactive-signal__frame {
   position: absolute;
-  inset: 0 auto auto 0;
-  color: rgb(203 213 225 / 0.72);
-  clip-path: inset(38% 0 42% 0);
-  opacity: 0;
-  transform: translateX(0);
-  animation: hero-inactive-signal-glitch 9.4s steps(1, end) infinite;
-  pointer-events: none;
+  top: var(--hero-signal-center-y, 40vh);
+  left: 50%;
+  height: min(78vh, 48rem);
+  aspect-ratio: 500 / 620;
+  transform: translate(-50%, -60.9677%);
 }
 
-/* La cola del gato (Carlos, 21 sep 2026). La deriva ya era una onda viajera
-   —cada capa entra desfasada 0.83 s de la siguiente sobre un ciclo de 13 s—,
-   pero se movía en vertical y ±1.5 px: nadie podía verla. Ahora la onda es
-   lateral, que es como se mueve una cola, y su amplitud la pone cada capa en
-   --hero-echo-sway: casi nula en la de abajo, que está anclada al título y hay
-   que poder leerla, y máxima en las de arriba, la punta que se pierde. Los
-   tiempos son irregulares a propósito: una cola en reposo no oscila como un
-   péndulo, va a la deriva y de vez en cuando da un tirón. */
-@keyframes hero-inactive-signal-drift {
+.hero-inactive-signal__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hero-inactive-signal__svg path {
+  fill: none;
+}
+
+.hero-inactive-signal__spine {
+  fill: none;
+  stroke: rgb(139 92 246 / 0.1);
+  stroke-width: 18px;
+  stroke-linecap: round;
+  filter: blur(6px);
+}
+
+.hero-inactive-signal__text {
+  font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 1.7px;
+  paint-order: stroke fill;
+  stroke: rgb(2 2 8 / 0.7);
+  stroke-width: 0.8px;
+  will-change: opacity, filter;
+}
+
+.hero-inactive-signal__text--primary {
+  fill: rgb(226 232 240 / 0.84);
+  filter:
+    drop-shadow(0 0 3px rgb(226 232 240 / 0.26))
+    drop-shadow(0 0 10px rgb(139 92 246 / 0.22));
+  animation: hero-inactive-signal-primary-breathe 6.8s ease-in-out infinite;
+}
+
+.hero-inactive-signal__text--memory {
+  fill: rgb(196 181 253 / 0.42);
+  opacity: 0.48;
+  filter:
+    blur(0.55px)
+    drop-shadow(0 0 8px rgb(139 92 246 / 0.2));
+  animation: hero-inactive-signal-memory-breathe 8.6s ease-in-out infinite;
+}
+
+@keyframes hero-inactive-signal-primary-breathe {
+  0%, 100% { opacity: 0.72; }
+  48% { opacity: 0.94; }
+  53% { opacity: 0.82; }
+  58% { opacity: 0.92; }
+}
+
+@keyframes hero-inactive-signal-memory-breathe {
   0%, 100% {
-    transform: translate3d(calc(var(--hero-echo-sway, 0px) * -1), -1px, 0);
-    filter: brightness(0.86);
+    opacity: 0.26;
+    transform: translate3d(-0.5px, 0.3px, 0);
   }
-  27% {
-    transform: translate3d(calc(var(--hero-echo-sway, 0px) * 0.52), 0.4px, 0);
-    filter: brightness(1.02);
-  }
-  48% {
-    transform: translate3d(var(--hero-echo-sway, 0px), 1.5px, 0);
-    filter: brightness(1.08);
-  }
-  52% {
-    transform: translate3d(calc(var(--hero-echo-sway, 0px) * 0.86), 1px, 0);
-    filter: brightness(0.94);
-  }
-  76% {
-    transform: translate3d(calc(var(--hero-echo-sway, 0px) * -0.44), 0.6px, 0);
-    filter: brightness(0.95);
-  }
-}
-
-@keyframes hero-inactive-signal-glitch {
-  0%, 86%, 88.5%, 100% {
-    opacity: 0;
-    transform: translateX(0);
-  }
-  86.4% {
+  44% {
     opacity: 0.5;
-    transform: translateX(-0.16em);
+    transform: translate3d(0.65px, -0.25px, 0);
   }
-  87.1% {
-    opacity: 0.22;
-    transform: translateX(0.1em);
+  49% {
+    opacity: 0.34;
+    transform: translate3d(-0.3px, 0.45px, 0);
   }
-  87.7% {
-    opacity: 0.38;
-    transform: translateX(-0.05em);
-  }
-}
-
-/* Cursor parpadeante: solo vive en la frase frontal para mantener jerarquía. */
-.hero-hint-cursor {
-  display: inline-block;
-  width: 1px;
-  height: 0.9em;
-  margin-left: 0.35em;
-  background: currentColor;
-  vertical-align: -0.15em;
-  animation: hero-hint-cursor-blink 1s linear infinite;
-  animation-delay: var(--hero-hint-entry-delay, 0s);
-}
-
-@keyframes hero-hint-cursor-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-inactive-signal {
-    gap: clamp(0.18rem, 1.25vh, 0.78rem);
-  }
-
-  .hero-inactive-signal__copy,
-  .hero-inactive-signal__line--near .hero-inactive-signal__copy::before {
-    animation: none;
-  }
-
-  .hero-hint-cursor {
+  .hero-inactive-signal__text--primary,
+  .hero-inactive-signal__text--memory {
     animation: none;
   }
 }
 
 @media (max-width: 640px) {
-  .hero-inactive-signal {
-    width: calc(100vw - 2rem);
-    height: min(52vh, 31rem);
-    gap: clamp(0.12rem, 1.05vh, 0.52rem);
-    padding-bottom: clamp(0.55rem, 1.5vh, 0.9rem);
+  .hero-inactive-signal__frame {
+    height: min(78vh, 42rem);
   }
 
-  .hero-inactive-signal__line {
-    text-shadow:
-      0 0 6px rgb(203 213 225 / var(--hero-echo-mobile-glow-alpha));
+  .hero-inactive-signal__text {
+    font-size: 15px;
+    letter-spacing: 1.35px;
   }
 }
 
@@ -935,6 +883,39 @@ body {
   50% { transform: translate3d(0, -6px, 0) rotate(1.2deg); }
 }
 
+/* Sustituto plano del objeto de obsidiana: conserva exactamente su caja,
+   halo y origen de transmigración. Pulsa sin desplazarse ni rotar para que
+   el gesto tenga doble sentido con la frase «pulsa el gato». */
+.hero-threshold-index-mark {
+  width: 100%;
+  height: 100%;
+  font-size: clamp(2.65rem, 6vh, 3.75rem);
+  text-shadow:
+    0 0 10px rgba(226, 232, 240, 0.24),
+    0 0 26px rgba(139, 92, 246, 0.2);
+  animation: none;
+}
+
+.hero-hashtag-prerendered--awake.hero-threshold-index-mark {
+  text-shadow:
+    0 0 13px rgba(241, 245, 249, 0.38),
+    0 0 32px rgba(167, 139, 250, 0.3);
+  animation: hero-threshold-index-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes hero-threshold-index-pulse {
+  0%, 100% {
+    opacity: 0.76;
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.18));
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 11px rgba(196, 181, 253, 0.48)) brightness(1.16);
+  }
+}
+
 @media (max-width: 640px) {
   .hero-title-mark-slot {
     --hero-title-mark-size: clamp(98px, 14vh, 128px);
@@ -943,6 +924,10 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-hashtag-prerendered img {
+    animation: none;
+  }
+
+  .hero-threshold-index-mark {
     animation: none;
   }
 }
@@ -2024,8 +2009,8 @@ body {
   }
 
   #hero .hero-subtitle-track {
-    width: clamp(22rem, 30vw, 28rem);
-    max-width: min(86vw, 28rem);
+    width: min(82vw, 52rem);
+    max-width: min(82vw, 52rem);
     min-height: 3.05rem;
   }
 
@@ -2061,8 +2046,8 @@ body {
   }
 
   #hero .hero-subtitle-track {
-    width: clamp(24rem, 24vw, 32rem);
-    max-width: min(82vw, 32rem);
+    width: min(82vw, 52rem);
+    max-width: min(82vw, 52rem);
     min-height: 3.25rem;
   }
 

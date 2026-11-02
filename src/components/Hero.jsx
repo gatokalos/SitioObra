@@ -5,7 +5,6 @@ const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchase
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
-const heroHashtagObsidianWebp = '/assets/hero-hashtag-obsidian-v1.webp';
 import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
 import PWAFirstLaunchWelcome from '@/components/PWAFirstLaunchWelcome';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
@@ -55,29 +54,15 @@ const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
-// Piezas separadas para poder revelar la continuación con el tecleo editorial
-// sin alterar la palabra "gato".
-const HERO_INACTIVE_HINT_PREFIX = 'Ante la duda';
-const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
-const HERO_INACTIVE_HINT_SUFFIX = '';
-const HERO_SI_EL_HASH_TEXT = ', pulsa el ';
-// La frase completa se ARMA de esas mismas piezas en vez de escribirse aparte.
-// Hasta el 9 sep 2026 era una constante suelta que todavía decía "Cuando lo
-// veas, toca el gato" —redacción retirada el 19 ago 2026— y como solo se usa
-// de aria-label, quien navega con lector de pantalla oía una frase distinta de
-// la que estaba escrita. Derivándola, no puede volver a desfasarse.
-const HERO_INACTIVE_HINT =
-  `${HERO_INACTIVE_HINT_PREFIX}${HERO_INACTIVE_HINT_SUFFIX}${HERO_SI_EL_HASH_TEXT}${HERO_INACTIVE_HINT_GATO_WORD}`;
-const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
-// El # se queda insinuado —presente pero no plenamente— hasta que el hint
-// termina de escribirse. La invitación a tocarlo no puede llegar antes que la
-// instrucción que dice que es el gato (Carlos, 9 sep 2026): antes el # subía a
-// opacidad plena ~2.3 s antes de que el subtítulo lo nombrara, y ese tramo
-// invitaba a un clic sin instrucción.
+const HERO_INACTIVE_ECHO_TEXT = 'Ante la duda, pulsa el gato';
+const HERO_INACTIVE_SIGNAL_LOOP_TEXT = `${HERO_INACTIVE_ECHO_TEXT} · `.repeat(9);
+// El [#] se queda insinuado hasta que la cascada completa alcanza el umbral.
+// Así el brillo del símbolo es la consecuencia visual del eco, no una segunda
+// instrucción separada.
 const HERO_HASH_INSINUATED_OPACITY = 0.28;
-const HERO_INACTIVE_ECHO_COUNT = 13;
-const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
-const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
+// La espiral sustituye a la vieja frase mecanografiada: nace en el fondo,
+// recorre la cinta y, solo cuando alcanza al gato, enciende el [#].
+const HERO_INACTIVE_SIGNAL_REVEAL_MS = 5200;
 const PWA_HASH_WHISPERS = [
   '¿Me voy contigo?',
   'Soy una obra diferente',
@@ -93,23 +78,6 @@ const PWA_INSTRUCTIONS_EYEBROW = '';
 // Aviso suave al pie de las instrucciones, en el registro de «se recomienda el
 // uso de audífonos» (Carlos, 21 sep 2026). Un aviso, no una orden.
 const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instalada';
-// Feedback real de un visitante (agosto 2026): no relacionó el # con "el
-// gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez:
-// pasado este tiempo se teclea ", pulsa el gato" y, en el mismo instante, el #
-// se enciende y llega a opacidad plena. Dispara después de que el hint
-// estático ya lleva un rato visible sin interacción.
-// [CORREGIDO 9 sep 2026] Este comentario describía que la palabra "gato" se
-// revolvía con # y se asentaba de vuelta; eso no ocurre — useSignalDriftText
-// solo se aplica al emblema del título, nunca al hint.
-// [RESUELTO 21 sep 2026] El temporizador arranca al montar, no cuando el hint
-// es legible (entra a los ~1.86 s). Con 6500 el silencio real duraba ~4.6 s y
-// el gato no florecía hasta el segundo 7: demasiado para una pantalla que dice
-// "Ante la duda" y nada más, con un blanco que apenas se ve. Carlos, 21 sep
-// 2026: "muchas veces quiero picar el # antes de que se complete la frase."
-// Con 4000, el silencio queda en ~2.1 s y el gato florece cerca del 4.5 — un
-// aire contenido, no una espera. El toque, eso sí, nunca estuvo bloqueado:
-// funciona desde el primer instante, aunque el # esté insinuado.
-const HERO_HINT_CONTINUATION_DELAY_MS = 4000;
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
   const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
@@ -136,106 +104,180 @@ const HERO_GHOST_SUBTITLES = [
   '(Tal vez esto empieza al revés)',                // 7 · NUEVA — el premio final del que se quedó
 ];
 
-// Se probó variar cada capa del eco con una frase distinta (déjà vu con los
-// subtítulos rotativos) y se revirtió el mismo día — vuelve a ser una sola
-// frase repetida 13 veces, como el diseño original, pero con esta pregunta
-// introspectiva en vez del hint de activación (Carlos, 2026-08-19).
-// La pregunta del eco (Carlos, 21 sep 2026). Antes era «¿qué es estar bien?»,
-// que remite sólo a la app de la causa social; ésta pregunta por la obra.
-// Tiene que ser igual de corta: es un solo renglón repetido trece veces.
-const HERO_INACTIVE_ECHO_TEXT = 'Una sola pregunta: ¿qué queda de una obra?';
-
-const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
-  // El eco nace en el título —abajo, visible— y asciende perdiendo opacidad
-  // hasta casi desaparecer arriba. El gradiente es el original; lo que se
-  // invirtió el 9 sep 2026 (Carlos) es la DIRECCIÓN del movimiento, abajo
-  // más adelante: la pregunta emana de la obra y se aleja, no cae sobre ella.
-  const echoes = Array.from({ length: HERO_INACTIVE_ECHO_COUNT }, (_, index) => {
-    const depth = index / (HERO_INACTIVE_ECHO_COUNT - 1);
-    return 0.035 + depth ** 1.18 * 0.27;
-  });
+const HeroInactiveSignal = ({
+  prefersReducedMotion = false,
+  centerY = null,
+  onReachThreshold,
+}) => {
+  useEffect(() => {
+    if (typeof onReachThreshold !== 'function') return undefined;
+    // Respaldo de la propia animación SVG: algunos WebKit/Chromium no emiten
+    // onAnimationComplete dentro de <mask>. Comparte exactamente la duración
+    // de la revelación, así que no crea una segunda coreografía paralela.
+    const timerId = window.setTimeout(
+      onReachThreshold,
+      prefersReducedMotion ? 120 : HERO_INACTIVE_SIGNAL_REVEAL_MS
+    );
+    return () => window.clearTimeout(timerId);
+  }, [onReachThreshold, prefersReducedMotion]);
 
   return (
     <motion.div
       className="hero-inactive-signal"
-      // Las 13 capas son una sola frase repetida en perspectiva: se anuncia
-      // una vez como imagen de texto en vez de trece veces seguidas (que sería
-      // ilegible) o ninguna (como estaba hasta el 9 sep 2026, cuando el bloque
-      // entero iba aria-hidden y quien no ve entraba sin la pregunta).
+      // La cinta completa se anuncia una sola vez: las dos hileras visibles
+      // son una misma frase y la segunda funciona como persistencia analógica.
       role="img"
       aria-label={HERO_INACTIVE_ECHO_TEXT}
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       exit={
         prefersReducedMotion
           ? { opacity: 0 }
           : {
               opacity: 0,
-              y: '13vh',
-              scale: 0.74,
-              filter: 'blur(7px)',
+              y: '17vh',
+              scale: 0.12,
+              filter: 'blur(8px)',
             }
       }
       transition={
         prefersReducedMotion
           ? { duration: 0.12 }
-          : { duration: 0.42, ease: [0.4, 0, 0.2, 1] }
+          : { duration: 0.58, ease: [0.22, 1, 0.36, 1] }
       }
+      style={{
+        '--hero-signal-center-y': centerY === null ? '40vh' : `${centerY}px`,
+      }}
     >
-      {echoes.map((echoOpacity, index) => {
-        // depth 1 = la instancia más próxima, la de abajo, pegada al título.
-        const isNear = index === echoes.length - 1;
-        const depth = echoes.length <= 1 ? 1 : index / (echoes.length - 1);
-        // Los dos movimientos —la entrada escalonada y la deriva continua— se
-        // indexan desde abajo para que asciendan con el gradiente en vez de
-        // caer contra él.
-        const riseIndex = echoes.length - 1 - index;
-        return (
-          <motion.span
-            key={`hero-inactive-echo-${index}`}
-            aria-hidden="true"
-            className={`hero-inactive-signal__line${isNear ? ' hero-inactive-signal__line--near' : ''}`}
-            style={{
-              '--hero-echo-depth': depth,
-              '--hero-echo-opacity': echoOpacity,
-              '--hero-echo-delay': `${-(riseIndex * 0.83)}s`,
-              '--hero-echo-glow-alpha': 0.015 + depth * 0.055,
-              '--hero-echo-violet-alpha': 0.01 + depth * 0.035,
-              '--hero-echo-mobile-glow-alpha': 0.012 + depth * 0.04,
-              // Amplitud de la cola: la capa de abajo está anclada al título y
-              // hay que poder leerla; la punta que se aleja es la que se mueve.
-              '--hero-echo-sway': `${(1 - depth) ** 1.3 * 9 + 0.8}px`,
-              // Punto de fuga. Antes las trece capas medían casi lo mismo (0.64
-              // → 0.76 rem, un 19 %) y las lejanas llevaban MÁS interletraje
-              // que las cercanas, así que nada convergía: no era un túnel, era
-              // una pila de copias desvaneciéndose. Ahora la lejana mide poco
-              // más de la mitad que la próxima y el interletraje se cierra con
-              // la distancia, que es lo que hace que las líneas apunten a un
-              // punto (Carlos, 21 sep 2026).
-              fontSize: `clamp(${0.44 + depth ** 0.82 * 0.34}rem, ${0.5 + depth ** 0.82 * 0.4}vw, ${0.52 + depth ** 0.82 * 0.42}rem)`,
-              letterSpacing: `${0.15 + depth * 0.05}em`,
-            }}
-            initial={
-              prefersReducedMotion
-                ? { opacity: echoOpacity }
-                : { opacity: 0, y: -12, scale: 0.82 }
-            }
-            animate={{ opacity: echoOpacity, y: 0, scale: 1 }}
-            transition={{
-              duration: prefersReducedMotion ? 0.12 : HERO_INACTIVE_ECHO_ENTRY_DURATION_S,
-              delay: prefersReducedMotion ? 0 : riseIndex * HERO_INACTIVE_ECHO_STAGGER_S,
-              ease: [0.2, 1, 0.2, 1],
-            }}
+      <div className="hero-inactive-signal__frame">
+        <svg
+          className="hero-inactive-signal__svg"
+          viewBox="0 0 500 620"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+        >
+        <defs>
+          <linearGradient
+            id="hero-inactive-signal-fade"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="620"
+            gradientUnits="userSpaceOnUse"
           >
-            <span
-              className="hero-inactive-signal__copy"
-              data-text={HERO_INACTIVE_ECHO_TEXT}
-            >
-              {HERO_INACTIVE_ECHO_TEXT}
-            </span>
-          </motion.span>
-        );
-      })}
+            <stop offset="0" stopColor="black" />
+            <stop offset="0.16" stopColor="white" stopOpacity="0.08" />
+            <stop offset="0.38" stopColor="white" stopOpacity="0.38" />
+            <stop offset="0.72" stopColor="white" stopOpacity="0.88" />
+            <stop offset="1" stopColor="white" />
+          </linearGradient>
+          <radialGradient id="hero-inactive-signal-tip-fade" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="black" />
+            <stop offset="0.34" stopColor="black" stopOpacity="0.92" />
+            <stop offset="0.72" stopColor="black" stopOpacity="0.36" />
+            <stop offset="1" stopColor="black" stopOpacity="0" />
+          </radialGradient>
+          <mask
+            id="hero-inactive-signal-mask"
+            maskUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="500"
+            height="700"
+          >
+            <rect width="500" height="700" fill="url(#hero-inactive-signal-fade)" />
+            <circle
+              cx="250"
+              cy="378"
+              r="92"
+              fill="url(#hero-inactive-signal-tip-fade)"
+            />
+          </mask>
+          <mask
+            id="hero-inactive-signal-reveal-mask"
+            maskUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="500"
+            height="700"
+          >
+            <rect width="500" height="700" fill="black" />
+            <motion.path
+              d="M 248 378 C 268 388 273 414 255 428 C 233 446 197 433 192 403 C 186 367 220 335 262 352 C 318 375 328 445 280 480 C 228 517 154 485 133 417 C 111 345 155 270 235 268 C 329 266 402 341 403 438 C 440 525 395 630 307 665"
+              fill="none"
+              stroke="white"
+              strokeWidth="58"
+              strokeLinecap="round"
+              initial={{ pathLength: prefersReducedMotion ? 1 : 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.12 : HERO_INACTIVE_SIGNAL_REVEAL_MS / 1000,
+                ease: [0.42, 0, 0.18, 1],
+              }}
+              onAnimationComplete={prefersReducedMotion ? undefined : onReachThreshold}
+            />
+          </mask>
+          <path
+            id="hero-inactive-signal-path-primary"
+            d="M 300 665 C 390 630 440 525 411 438 C 411 337 333 258 235 260 C 150 262 104 342 127 419 C 149 492 229 526 284 486 C 336 448 325 371 265 347 C 218 328 180 363 187 404 C 193 439 234 453 260 433 C 281 417 276 384 251 372"
+          />
+          <path
+            id="hero-inactive-signal-path-memory"
+            d="M 314 665 C 400 628 429 523 396 438 C 395 345 324 273 235 275 C 160 277 118 347 139 415 C 159 478 228 508 276 473 C 320 441 311 378 260 358 C 221 343 192 371 197 402 C 202 427 231 438 250 423 C 264 412 261 392 245 384"
+          />
+          <path
+            id="hero-inactive-signal-path-spine"
+            d="M 307 665 C 395 630 440 525 403 438 C 402 341 329 266 235 268 C 155 270 111 345 133 417 C 154 485 228 517 280 480 C 328 445 318 375 262 352 C 220 335 186 367 192 403 C 197 433 233 446 255 428 C 273 414 268 388 248 378"
+          />
+        </defs>
+
+        <g mask="url(#hero-inactive-signal-mask)">
+          <g mask="url(#hero-inactive-signal-reveal-mask)">
+          <use
+            href="#hero-inactive-signal-path-spine"
+            className="hero-inactive-signal__spine"
+          />
+          <text
+            className="hero-inactive-signal__text hero-inactive-signal__text--memory"
+            textLength="2700"
+            lengthAdjust="spacing"
+          >
+            <textPath href="#hero-inactive-signal-path-memory" startOffset="0">
+              {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
+              {!prefersReducedMotion ? (
+                <animate
+                  attributeName="startOffset"
+                  from="0"
+                  to="-300"
+                  dur="21s"
+                  repeatCount="indefinite"
+                />
+              ) : null}
+            </textPath>
+          </text>
+
+          <text
+            className="hero-inactive-signal__text hero-inactive-signal__text--primary"
+            textLength="2700"
+            lengthAdjust="spacing"
+          >
+            <textPath href="#hero-inactive-signal-path-primary" startOffset="0">
+              {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
+              {!prefersReducedMotion ? (
+                <animate
+                  attributeName="startOffset"
+                  from="0"
+                  to="-300"
+                  dur="18s"
+                  repeatCount="indefinite"
+                />
+              ) : null}
+            </textPath>
+          </text>
+          </g>
+        </g>
+        </svg>
+      </div>
     </motion.div>
   );
 };
@@ -291,6 +333,9 @@ const Hero = () => {
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
   const heroSectionRef = useRef(null);
+  const heroContentRef = useRef(null);
+  const heroLogoAnchorRef = useRef(null);
+  const [heroSignalCenterY, setHeroSignalCenterY] = useState(null);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -318,14 +363,8 @@ const Hero = () => {
   const lastPwaHashWhisperIndexRef = useRef(-1);
   const lastPwaHashWhisperAtRef = useRef(0);
   const pwaHashWhisperTimerRef = useRef(null);
-  // La continuación se revela una sola vez por sesión.
-  const [hintContinuationTriggerKey, setHintContinuationTriggerKey] = useState(0);
-  const [hasHintGlowRevealed, setHasHintGlowRevealed] = useState(false);
-  const hasTriggeredHintContinuationRef = useRef(false);
-  // Tecleo real del segundo renglón — se revela letra por letra para que se
-  // sienta continuación de la escritura, no un aditamento aparte (Carlos,
-  // 2026-08-19). Arranca en 0; el efecto de abajo lo hace avanzar.
-  const [siElHashTypedLength, setSiElHashTypedLength] = useState(0);
+  const [hasEchoReachedThreshold, setHasEchoReachedThreshold] = useState(false);
+  const hasCompletedEchoRevealRef = useRef(false);
   const prefersReducedMotion = useReducedMotion();
   const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
   const [heroGatBalance, setHeroGatBalance] = useState(readHeroGatBalance);
@@ -396,46 +435,19 @@ const Hero = () => {
   // Solo se retiene mientras el hint está corriendo. Si nunca se muestra
   // (audiencia de linktree, sheet de PWA abierto, escena ya activada), el #
   // conserva su entrada completa de siempre.
-  const shouldHoldHashtagInsinuated = shouldShowHeroInactiveHint && !hasHintGlowRevealed;
+  const shouldHoldHashtagInsinuated = shouldShowHeroInactiveHint && !hasEchoReachedThreshold;
+  const isHeroThresholdReady =
+    hasEchoReachedThreshold || !shouldShowHeroInactiveHint || isHeroPwaInstructionsOpen;
 
-  useEffect(() => {
-    if (!shouldShowHeroInactiveHint || hasTriggeredHintContinuationRef.current) return undefined;
-    const timerId = window.setTimeout(() => {
-      hasTriggeredHintContinuationRef.current = true;
-      setHintContinuationTriggerKey((prev) => prev + 1);
-    }, HERO_HINT_CONTINUATION_DELAY_MS);
-    return () => window.clearTimeout(timerId);
-  }, [shouldShowHeroInactiveHint]);
-
-  useEffect(() => {
-    if (hintContinuationTriggerKey === 0) return undefined;
-    if (prefersReducedMotion) {
-      setSiElHashTypedLength(HERO_SI_EL_HASH_TEXT.length);
-      setHasHintGlowRevealed(true);
-      return undefined;
-    }
-    let cancelled = false;
-    let charIndex = 0;
-    const typeNextChar = () => {
-      if (cancelled) return;
-      charIndex += 1;
-      setSiElHashTypedLength(charIndex);
-      if (charIndex < HERO_SI_EL_HASH_TEXT.length) {
-        window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
-      } else {
-        setHasHintGlowRevealed(true);
-      }
-    };
-    const startId = window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(startId);
-    };
-  }, [hintContinuationTriggerKey, prefersReducedMotion]);
+  const handleHeroSignalReachedThreshold = useCallback(() => {
+    if (hasCompletedEchoRevealRef.current) return;
+    hasCompletedEchoRevealRef.current = true;
+    setHasEchoReachedThreshold(true);
+  }, []);
 
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
-    : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
+    : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
   const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, {
     active: hasActivatedAudio,
@@ -449,11 +461,6 @@ const Hero = () => {
   );
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
-  const heroInactiveHintEntryDelay = prefersReducedMotion
-    ? 0.12
-    : (HERO_INACTIVE_ECHO_COUNT - 1) * HERO_INACTIVE_ECHO_STAGGER_S
-      + HERO_INACTIVE_ECHO_ENTRY_DURATION_S;
-
   useEffect(() => {
     const syncGatBalance = (event) => {
       const eventBalance = Number(event?.detail?.balance);
@@ -492,6 +499,58 @@ const Hero = () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, [user, hasActivatedAudio]);
+
+  // El núcleo de la espiral y la esfera activa comparten un mismo punto
+  // físico. La esfera permanece en layout aun cuando está invisible, así que
+  // podemos medir su centro real en cada viewport y evitar una alineación a
+  // ojo distinta para móvil y escritorio.
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const content = heroContentRef.current;
+    const logo = heroLogoAnchorRef.current;
+    if (!content || !logo) return undefined;
+
+    let frameId = 0;
+    const syncSignalCenter = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(() => {
+        // offsetTop/offsetHeight describen la caja de layout y, a diferencia
+        // de getBoundingClientRect(), no incluyen el y:50 de entrada de
+        // Framer Motion. Sumamos la cadena de offsetParents hasta el contenedor
+        // que también posiciona a la espiral.
+        let nextCenterY = logo.offsetTop + logo.offsetHeight / 2;
+        let offsetParent = logo.offsetParent;
+        while (offsetParent && offsetParent !== content) {
+          nextCenterY += offsetParent.offsetTop;
+          offsetParent = offsetParent.offsetParent;
+        }
+        if (offsetParent !== content) {
+          const contentRect = content.getBoundingClientRect();
+          const logoRect = logo.getBoundingClientRect();
+          nextCenterY = logoRect.top + logoRect.height / 2 - contentRect.top;
+        }
+        setHeroSignalCenterY((current) =>
+          current !== null && Math.abs(current - nextCenterY) < 0.5
+            ? current
+            : nextCenterY
+        );
+      });
+    };
+
+    syncSignalCenter();
+    const resizeObserver = typeof window.ResizeObserver === 'function'
+      ? new window.ResizeObserver(syncSignalCenter)
+      : null;
+    resizeObserver?.observe(content);
+    resizeObserver?.observe(logo);
+    window.addEventListener('resize', syncSignalCenter);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', syncSignalCenter);
+    };
+  }, []);
 
   // Mientras el scroll está bloqueado, un swipe/tap/scroll que "no hace
   // nada" se siente como fricción — en vez de eso, dispara una estrella
@@ -972,6 +1031,10 @@ const Hero = () => {
   }, []);
 
   const handleHeroHashClick = useCallback(() => {
+    // En Estado Cero la espiral debe completar el viaje antes de que el gato
+    // responda. Sin este guard, un clic temprano rompería la causalidad de la
+    // coreografía aunque el símbolo todavía no se hubiera encendido.
+    if (!isHeroThresholdReady) return;
     // Mismo trato que PWAInstructionsOverlay: mientras el HUB de accesos
     // rápidos (Header.jsx) está abierto, el # 3D no activa la escena por su
     // cuenta — solo la × del HUB lo hace. Lectura síncrona vía dataset
@@ -990,6 +1053,7 @@ const Hero = () => {
     handleIsotipoClick();
   }, [
     handleIsotipoClick,
+    isHeroThresholdReady,
     isHeroPwaInstructionsOpen,
     shouldInterceptHeroActivationForPwa,
     showNextPwaHashWhisper,
@@ -1362,31 +1426,27 @@ const Hero = () => {
             )}
           </AnimatePresence>
         {/* Contenido */}
-          <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
+          <div
+            ref={heroContentRef}
+            className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col"
+          >
+
+              <AnimatePresence>
+                {shouldShowHeroInactiveHint ? (
+                  <HeroInactiveSignal
+                    key="hero-inactive-signal"
+                    prefersReducedMotion={prefersReducedMotion}
+                    centerY={heroSignalCenterY}
+                    onReachThreshold={handleHeroSignalReachedThreshold}
+                  />
+                ) : null}
+              </AnimatePresence>
 
               {/* TOP HALF — hash fijo de marca hasta la línea central */}
               <div className="relative flex flex-1 items-end justify-center">
-                <AnimatePresence>
-                  {shouldShowHeroInactiveHint ? (
-                    <HeroInactiveSignal
-                      key="hero-inactive-signal"
-                      prefersReducedMotion={prefersReducedMotion}
-                    />
-                  ) : null}
-                </AnimatePresence>
                 <div className="flex flex-col items-center">
                   <motion.div
-                    aria-hidden="true"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: hasActivatedAudio ? 0.62 : 0, y: 0 }}
-                    transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
-                    className="hero-universe-mark"
-                  >
-                    <span className="hero-universe-mark__line" />
-                    <span className="hero-universe-mark__text">Universo</span>
-                    <span className="hero-universe-mark__line" />
-                  </motion.div>
-                  <motion.div
+                    ref={heroLogoAnchorRef}
                     aria-hidden="true"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
@@ -1467,49 +1527,33 @@ const Hero = () => {
                   <span className="hero-subtitle-track relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-200/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
                     <AnimatePresence mode="sync" initial={false}>
-                      <motion.span
-                        key={currentHeroSubtitle}
-                        initial={{ opacity: 0, filter: 'blur(14px)' }}
-                        animate={{
-                          opacity: 1,
-                          filter: 'blur(0px)',
-                          transition: {
-                            duration: 1.8,
-                            ease: [0.2, 1, 0.2, 1],
-                            delay: shouldShowHeroInactiveHint ? heroInactiveHintEntryDelay : 0,
-                          },
-                        }}
-                        exit={{
-                          opacity: 0,
-                          filter: 'blur(14px)',
-                          transition: {
-                            duration: 1.8,
-                            ease: [0.2, 1, 0.2, 1],
-                            delay: 0,
-                          },
-                        }}
-                        className={`hero-subtitle-copy absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
-                      >
-                        {shouldShowHeroInactiveHint ? (
-                          <span
-                            className="inline-flex items-center justify-center"
-                            style={{
-                              '--hero-hint-entry-delay': `${heroInactiveHintEntryDelay}s`,
-                            }}
-                            aria-label={HERO_INACTIVE_HINT}
-                          >
-                            <span aria-hidden="true">
-                              {HERO_INACTIVE_HINT_PREFIX}
-                              {HERO_INACTIVE_HINT_SUFFIX}
-                              {HERO_SI_EL_HASH_TEXT.slice(0, siElHashTypedLength)}
-                              {siElHashTypedLength === HERO_SI_EL_HASH_TEXT.length
-                                ? HERO_INACTIVE_HINT_GATO_WORD
-                                : null}
-                            </span>
-                            <span className="hero-hint-cursor" aria-hidden="true" />
-                          </span>
-                        ) : currentHeroSubtitle}
-                      </motion.span>
+                      {hasActivatedAudio ? (
+                        <motion.span
+                          key={currentHeroSubtitle}
+                          initial={{ opacity: 0, filter: 'blur(14px)' }}
+                          animate={{
+                            opacity: 1,
+                            filter: 'blur(0px)',
+                            transition: {
+                              duration: 1.8,
+                              ease: [0.2, 1, 0.2, 1],
+                              delay: 0,
+                            },
+                          }}
+                          exit={{
+                            opacity: 0,
+                            filter: 'blur(14px)',
+                            transition: {
+                              duration: 1.8,
+                              ease: [0.2, 1, 0.2, 1],
+                              delay: 0,
+                            },
+                          }}
+                          className={`hero-subtitle-copy absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
+                        >
+                          {currentHeroSubtitle}
+                        </motion.span>
+                      ) : null}
                     </AnimatePresence>
                   </span>
                 </motion.div>
@@ -1539,29 +1583,34 @@ const Hero = () => {
                   // el # se acomoda en el espacio sin encenderse.
                   scale: {
                     duration: hasActivatedAudio ? 0.18 : 1,
-                    delay: hasActivatedAudio ? 0 : heroInactiveHintEntryDelay + 1.8,
+                    delay: hasActivatedAudio
+                      ? 0
+                      : prefersReducedMotion
+                        ? 0.12
+                        : HERO_INACTIVE_SIGNAL_REVEAL_MS / 1000,
                   },
-                  // La opacidad plena florece cuando cae la palabra "gato", sin
-                  // retardo propio: si el hint corre, este cambio ya viene
-                  // disparado por hasHintGlowRevealed y llegar 1.8 s tarde
-                  // rompería la simultaneidad con el encendido del glow.
+                  // La opacidad plena florece cuando la última capa alcanza el
+                  // umbral; no lleva un segundo retardo porque el temporizador
+                  // del eco ya marca ese instante.
                   opacity: {
                     duration: hasActivatedAudio ? 0.18 : 1,
                     delay:
                       hasActivatedAudio || shouldShowHeroInactiveHint
                         ? 0
-                        : heroInactiveHintEntryDelay + 1.8,
+                        : HERO_INACTIVE_SIGNAL_REVEAL_MS / 1000,
                   },
                 }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
-                  pointerEvents: hasActivatedAudio ? 'none' : 'auto',
+                  pointerEvents:
+                    hasActivatedAudio || !isHeroThresholdReady ? 'none' : 'auto',
                 }}
                 role="button"
-                tabIndex={hasActivatedAudio ? -1 : 0}
+                tabIndex={hasActivatedAudio || !isHeroThresholdReady ? -1 : 0}
                 onKeyDown={handleHeroHashKeyDown}
                 aria-hidden={hasActivatedAudio}
                 aria-label="Activar escena"
+                aria-disabled={!isHeroThresholdReady}
                 onClick={handleHeroHashClick}
               >
                 <div className="hero-pwa-hash-whisper-anchor" aria-live="polite">
@@ -1583,13 +1632,13 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {/* La apariencia 3D permanece, pero ya no existe un canvas WebGL
-                    en la antesala. El movimiento y la luz son CSS liviano. */}
+                {/* El mismo [#] tipográfico del Programa de mano sustituye al
+                    objeto 3D sin alterar la coreografía original del Hero. */}
                 <span
                   aria-hidden="true"
-                  className={`hero-hashtag-prerendered ${hasHintGlowRevealed || isHeroPwaInstructionsOpen ? 'hero-hashtag-prerendered--awake' : ''}`}
+                  className={`hero-hashtag-prerendered header-hashtag-mark hero-threshold-index-mark ${hasEchoReachedThreshold || isHeroPwaInstructionsOpen ? 'hero-hashtag-prerendered--awake' : ''}`}
                 >
-                  <img src={heroHashtagObsidianWebp} alt="" draggable="false" />
+                  [#]
                 </span>
               </motion.div>
 
@@ -1630,7 +1679,7 @@ const Hero = () => {
                           }}
                           aria-hidden="true"
                         >
-                          #
+                          [#]
                         </motion.span>
                       ) : null}
                     </AnimatePresence>,

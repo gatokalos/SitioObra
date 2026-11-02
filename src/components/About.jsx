@@ -1075,7 +1075,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Escribe lo que estas preguntas te hacen sentir…"
+                      placeholder="Contesta con lo que alguna de estas preguntas te haga sentir…"
                     />
 
                     {/* Cuando el texto vino de la Memoria, aquí se cumplen las dos

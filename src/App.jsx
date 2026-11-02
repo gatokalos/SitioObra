@@ -188,8 +188,8 @@ const HERO_GUEST_CABINA_MOBILE_SRC = '/assets/gato-cabina-mobile-v1.webp';
 
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
-const HERO_GUEST_CABINA_IDLE_OPACITY = 0.12;
-const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.66;
+const HERO_GUEST_CABINA_IDLE_OPACITY = 0;
+const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.33;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
@@ -216,7 +216,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
   const stageVeilOpacity = isGuestCabina
     ? isHeroSceneRevealed ? 0.14 : 1
     : isHeroSceneRevealed ? 1 : 0;
-  const softFocusOpacity = isHeroSceneRevealed ? 0.2 : 0.07;
+  const softFocusOpacity = isHeroSceneRevealed ? 0.2 : 0;
 
   useEffect(() => {
     const FADE_DISTANCE = 900;
