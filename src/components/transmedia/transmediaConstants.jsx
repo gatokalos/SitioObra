@@ -1409,7 +1409,7 @@ export const formats = [
     title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
-    vitrinaCopy: 'Es como una pregunta,\nuna que nadie está pensando.\nPero si alguien mira, ocurre.',
+    vitrinaCopy: 'Es como La pregunta,\nuna que nadie está pensando.\nPero si alguien mira, ocurre.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
@@ -1419,7 +1419,7 @@ export const formats = [
     title: 'El objeto',
     icon: Coffee,
     iconClass: 'text-amber-300',
-    vitrinaCopy: 'Sostiene lo mismo que el drama\nuna emoción que alguien puso ahí.\nAunque sin derramarse.',
+    vitrinaCopy: 'Sostiene lo mismo que El drama\nuna emoción que alguien puso ahí.\nAunque sin derramarse.',
 
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
@@ -1429,7 +1429,7 @@ export const formats = [
     title: 'La escritura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-    vitrinaCopy: 'Casi un objeto,\nse puede volver a agarrar.\nPero viaja con el viento.',
+    vitrinaCopy: 'Es como El objeto,\nse puede volver a agarrar.\nPero viaja con el viento.',
 
     iaTokensNote: 'Energía viva: ~150 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
@@ -1439,7 +1439,7 @@ export const formats = [
     title: 'La imagen',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    vitrinaCopy: 'Se parece a la escritura.\nRefleja algo en la superficie.\nPues adentro, no hay nadie.',
+    vitrinaCopy: 'Se parece a La escritura.\nRefleja algo en la superficie.\nPues adentro, no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
@@ -1449,7 +1449,7 @@ export const formats = [
     title: 'La proyección',
     icon: Film,
     iconClass: 'text-rose-300',
-    vitrinaCopy: 'Como la imagen,\nalguien decidió exponerla.\nPero revelando la trama.',
+    vitrinaCopy: 'Como La imagen,\nalguien decidió exponerla.\nPero revelando la trama.',
 
     iaTokensNote: 'Requiere ~250 confiados.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
@@ -1459,7 +1459,7 @@ export const formats = [
     title: 'La vibración',
     icon: Music,
     iconClass: 'text-cyan-300',
-    vitrinaCopy: 'Dura lo que la proyección,\nel tiempo justo y se va.\nPero el eco, este sigue y sigue.',
+    vitrinaCopy: 'Dura lo que La proyección,\nel tiempo justo y se va.\nPero el eco, este sigue y sigue.',
 
     iaTokensNote: 'Requiere ~130 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
@@ -1469,7 +1469,7 @@ export const formats = [
     title: 'El cuerpo',
     icon: MapIcon,
     iconClass: 'text-sky-300',
-    vitrinaCopy: 'Como la vibración,\npasa y no deja rastro visible.\nPero te cambia de lugar.',
+    vitrinaCopy: 'Como La vibración,\npasa y no deja rastro visible.\nPero te cambia de lugar.',
 
     iaTokensNote: '~280 por mapa.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
@@ -1479,7 +1479,7 @@ export const formats = [
     title: 'El riesgo',
     icon: Dice5,
     iconClass: 'text-lime-300',
-    vitrinaCopy: 'Pide lo mismo que el cuerpo:\nque hagas algo sin pensarlo mucho.\nPero sin decidir tu solo.',
+    vitrinaCopy: 'Pide lo mismo que El cuerpo:\nque hagas algo sin pensarlo mucho.\nPero sin decidir tú solo.',
 
     iaTokensNote: 'IA marca el ritmo felino.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
@@ -1489,7 +1489,7 @@ export const formats = [
     title: 'La pregunta',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    vitrinaCopy: 'Como el riesgo,\nte coloca frente a algo.\nAunque la jaula queda abierta.',
+    vitrinaCopy: 'Como El riesgo,\nte coloca frente a algo.\nAunque la jaula queda abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',

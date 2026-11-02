@@ -5637,8 +5637,8 @@ const renderDramaFeaturedWork = () => (
                 <span aria-hidden="true">LAS NUEVE FORMAS</span>
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Este universo cambia de forma</em>.<br />
-    De cada una, nace un <em>miniverso</em>. <br /><strong>Encuentra el tuyo.</strong>
+    Este universo cabe en nueve versos.<br />
+    De cada uno, nace un <em>miniverso</em>. <br /><strong>Encuentra el tuyo.</strong>
            </p>
             </motion.div>
           ) : null}

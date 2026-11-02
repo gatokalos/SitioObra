@@ -92,16 +92,17 @@ const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 // pregunta» antes de activar. Va al final del ciclo para pasarle el turno a
 // quien visita; como fantasma tardaría casi un minuto en salir.
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en tu mente',                   // 0 · el slogan canónico
-  'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
-  'Arte, tecnología y cuidado: una sola función',  // 4 · la función de la obra
-  'Tú sabes hasta dónde indagar',                     // la invitación — le pasa el turno a quien visita
-  ];
+  'La obra que ocurre en ti',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
+  'Basada en una herida emocional compartida',       // el origen — intacta
+  'Arte, tecnología y una causa: una sola función',  // la función de la obra, y su economía
+  'Una pregunta que vuelve días después',            // el mecanismo — el cuarto movimiento
+  'Tú sabes hasta dónde indagar',                    // la invitación — le pasa el turno a quien visita
+];
 
 const HERO_GHOST_SUBTITLES = [
-  'Sí: aquí hay gato encerrado',                      // 7 · NUEVA — el premio final del que se quedó
-  'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
-  '(Tal vez esto empieza al revés)',                // 7 · NUEVA — el premio final del que se quedó
+  'Sí: aquí hay gato encerrado',                     // el premio final del que se quedó; título del artículo
+  'Un universo en nueve versos',                        // el gato escondido en el número
+  '(Tal vez esto empieza al revés)',                 // la pregunta llega antes que la obra, a propósito
 ];
 
 const HeroInactiveSignal = ({
