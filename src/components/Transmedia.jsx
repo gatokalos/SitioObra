@@ -1168,8 +1168,31 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     const locked = safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY);
     if (locked && showcaseDefinitions[locked]) {
       setRecommendedShowcaseId(locked);
+      // Y que la galería abra sobre ella, en el teléfono y en la computadora,
+      // como hace focusShowcaseCard en el regreso con `?focus=`: desde D-72 la
+      // recomendada trae la pregunta encima y es lo primero que hay que ver.
+      const targetIndex = formats.findIndex((item) => item.id === locked);
+      if (targetIndex >= 0) {
+        setMobileShowcaseIndex(targetIndex);
+        if (formats.length > 3) {
+          setShowcaseCarouselIndex((targetIndex - 1 + formats.length) % formats.length);
+        }
+      }
     }
   }, [isAuthenticated, recommendedShowcaseId]);
+
+  // Quien llega con pase (invitado con la Bienvenida completada) ve la vitrina
+  // recomendada ya revelada: la pregunta madre encima de la imagen, la misma
+  // que trae impresa en su boleto, con el velo que las vitrinas cerradas
+  // muestran al tocarlas. Es la bisagra entre el acto uno y el segundo acto
+  // (Carlos, 1 nov 2026, D-72). A una cuenta con sesión no se le revela: su
+  // botón amarillo llevaría a iniciar sesión.
+  const [hasBienvenidaPass, setHasBienvenidaPass] = useState(
+    () => safeGetItem('gatoencerrado:bienvenida-completed') === '1'
+  );
+  useEffect(() => {
+    setHasBienvenidaPass(safeGetItem('gatoencerrado:bienvenida-completed') === '1');
+  }, [recommendedShowcaseId, isAuthenticated]);
 
   // Ref para evitar que el efecto reabra la vitrina cuando focusLockShowcaseId
   // cambia a null al cerrar (el hash sigue igual, solo cambió la var de estado).
@@ -5643,6 +5666,9 @@ const renderDramaFeaturedWork = () => (
               const isTransitionDimTile = isShowcaseOpenTransitionActive && !isTransitionTargetTile;
               const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
+              const isVitrinaRevelada =
+                mobileVitranaRevealId === format.id ||
+                (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
               return (
                 <>
                   {isRecommendedTile ? (
@@ -5762,7 +5788,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <AnimatePresence>
-                        {mobileVitranaRevealId === format.id && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -5834,15 +5860,14 @@ const renderDramaFeaturedWork = () => (
                           {format.vitrinaCopy}
                         </p>
                       ) : null}
-                      {mobileVitranaRevealId === format.id ? (
+                      {isVitrinaRevelada ? (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const hasUnlockedAccess = format.id === recommendedShowcaseId;
-                            if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
-                              return;
-                            }
+                            // Igual en teléfono y en computadora: a iniciar sesión
+                            // (Carlos, 1 nov 2026). El toque en la tarjeta recomendada
+                            // con pase sigue abriendo el portal (handleFormatClick).
                             writePendingContinuation({
                               source: 'transmedia-vitrana',
                               showcaseId: format.id,
@@ -5917,6 +5942,9 @@ const renderDramaFeaturedWork = () => (
                 const mirrorEffect =
                   VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
                 const isRecommendedTile = recommendedShowcaseId === format.id;
+                const isVitrinaRevelada =
+                  desktopVitranaRevealId === format.id ||
+                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
                 const isFocusCenterTile = index === 1;
                 const isFocusSideTile = isDesktopFocusLockActive && !isFocusCenterTile;
                 const isTransitionTargetTile =
@@ -5970,7 +5998,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                       <AnimatePresence>
-                        {desktopVitranaRevealId === format.id && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -6041,15 +6069,14 @@ const renderDramaFeaturedWork = () => (
                           {format.instruccion}
                         </p>
                       )}
-                      {desktopVitranaRevealId === format.id ? (
+                      {isVitrinaRevelada ? (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const hasUnlockedAccess = format.id === recommendedShowcaseId;
-                            if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
-                              return;
-                            }
+                            // Igual en teléfono y en computadora: a iniciar sesión
+                            // (Carlos, 1 nov 2026). El toque en la tarjeta recomendada
+                            // con pase sigue abriendo el portal (handleFormatClick).
                             writePendingContinuation({
                               source: 'transmedia-vitrana',
                               showcaseId: format.id,
