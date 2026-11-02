@@ -5671,32 +5671,11 @@ const renderDramaFeaturedWork = () => (
                 (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
               return (
                 <>
-                  {isRecommendedTile ? (
-                    <div className="flex justify-center py-1">
-                      <motion.svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 34 34"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
-                        transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-                        className="h-10 w-10"
-                        style={{ filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))' }}
-                      >
-                        <defs>
-                          <linearGradient id="transmediaMobileChevronGrad" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                            <stop stopColor="#2d2d2d" />
-                            <stop offset="0.55" stopColor="#bdbdbd" />
-                            <stop offset="1" stopColor="#ffffff" />
-                          </linearGradient>
-                        </defs>
-                        <path d="M7 9.5L17 15.5L27 9.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
-                        <path d="M7 16L17 22L27 16" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.9" strokeLinecap="round" strokeLinejoin="round" opacity="0.74" />
-                        <path d="M7 22.5L17 28.5L27 22.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.66" />
-                      </motion.svg>
-                    </div>
-                  ) : (
+                  {/* La fila de navegación (nombres vecinos y puntos) va en todas las vitrinas,
+                      también en la recomendada: el título ya dice «LAS NUEVE FORMAS» y quien
+                      llega con pase tiene que ver que puede deslizar si la pregunta madre que
+                      le tocó no le dice nada (Carlos, 1 nov 2026). Antes el chevrón la
+                      sustituía; ahora la acompaña, debajo, solo en la recomendada. */}
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]">
                       <button
                         type="button"
@@ -5745,7 +5724,32 @@ const renderDramaFeaturedWork = () => (
                         <span aria-hidden="true">→</span>
                       </button>
                     </div>
-                  )}
+                  {isRecommendedTile ? (
+                    <div className="flex justify-center py-1">
+                      <motion.svg
+                        width="36"
+                        height="36"
+                        viewBox="0 0 34 34"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                        transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                        className="h-10 w-10"
+                        style={{ filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))' }}
+                      >
+                        <defs>
+                          <linearGradient id="transmediaMobileChevronGrad" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                            <stop stopColor="#2d2d2d" />
+                            <stop offset="0.55" stopColor="#bdbdbd" />
+                            <stop offset="1" stopColor="#ffffff" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M7 9.5L17 15.5L27 9.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
+                        <path d="M7 16L17 22L27 16" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.9" strokeLinecap="round" strokeLinejoin="round" opacity="0.74" />
+                        <path d="M7 22.5L17 28.5L27 22.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.66" />
+                      </motion.svg>
+                    </div>
+                  ) : null}
                   <motion.div
                     key={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
@@ -5850,11 +5854,9 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                      {isRecommendedTile ? (
-                        <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Te recomiendo este
-                        </div>
-                      ) : null}
+                      {/* Sin chip «Te recomiendo este» desde el 1 nov 2026 (Carlos): duplicaba
+                          señales (velo, pregunta, botón, borde), mentía cuando la persona eligió
+                          su propia forma en la cuadrícula del Umbral y desalineaba los renglones. */}
                       {format.vitrinaCopy ? (
                         <p className="whitespace-pre-line text-sm font-light leading-relaxed text-slate-300/70">
                           {format.vitrinaCopy}
@@ -6055,11 +6057,9 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                      {isRecommendedTile ? (
-                        <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Te recomiendo este
-                        </div>
-                      ) : null}
+                      {/* Sin chip «Te recomiendo este» desde el 1 nov 2026 (Carlos): duplicaba
+                          señales (velo, pregunta, botón, borde), mentía cuando la persona eligió
+                          su propia forma en la cuadrícula del Umbral y desalineaba los renglones. */}
                       {format.vitrinaCopy ? (
                         <p className="whitespace-pre-line text-sm font-light leading-relaxed text-slate-300/70">
                           {format.vitrinaCopy}
