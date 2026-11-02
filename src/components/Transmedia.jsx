@@ -5594,8 +5594,14 @@ const renderDramaFeaturedWork = () => (
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Segundo acto</p>
-              <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                La obra toma forma
+              {/* 1 nov 2026 (Carlos): el acto uno cierra con «La obra toma forma»
+                  en el pozo de la Bienvenida y el acto dos abre con «LA FORMA», con
+                  la misma letra que «LA RÉPLICA» del acto final (About.jsx). */}
+              <h2
+                className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}
+                aria-label="La forma"
+              >
+                <span aria-hidden="true">LA FORMA</span>
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Este universo cambia de forma</em>.<br />
