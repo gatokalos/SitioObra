@@ -191,7 +191,7 @@ const MiniverseInlineSection = () => {
                 className="white-glass-btn white-glass-btn--active ge-mobile-cta-width mx-auto flex items-center gap-2 px-6 py-3 font-semibold"
               >
                 <Sparkle size={20} />
-                Modelo de negocio
+                Ir a la taquilla
               </Button>
             </motion.div>
           )}

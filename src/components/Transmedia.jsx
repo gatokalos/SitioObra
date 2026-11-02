@@ -5622,9 +5622,9 @@ const renderDramaFeaturedWork = () => (
                   la misma letra que «LA RÉPLICA» del acto final (About.jsx). */}
               <h2
                 className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}
-                aria-label="La forma"
+                aria-label="Las nueve formas"
               >
-                <span aria-hidden="true">LA FORMA</span>
+                <span aria-hidden="true">LAS NUEVE FORMAS</span>
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Este universo cambia de forma</em>.<br />
