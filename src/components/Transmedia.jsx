@@ -206,6 +206,16 @@ const SHOWCASE_CARD_GRADIENT = {
   miniversos:          'to-rose-900/35',
 };
 
+// Botón de la vitrina recomendada para quien llega con pase (1 nov 2026, noche,
+// a propuesta de Carlos): no lleva a iniciar sesión, lleva a su forma, como el
+// toque en la tarjeta. Magenta, el color que ya marca la recomendada, y un
+// rótulo corto que es verdad tanto si la forma vino del ranking como si la
+// eligió en la cuadrícula del Umbral. «Entra en escena» (Carlos, 1 nov, noche):
+// anuncia el nivel de participación que hay al abrir la vitrina, cuyo primer
+// bloque ya dice «Al entrar en escena…». Las demás vitrinas reveladas conservan
+// el botón amarillo a iniciar sesión.
+const VITRINA_TU_FORMA_LABEL = 'Entra en escena';
+
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Qué sigue sonando en ti cuando ya no queda nada que mirar?',
@@ -5671,59 +5681,6 @@ const renderDramaFeaturedWork = () => (
                 (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
               return (
                 <>
-                  {/* La fila de navegación (nombres vecinos y puntos) va en todas las vitrinas,
-                      también en la recomendada: el título ya dice «LAS NUEVE FORMAS» y quien
-                      llega con pase tiene que ver que puede deslizar si la pregunta madre que
-                      le tocó no le dice nada (Carlos, 1 nov 2026). Antes el chevrón la
-                      sustituía; ahora la acompaña, debajo, solo en la recomendada. */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]">
-                      <button
-                        type="button"
-                        disabled={isShowcaseOpenTransitionActive}
-                        onClick={() => setMobileShowcaseIndex(prevIndex)}
-                        className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                        aria-label={`Ir a vitrina anterior: ${prevLabel}`}
-                      >
-                        <span aria-hidden="true">←</span>
-                        <span className="truncate">{prevLabel}</span>
-                      </button>
-                      <div className="flex items-center justify-center gap-2 min-w-[88px]">
-                        {visibleDotIndices.map((idx, offset) => {
-                          const item = formats[idx];
-                          const isActiveDot = idx === currentIndex;
-                          const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
-                          const isRightEdgeDot =
-                            offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
-                          return (
-                            <button
-                              key={`mobile-dot-${item.id}`}
-                              type="button"
-                              disabled={isShowcaseOpenTransitionActive}
-                              onClick={() => setMobileShowcaseIndex(idx)}
-                              className={`h-2 w-2 rounded-full transition ${
-                                isActiveDot
-                                  ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
-                                  : isLeftEdgeDot || isRightEdgeDot
-                                    ? 'bg-slate-500/40 hover:bg-slate-300/65'
-                                    : 'bg-slate-500/70 hover:bg-slate-300/80'
-                              } disabled:opacity-45 disabled:pointer-events-none`}
-                              aria-label={`Ir a vitrina ${item.title}`}
-                              aria-current={isActiveDot ? 'true' : undefined}
-                            />
-                          );
-                        })}
-                      </div>
-                      <button
-                        type="button"
-                        disabled={isShowcaseOpenTransitionActive}
-                        onClick={() => setMobileShowcaseIndex(nextIndex)}
-                        className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                        aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
-                      >
-                        <span className="truncate">{nextLabel}</span>
-                        <span aria-hidden="true">→</span>
-                      </button>
-                    </div>
                   {isRecommendedTile ? (
                     <div className="flex justify-center py-1">
                       <motion.svg
@@ -5862,14 +5819,30 @@ const renderDramaFeaturedWork = () => (
                           {format.vitrinaCopy}
                         </p>
                       ) : null}
-                      {isVitrinaRevelada ? (
+                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFormatClick(format.id);
+                          }}
+                          className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
+                        >
+                          {VITRINA_TU_FORMA_LABEL}
+                          <ArrowRight
+                            size={16}
+                            className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      ) : isVitrinaRevelada ? (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             // Igual en teléfono y en computadora: a iniciar sesión
-                            // (Carlos, 1 nov 2026). El toque en la tarjeta recomendada
-                            // con pase sigue abriendo el portal (handleFormatClick).
+                            // (Carlos, 1 nov 2026). La recomendada con pase tiene su
+                            // propio botón, arriba, que lleva a la forma.
                             writePendingContinuation({
                               source: 'transmedia-vitrana',
                               showcaseId: format.id,
@@ -5904,6 +5877,59 @@ const renderDramaFeaturedWork = () => (
                       }`}
                     />
                   </motion.div>
+                  {/* La fila de navegación (nombres vecinos y puntos) va en todas las vitrinas y
+                      debajo de la tarjeta, como los puntos de cualquier galería (Carlos, 1 nov,
+                      noche): también en la recomendada, porque el título ya dice «LAS NUEVE
+                      FORMAS» y quien llega con pase tiene que ver que puede deslizar si la
+                      pregunta madre que le tocó no le dice nada. El chevrón queda arriba. */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]">
+                      <button
+                        type="button"
+                        disabled={isShowcaseOpenTransitionActive}
+                        onClick={() => setMobileShowcaseIndex(prevIndex)}
+                        className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                        aria-label={`Ir a vitrina anterior: ${prevLabel}`}
+                      >
+                        <span aria-hidden="true">←</span>
+                        <span className="truncate">{prevLabel}</span>
+                      </button>
+                      <div className="flex items-center justify-center gap-2 min-w-[88px]">
+                        {visibleDotIndices.map((idx, offset) => {
+                          const item = formats[idx];
+                          const isActiveDot = idx === currentIndex;
+                          const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
+                          const isRightEdgeDot =
+                            offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
+                          return (
+                            <button
+                              key={`mobile-dot-${item.id}`}
+                              type="button"
+                              disabled={isShowcaseOpenTransitionActive}
+                              onClick={() => setMobileShowcaseIndex(idx)}
+                              className={`h-2 w-2 rounded-full transition ${
+                                isActiveDot
+                                  ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+                                  : isLeftEdgeDot || isRightEdgeDot
+                                    ? 'bg-slate-500/40 hover:bg-slate-300/65'
+                                    : 'bg-slate-500/70 hover:bg-slate-300/80'
+                              } disabled:opacity-45 disabled:pointer-events-none`}
+                              aria-label={`Ir a vitrina ${item.title}`}
+                              aria-current={isActiveDot ? 'true' : undefined}
+                            />
+                          );
+                        })}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isShowcaseOpenTransitionActive}
+                        onClick={() => setMobileShowcaseIndex(nextIndex)}
+                        className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                        aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
+                      >
+                        <span className="truncate">{nextLabel}</span>
+                        <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
                 </>
               );
             })()}
@@ -6069,14 +6095,30 @@ const renderDramaFeaturedWork = () => (
                           {format.instruccion}
                         </p>
                       )}
-                      {isVitrinaRevelada ? (
+                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFormatClick(format.id);
+                          }}
+                          className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
+                        >
+                          {VITRINA_TU_FORMA_LABEL}
+                          <ArrowRight
+                            size={16}
+                            className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      ) : isVitrinaRevelada ? (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             // Igual en teléfono y en computadora: a iniciar sesión
-                            // (Carlos, 1 nov 2026). El toque en la tarjeta recomendada
-                            // con pase sigue abriendo el portal (handleFormatClick).
+                            // (Carlos, 1 nov 2026). La recomendada con pase tiene su
+                            // propio botón, arriba, que lleva a la forma.
                             writePendingContinuation({
                               source: 'transmedia-vitrana',
                               showcaseId: format.id,
