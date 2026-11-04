@@ -31,6 +31,7 @@ const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoence
 // Aterrizaje del aviso del regreso diferido (WhatsApp/push, días después).
 // URL: /bitacora?t=<anon_id>            → D-35: un enlace por persona; las
 //                                          formas pendientes las dice el servidor
+//      /bitacora?t=<anon_id>&via=correo  → fase 2: por dónde volvió (correo, push, whatsapp)
 //      /bitacora?t=<anon_id>&m=<portal>  → enlaces anteriores, por forma
 // El anon_id del link puede no coincidir con el de este navegador (el link
 // puede abrirse en otro dispositivo) — se fuerza como identidad activa para
@@ -44,6 +45,10 @@ const BitacoraLanding = () => {
 
   const anonId = searchParams.get('t');
   const linkedPortal = searchParams.get('m');
+  // Fase 2 (3 nov 2026): el enlace del aviso dice por dónde volvió la persona;
+  // el modal lo manda al contestar (canal_regreso). Sin `via`, no se afirma nada.
+  const via = searchParams.get('via');
+  const bitacoraVia = ['correo', 'whatsapp', 'push'].includes(via) ? via : null;
   // null = todavía consultando; [] = nada pendiente
   const [ventana, setVentana] = useState(() => (linkedPortal ? [linkedPortal] : null));
 
@@ -125,6 +130,7 @@ const BitacoraLanding = () => {
           open
           startInBitacora
           bitacoraVentana={linkedPortal ? null : ventana}
+          bitacoraVia={bitacoraVia}
           portal={portalKey}
           question={entry.q}
           onClose={handleClose}

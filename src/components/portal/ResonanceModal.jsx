@@ -13,7 +13,11 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
-import { clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
+import {
+  clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanceProgress,
+  readGlobalConsentCanal, writeGlobalConsentCanal,
+  readPendingAvisoCanal, writePendingAvisoCanal, clearPendingAvisoCanal,
+} from '@/lib/bitacoraShared';
 import FarewellVideoPanel from './FarewellVideoPanel';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
@@ -373,7 +377,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -396,6 +400,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const poster   = PORTAL_POSTER[portal]   ?? PORTAL_POSTER.obra;
   const l2q      = LEVEL2_QUESTIONS[portal] ?? null;
   const dramaturgy = getResonanceDramaturgy(portal);
+  // Fase 2 del regreso (3 nov 2026): la fila del aviso dice por dónde llegará,
+  // y «Con mi correo» nombra la cuenta cuando ya hay sesión.
+  const avisoCanal = lsRead(portal).bitacora_canal ?? readGlobalConsentCanal();
+  const avisoDoneHint = avisoCanal === 'correo'
+    ? dramaturgy.returnDoneHintCorreo
+    : avisoCanal === 'whatsapp' ? dramaturgy.returnDoneHint : dramaturgy.returnDoneHintGenerico;
+  const correoEnmascarado = user?.email ? user.email.replace(/^(.)[^@]*(@.*)$/, '$1•••$2') : null;
   const dashboardLevels = LEVELS.map((level) => {
     if (level.num === 2) {
       return { ...level, eyebrow: dramaturgy.phase2Eyebrow, title: dramaturgy.phase2Title };
@@ -480,7 +491,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
   const [bitacoraAvailabilityTick, setBitacoraAvailabilityTick] = useState(() => Date.now());
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
-  const [showPhoneInput, setShowPhoneInput]           = useState(false);
+  // Fase 2 del regreso (3 nov 2026): la fila del aviso abre dos vías —con mi
+  // correo (sesión, sin pedir dirección) o por WhatsApp (número, sin cuenta)—.
+  // null = fila cerrada; 'elegir' = las dos vías; 'whatsapp' = pide el número.
+  const [avisoPaso, setAvisoPaso]                     = useState(null);
   // Video corto de despedida — panel embebido (no pantalla completa) que
   // aparece en cuanto el recorrido se da por concluido, sin depender de si
   // dio o no su WhatsApp (Carlos, 2026-08-27: debe verse "aceptado o
@@ -1096,8 +1110,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (isDevAuth) {
       // Sin servidor no hay plazo: queda consentida y no disponible hasta que
       // el atajo «[dev] simular regreso» la abra.
-      lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null });
+      lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null, bitacora_canal: canal });
       writeGlobalConsent();
+      writeGlobalConsentCanal(canal);
       setBitacoraConsented(true);
       setBitacoraAvailableAt(null);
       return;
@@ -1117,13 +1132,35 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       });
       const data = await res.json();
       if (data.ok) {
-        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: data.available_at });
+        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: data.available_at, bitacora_canal: canal });
         writeGlobalConsent();
+        writeGlobalConsentCanal(canal);
         setBitacoraConsented(true);
         setBitacoraAvailableAt(data.available_at);
       }
     } catch (_) {}
   }, [portal, isDevAuth, user?.id]);
+
+  // «Con mi correo»: con sesión, un toque; sin sesión, se abre la pantalla de
+  // entrar (código al correo, Google o Apple) y la intención queda guardada. No
+  // se pide ni se guarda ninguna dirección: el aviso sale al correo de la cuenta.
+  const handleAvisoPorCorreo = useCallback(() => {
+    if (user?.id) {
+      void handleBitacoraConsent('correo');
+      return;
+    }
+    writePendingAvisoCanal('correo');
+    onRequireLogin?.();
+  }, [user?.id, handleBitacoraConsent, onRequireLogin]);
+
+  // Cuando la sesión llega (en esta pestaña, o tras la recarga de Google/Apple),
+  // se registra el aviso que quedó pendiente.
+  useEffect(() => {
+    if (!user?.id || bitacoraConsented) return;
+    if (readPendingAvisoCanal() !== 'correo') return;
+    clearPendingAvisoCanal();
+    void handleBitacoraConsent('correo');
+  }, [user?.id, bitacoraConsented, handleBitacoraConsent]);
 
   // Marca el video de despedida como visto — al arrancar la reproducción o
   // al saltarlo, cualquiera de los dos cuenta. Independiente de si dio o no
@@ -1176,6 +1213,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             // aplica. Sin ventana, sigue siendo por esta forma.
             ...(bitacoraVentana ? {} : { miniverso_id: portal }),
             ...(user?.id ? { user_id: user.id } : {}),
+            // Fase 2: por dónde volvió. El enlace del aviso lo trae (via); dentro
+            // del sitio es directo; desde un enlace sin via no se afirma nada.
+            ...(bitacoraVia ? { canal_regreso: bitacoraVia } : startInBitacora ? {} : { canal_regreso: 'directo' }),
             p1_response:    p1Response,
             p1_afirmativa:  p1Afirmativa,
             p2_response:    bitacoraP2 || null,
@@ -1212,7 +1252,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     // acto, en la misma cabina que hizo las otras tres. Es el único momento en
     // que todo el mundo está y acaba de escribir lo que se va a compartir.
     setBitacoraStep('compartir');
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, bitacoraP2Question, bitacoraP3Question, isDevAuth, user?.id, bitacoraVentana]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, bitacoraP2Question, bitacoraP3Question, isDevAuth, user?.id, bitacoraVentana, bitacoraVia, startInBitacora]);
 
   // El cierre que antes ocurría al guardar: vuelve primero a la Memoria, y la
   // huella queda disponible dentro de ese mapa para cuando ella quiera abrirla.
@@ -2323,14 +2363,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                               {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.closingLine.replace(/\.$/, '')}
                                                             </span>
                                                             <span className="cabina-antesala-opcion__detalle">
-                                                              {bitacoraAvailable ? dramaturgy.returnBackNowHint : dramaturgy.returnDoneHint}
+                                                              {bitacoraAvailable ? dramaturgy.returnBackNowHint : avisoDoneHint}
                                                             </span>
                                                           </span>
                                                         </div>
-                                                      ) : !showPhoneInput ? (
+                                                      ) : avisoPaso === null ? (
                                                         <button
                                                           type="button"
-                                                          onClick={() => setShowPhoneInput(true)}
+                                                          onClick={() => setAvisoPaso('elegir')}
                                                           className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
                                                         >
                                                           {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
@@ -2346,6 +2386,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                             </span>
                                                           </span>
                                                         </button>
+                                                      ) : avisoPaso === 'elegir' ? (
+                                                        <div className="cabina-antesala-form space-y-2">
+                                                          {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
+                                                              sesión, la del correo es un solo toque y nombra la cuenta. */}
+                                                          <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
+                                                            <span className="cabina-antesala-eleccion__titulo">
+                                                              {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
+                                                            </span>
+                                                            <span className="cabina-antesala-eleccion__detalle">
+                                                              {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
+                                                            </span>
+                                                          </button>
+                                                          <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
+                                                            <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
+                                                            <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
+                                                          </button>
+                                                        </div>
                                                       ) : (
                                                         <div className="cabina-antesala-form space-y-2">
                                                           <p className="cabina-antesala-form__pregunta">
@@ -2531,7 +2588,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 setBitacoraAvailabilityTick(Date.now());
                                                 setBitacoraCompleted(false);
                                                 setFarewellVideoSeen(false);
-                                                setShowPhoneInput(false);
+                                                setAvisoPaso(null);
                                                 setPhoneInput('');
                                                 setSouvenirDeliveredAt(null);
                                               }}

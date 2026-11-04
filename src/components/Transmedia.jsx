@@ -4638,6 +4638,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Entrar al drama"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4677,6 +4678,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="📖 Activar artefacto"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4716,6 +4718,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Activa tu taza"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4756,6 +4759,7 @@ const renderDramaFeaturedWork = () => (
                           onNavigateToRecommendation={handleFormatClick}
                           onL2QuestionReady={handlePdfAftercareClose}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4795,6 +4799,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4834,6 +4839,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Escuchar ahora"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4873,6 +4879,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Ver los talleres"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4912,6 +4919,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
@@ -4951,6 +4959,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
                         />
                       </>

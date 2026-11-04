@@ -25,6 +25,15 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // confirmación que el recuerdo entregado (Carlos, 18 sep 2026).
   returnDone: 'La pregunta volverá',
   returnDoneHint: 'Te buscará por WhatsApp cuando llegue el momento.',
+  // Fase 2 (3 nov 2026): el aviso también llega por correo, al de la cuenta.
+  returnDoneHintCorreo: 'Te buscará en tu correo cuando llegue el momento.',
+  returnDoneHintGenerico: 'Te buscará cuando llegue el momento.',
+  // Las dos vías del aviso (prototipo del segundo acto v0.4; Carlos, 22 oct 2026).
+  avisoCorreoTitle: 'Con mi correo',
+  avisoCorreoHint: 'Inicias sesión aquí mismo. Un solo correo, el mismo de tu cuenta.',
+  avisoCorreoConCuentaHint: 'El de tu cuenta. Un solo correo.',
+  avisoWhatsAppTitle: 'Por WhatsApp',
+  avisoWhatsAppHint: 'Sin cuenta. Solo tu número, solo para esto.',
   returnBackNow: 'La pregunta ya volvió',
   returnBackNowHint: 'Puedes entrar a escena.',
   souvenirCta: 'Llevarme el recuerdo',

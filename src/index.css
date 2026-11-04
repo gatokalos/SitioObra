@@ -4117,6 +4117,42 @@ body {
   background: rgba(87, 50, 17, 0.32);
 }
 
+/* Fase 2 del regreso (3 nov 2026): las dos vías del aviso —con mi correo, por
+   WhatsApp— se eligen dentro de la misma fila, con la caja del formulario. */
+.cabina-antesala-eleccion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.6rem 0.78rem;
+  border: 1px solid rgba(213, 169, 83, 0.28);
+  border-radius: 14px;
+  background: rgba(2, 3, 7, 0.72);
+  color: rgba(241, 231, 211, 0.92);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cabina-antesala-eleccion:hover,
+.cabina-antesala-eleccion:focus-visible {
+  border-color: rgba(220, 174, 80, 0.54);
+  background: rgba(87, 50, 17, 0.32);
+  outline: none;
+}
+
+.cabina-antesala-eleccion__titulo {
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+}
+
+.cabina-antesala-eleccion__detalle {
+  font-size: 0.66rem;
+  line-height: 1.4;
+  color: rgba(205, 209, 219, 0.72);
+}
+
 /* ─── La huella: lectura editorial, no formulario de administración ───── */
 .huella-acordeon {
   position: relative;

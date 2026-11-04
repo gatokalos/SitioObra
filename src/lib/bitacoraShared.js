@@ -28,6 +28,32 @@ export const writeGlobalConsent = () => {
 
 export const clearGlobalConsent = () => {
   try { localStorage.removeItem(GLOBAL_CONSENT_KEY); } catch {}
+  try { localStorage.removeItem('gatoencerrado:bitacora:canal'); } catch {}
+  try { localStorage.removeItem('gatoencerrado:bitacora:aviso-pendiente'); } catch {}
+};
+
+// Fase 2 del regreso (3 nov 2026). Por dónde pidió el aviso (correo o whatsapp):
+// la fila de la cabina lo dice en su estado completado, en cualquier forma.
+const GLOBAL_CONSENT_CANAL_KEY = 'gatoencerrado:bitacora:canal';
+export const readGlobalConsentCanal = () => {
+  try { return localStorage.getItem(GLOBAL_CONSENT_CANAL_KEY) || null; } catch { return null; }
+};
+export const writeGlobalConsentCanal = (canal) => {
+  try { localStorage.setItem(GLOBAL_CONSENT_CANAL_KEY, canal); } catch {}
+};
+
+// «Con mi correo» puede pedir iniciar sesión primero. Si la sesión llega por
+// Google o Apple la página recarga, así que la intención se guarda aquí y se
+// consume en cuanto vuelve a haber usuario.
+const PENDING_AVISO_KEY = 'gatoencerrado:bitacora:aviso-pendiente';
+export const readPendingAvisoCanal = () => {
+  try { return localStorage.getItem(PENDING_AVISO_KEY) || null; } catch { return null; }
+};
+export const writePendingAvisoCanal = (canal) => {
+  try { localStorage.setItem(PENDING_AVISO_KEY, canal); } catch {}
+};
+export const clearPendingAvisoCanal = () => {
+  try { localStorage.removeItem(PENDING_AVISO_KEY); } catch {}
 };
 
 export const readResonanceRecord = (portal) => {
