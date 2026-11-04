@@ -274,6 +274,11 @@ export const buildL2Acknowledgment = (portal, option) => {
 // momento es lo que la persona ve, y ya no cambia después.
 const ESPERA_ECO_MS = 4000;
 
+// El aviso por WhatsApp se oculta mientras no exista la cuenta que lo envíe
+// (Carlos, 3 nov 2026): se ofrecía y no llegaba nada. Volver a true cuando el
+// servidor tenga WHATSAPP_CONFIGURED de verdad.
+const AVISO_WHATSAPP_DISPONIBLE = false;
+
 const esperarConPlazo = (promesa, ms) => new Promise((resolve) => {
   const plazo = setTimeout(() => resolve(null), ms);
   promesa
@@ -2389,7 +2394,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       ) : avisoPaso === 'elegir' ? (
                                                         <div className="cabina-antesala-form space-y-2">
                                                           {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
-                                                              sesión, la del correo es un solo toque y nombra la cuenta. */}
+                                                              sesión, la del correo es un solo toque y nombra la cuenta.
+                                                              WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
                                                           <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
                                                             <span className="cabina-antesala-eleccion__titulo">
                                                               {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
@@ -2398,10 +2404,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                               {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
                                                             </span>
                                                           </button>
-                                                          <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
-                                                            <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
-                                                            <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
-                                                          </button>
+                                                          {AVISO_WHATSAPP_DISPONIBLE && (
+                                                            <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
+                                                              <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
+                                                              <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
+                                                            </button>
+                                                          )}
                                                         </div>
                                                       ) : (
                                                         <div className="cabina-antesala-form space-y-2">
