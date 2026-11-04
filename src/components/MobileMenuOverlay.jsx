@@ -9,6 +9,13 @@ const MobileMenuOverlay = ({
   activeSectionHref = null,
   onNavigate,
   onClose,
+  // Sesión (Carlos, 4 nov 2026): el programa de mano es el único lugar con
+  // saludo y «Cerrar sesión». Sin sesión la fila no existe; aquí no se ofrece
+  // «Iniciar sesión», porque una cuenta iniciada revela el segundo acto y
+  // ese es el premio de cruzar la Tercera llamada.
+  sessionGreeting = null,
+  sessionEmail = null,
+  onSignOut = null,
 }) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const [activeFaqKey, setActiveFaqKey] = useState('');
@@ -61,6 +68,11 @@ const MobileMenuOverlay = ({
     });
   };
 
+  const handleSignOut = async () => {
+    await onSignOut?.();
+    onClose?.();
+  };
+
   const handleSecondaryClick = (item, secondaryItem) => {
     if (item.name === 'FAQ') {
       setExpandedSection('FAQ');
@@ -105,7 +117,9 @@ const MobileMenuOverlay = ({
 
 
           <section className="rounded-2xl border border-white/10 bg-black/35 p-2">
-            {menuItems.map((item) => (
+            {menuItems.map((item) => {
+              const isHere = activeSectionHref === item.href;
+              return (
               <div key={item.name} className="rounded-xl transition hover:bg-white/[0.04]">
                 <div className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3">
                   {/* Estación anunciada pero todavía cerrada: se lee, no se
@@ -114,7 +128,7 @@ const MobileMenuOverlay = ({
                   {item.locked ? (
                     <div className="min-w-0 flex-1 text-left" aria-disabled="true">
                       <p className="font-display text-[1.08rem] leading-tight text-slate-100/45">{item.name}</p>
-                      {item.description ? (
+                      {isHere && item.description ? (
                         <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/40">
                           {item.description}
                         </p>
@@ -126,8 +140,8 @@ const MobileMenuOverlay = ({
                       onClick={() => handleTitleClick(item)}
                       className="min-w-0 flex-1 text-left"
                     >
-                      <p className="font-display text-[1.08rem] leading-tight text-slate-100">{item.name}</p>
-                      {item.description ? (
+                      <p className={`font-display text-[1.08rem] leading-tight ${isHere ? 'text-white' : 'text-slate-100'}`}>{item.name}</p>
+                      {isHere && item.description ? (
                         <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/85">
                           {item.description}
                         </p>
@@ -142,11 +156,12 @@ const MobileMenuOverlay = ({
                         aria-label="Todavía no disponible"
                       />
                     ) : null}
-                    {activeSectionHref === item.href ? (
-                      <span
-                        className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
-                        aria-hidden="true"
-                      />
+                    {/* Antes, un punto esmeralda; ahora ese punto es solo
+                        «sesión encendida», y la sección se dice con palabras. */}
+                    {isHere ? (
+                      <span className="shrink-0 text-[10px] uppercase tracking-[0.2em] text-slate-300/85">
+                        estás aquí
+                      </span>
                     ) : null}
                     {item.secondary?.length ? (
                       <button
@@ -218,8 +233,35 @@ const MobileMenuOverlay = ({
                   </div>
                 ) : null}
               </div>
-            ))}
+              );
+            })}
           </section>
+
+          {sessionGreeting ? (
+            <section className="mt-2 rounded-2xl border border-white/10 bg-black/35 p-2" aria-label="Sesión">
+              <div className="flex items-center justify-between gap-3 rounded-xl px-3 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-2 font-display text-[1.02rem] leading-tight text-slate-100">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{sessionGreeting}</span>
+                  </p>
+                  {sessionEmail ? (
+                    <p className="mt-1 truncate text-[11px] text-slate-400/85">{sessionEmail}</p>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </section>
+          ) : null}
 
         </div>
       </div>

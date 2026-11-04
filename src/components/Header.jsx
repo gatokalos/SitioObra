@@ -1562,7 +1562,7 @@ const Header = ({
                 id="header-index-hashtag"
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
-                className={`flex shrink-0 cursor-pointer items-center gap-3 p-1 transition ${indexSurfaceClass} ${
+                className={`relative flex shrink-0 cursor-pointer items-center gap-3 p-1 transition ${indexSurfaceClass} ${
                   isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
                 }`}
                 animate={{ opacity: shouldGateIndexUntilHeroReveal ? 0 : 1 }}
@@ -1574,7 +1574,7 @@ const Header = ({
                 onClick={handleToggleIndex}
                 aria-controls="site-index-menu"
                 aria-expanded={isMenuOpen}
-                aria-label={isMenuOpen ? 'Cerrar índice de navegación' : 'Abrir índice de navegación'}
+                aria-label={`${isMenuOpen ? 'Cerrar' : 'Abrir'} índice de navegación${user ? ' · sesión iniciada' : ''}`}
                 tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
                 <span
@@ -1583,6 +1583,15 @@ const Header = ({
                 >
                   [#]
                 </span>
+                {/* Foquito de sesión (Carlos, 4 nov 2026): el punto esmeralda
+                    significa una sola cosa en todo el sitio, sesión encendida.
+                    Sin sesión no hay punto; el [#] sigue siendo el botón. */}
+                {user ? (
+                  <span
+                    className="pointer-events-none absolute right-0 top-0.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                    aria-hidden="true"
+                  />
+                ) : null}
               </motion.button>
               ) : null}
             </div>
@@ -1859,6 +1868,9 @@ const Header = ({
           activeSectionHref={activeSectionHref}
           onNavigate={handleNavClick}
           onClose={() => setIsMenuOpen(false)}
+          sessionGreeting={user ? greetingLabel : null}
+          sessionEmail={user?.email ?? null}
+          onSignOut={handleLogout}
         />
       ) : null}
 
