@@ -32,6 +32,7 @@ const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoence
 // URL: /bitacora?t=<anon_id>            → D-35: un enlace por persona; las
 //                                          formas pendientes las dice el servidor
 //      /bitacora?t=<anon_id>&via=correo  → fase 2: por dónde volvió (correo, push, whatsapp)
+//      (y desde el 4 nov 2026 la llegada se anota al abrir el enlace: POST /api/bitacora/llegada)
 //      /bitacora?t=<anon_id>&m=<portal>  → enlaces anteriores, por forma
 // El anon_id del link puede no coincidir con el de este navegador (el link
 // puede abrirse en otro dispositivo) — se fuerza como identidad activa para
@@ -66,6 +67,19 @@ const BitacoraLanding = () => {
     })();
     return () => { cancelled = true; };
   }, [anonId, linkedPortal]);
+
+  // Llegada por el enlace (Carlos, 4 nov 2026): se anota en cuanto la persona
+  // abre el enlace del aviso, conteste o no. Señal real, sin pixel. El servidor
+  // guarda solo la primera vez; si falla, no pasa nada visible.
+  useEffect(() => {
+    if (!anonId || !bitacoraVia) return;
+    fetch(`${OBRA_API_URL}/api/bitacora/llegada`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ anon_id: anonId, via: bitacoraVia }),
+      keepalive: true,
+    }).catch(() => {});
+  }, [anonId, bitacoraVia]);
 
   // La forma más reciente de la ventana hospeda la pantalla; la respuesta
   // cubre todas (ver bitacoraVentana en ResonanceModal).
