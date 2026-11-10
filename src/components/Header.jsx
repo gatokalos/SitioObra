@@ -286,10 +286,10 @@ const Header = ({
   // Leído por el efecto de arriba en el mismo tick en que isGatLinktreeOpen
   // pasa a false, para que el evento gat-hub-open-changed lleve la razón del
   // cierre — 'dismiss' (X, Escape, click afuera) vs 'scene-activate'
-  // (Retomar la proyección / Primera fila / Backstage).
+  // (Retomar la proyección / Proscenio / Backstage).
   const gatHubCloseReasonRef = useRef('dismiss');
   // Escape cierra el contenedor sin activar la escena (dismiss puro).
-  // Cualquier tile que navegue a otra vista (Primera fila, Backstage, Memoria
+  // Cualquier tile que navegue a otra vista (Proscenio, Backstage, Memoria
   // holográfico, Gastar energía, Café/merch, Iniciar sesión) debe pasar por
   // activateSceneAfterGatDismiss, no por esta función directo — si no, al
   // volver de esa vista el usuario se encuentra un Hero nunca activado
@@ -686,8 +686,8 @@ const Header = ({
   }, []);
 
   const menuItems = [
-    { name: 'Primera fila', href: '#hero' },
-    ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
+    { name: 'Proscenio', href: '#hero' },
+    ...(showTerceraLlamadaNav ? [{ name: 'Primer acto', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Segundo acto', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
@@ -709,10 +709,14 @@ const Header = ({
     isOpen ? item : { ...item, locked: true, secondary: undefined }
   );
 
+  // Nombres de las estaciones (Carlos, 9 nov 2026): «Proscenio» en vez de «Primera
+  // fila», porque la persona deja la butaca y pasa al borde del escenario; «Primer
+  // acto» en vez de «Tercera llamada», porque la llamada es la voz que se oye dentro
+  // de la escena («Tercera llamada, tercera... ¿Comenzamos?»), no el nombre del lugar.
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#AnteLaDuda' },
+    { name: 'Proscenio', href: '#hero', description: '#AnteLaDuda' },
     station(showTerceraLlamadaNav, {
-      name: 'Tercera llamada',
+      name: 'Primer acto',
       href: '#bienvenida-creador',
       description: '#Comenzamos',
     }),
@@ -1252,7 +1256,7 @@ const Header = ({
     {
       key: 'first-row',
       icon: Armchair,
-      label: 'Primera fila',
+      label: 'Proscenio',
       onClick: enterFirstRow,
       tone: 'neutral',
     },
