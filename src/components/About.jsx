@@ -112,7 +112,6 @@ const PROVOCA_TITLE_TERMS = [
   'una emoción que no entiendes del todo',
   'querer estar bien',
 ];
-const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
 const PROVOCA_INFO_BACKDROP_VARIANTS = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
 const PROVOCA_INFO_PANEL_VARIANTS = {
   hidden: { opacity: 0, y: 32, scale: 0.96 },
@@ -127,7 +126,7 @@ const PROVOCA_INFO_PANEL_VARIANTS = {
 const LESS_ALONE_GLYPHS = ['x', 'a', 'o', '#'];
 const LESS_ALONE_ROTATION_MS = 3200;
 const isProvocaDesktopViewport = () =>
-  typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+  typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
 
 const getProvocaSubmitCooldownKey = (userId) => {
   if (userId) return `${PROVOCA_SUBMIT_COOLDOWN_PREFIX}:user:${userId}`;
@@ -222,6 +221,7 @@ export const ProvocaSection = () => {
   // (D-38, 19 sep 2026).
   const [huellaDeOrigen, setHuellaDeOrigen] = useState(null);
   const voiceTextareaRef = useRef(null);
+  const replicaCardRef = useRef(null);
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
@@ -268,7 +268,35 @@ export const ProvocaSection = () => {
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
   const isSendVoiceDisabled = isSubmittingVoice;
   const hasVoiceDraftText = voiceDraft.trim().length > 0;
-  const isShareButtonInSendMode = isVoiceInputOpen && hasVoiceDraftText;
+  const scrollToReplicaCard = useCallback(() => {
+    const card = replicaCardRef.current;
+    if (!card || card.hidden) return;
+    // El foco no abre el teclado ni dispara otro scroll sobre el campo.
+    card.focus({ preventScroll: true });
+    card.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (!isVoiceInputOpen || isProvocaDesktopViewport()) return undefined;
+    // Espera al commit que retira hidden antes de medir y alinear la ficha.
+    const frame = window.requestAnimationFrame(scrollToReplicaCard);
+    return () => window.cancelAnimationFrame(frame);
+  }, [isVoiceInputOpen, scrollToReplicaCard]);
+  useEffect(() => {
+    // El envío integrado presupone el campo abierto en desktop, también al
+    // ampliar una ventana que se montó con el formulario móvil cerrado.
+    const media = window.matchMedia('(min-width: 1024px)');
+    const openDesktopComposer = () => {
+      if (media.matches) setIsVoiceInputOpen(true);
+    };
+    openDesktopComposer();
+    if (media.addEventListener) {
+      media.addEventListener('change', openDesktopComposer);
+      return () => media.removeEventListener('change', openDesktopComposer);
+    }
+    media.addListener(openDesktopComposer);
+    return () => media.removeListener(openDesktopComposer);
+  }, []);
   const currentProvocaTitleTerm = terminoFijado ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
   const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
@@ -316,7 +344,7 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
-        : '"Dímelo con drama"';
+        : '"Queiro más drama"';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
@@ -508,14 +536,16 @@ export const ProvocaSection = () => {
       if (e.detail?.termino) setTerminoFijado(e.detail.termino);
       if (e.detail?.borradorId) setBorradorId(e.detail.borradorId);
       setIsVoiceInputOpen(true);
-      setTimeout(() => {
-        document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => voiceTextareaRef.current?.focus(), 120);
-      }, 80);
+      if (isVoiceInputOpen || isProvocaDesktopViewport()) {
+        window.requestAnimationFrame(() => {
+          scrollToReplicaCard();
+          if (isProvocaDesktopViewport()) voiceTextareaRef.current?.focus({ preventScroll: true });
+        });
+      }
     };
     window.addEventListener('gatoencerrado:provoca-draft', handleProvocaDraft);
     return () => window.removeEventListener('gatoencerrado:provoca-draft', handleProvocaDraft);
-  }, []);
+  }, [isVoiceInputOpen, scrollToReplicaCard]);
 
   useEffect(() => {
     const payload = {
@@ -853,11 +883,9 @@ export const ProvocaSection = () => {
     setTerminoFijado(null);
     setBorradorId(null);
     safeRemoveItem(PROVOCA_DRAFT_KEY);
-    const keepFormOpen = isProvocaDesktopViewport();
-    if (keepFormOpen) {
-      setVoiceDraft('');
-    }
-    setIsVoiceInputOpen(keepFormOpen);
+    // La ficha queda abierta para mostrar la voz recién enviada y su devolución.
+    setVoiceDraft('');
+    setIsVoiceInputOpen(true);
   }, [
     corregirHuellaGuardada,
     registrarPublicadoEnBorrador,
@@ -890,20 +918,10 @@ export const ProvocaSection = () => {
     }
   }, [isVoiceInputOpen, user, voiceName]);
 
-  const handleShareVoiceAction = useCallback(() => {
-    if (isShareButtonInSendMode) {
-      void handleSubmitVoice();
-      return;
-    }
-
-    if (isProvocaDesktopViewport()) {
-      setIsVoiceInputOpen(true);
-      window.requestAnimationFrame(() => voiceTextareaRef.current?.focus());
-      return;
-    }
-
-    setIsVoiceInputOpen((previous) => !previous);
-  }, [handleSubmitVoice, isShareButtonInSendMode]);
+  const handleOpenReplica = useCallback(() => {
+    if (isSubmittingVoice) return;
+    setIsVoiceInputOpen(true);
+  }, [isSubmittingVoice]);
 
   const handleListenToObra = useCallback(async (voice) => {
     if (pendingSilvestreAudioUrl) {
@@ -979,7 +997,7 @@ export const ProvocaSection = () => {
 
   return (
     <>
-      <section id="provoca" className="provoca-continuum relative pt-20 pb-24 md:pt-24 lg:pt-28">
+      <section id="provoca" className={`provoca-continuum${isVoiceInputOpen ? '' : ' provoca-continuum--collapsed'} relative pt-20 pb-24 md:pt-24 lg:pt-28`}>
         <div className="container mx-auto px-6">
           <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -1005,60 +1023,72 @@ export const ProvocaSection = () => {
               </span>
             </h2>
             <p className="provoca-stage-description">
-              Ninguna obra termina en el acto final. Se completa cuando alguien la recibe <br /><em>y le da forma con sus palabras</em>.
+              Ninguna obra termina en el acto final. Hasta aquí hablo ella.
+              <span className="hidden lg:inline"><br /><em>Ahora te toca</em>.</span>
             </p>
           </header>
 
-          <div className="provoca-stage-shell">
+          <div className={`provoca-stage-entry${isVoiceInputOpen ? ' provoca-stage-entry--open' : ''}`}>
+            <div className="miniverse-inline-threshold" aria-hidden="true">
+              <span className="miniverse-inline-threshold__mark"><Quote size={28} strokeWidth={1.5} /></span>
+            </div>
+            {!isVoiceInputOpen && <Button
+              type="button"
+              variant="outline"
+              onClick={handleOpenReplica}
+              disabled={isSubmittingVoice}
+              aria-controls="provoca-replica-card"
+              aria-expanded={isVoiceInputOpen}
+              className="ge-chip-action ge-mobile-cta-width provoca-share-cta ge-chip-action--primary"
+            >
+              Ahora te toca…
+            </Button>}
+          </div>
+          <motion.div
+            id="provoca-replica-card"
+            ref={replicaCardRef}
+            hidden={!isVoiceInputOpen}
+            tabIndex={-1}
+            role="region"
+            aria-label="Tu réplica y las voces del público"
+            initial={false}
+            animate={{ opacity: isVoiceInputOpen ? 1 : 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.28 }}
+            className="provoca-stage-shell"
+          >
           {confettiBursts.map((burst) => (
             <ConfettiBurst key={burst} seed={burst} />
           ))}
-          <div className="grid items-start gap-8 md:grid-cols-[3fr_2fr]">
+          <div className="provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]">
             <div className="min-w-0">
               <h3
-                className="font-display mb-6 min-h-[6.75rem] text-3xl italic text-slate-100 xl:min-h-[2.25rem]"
+                className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
                 aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
               >
-                ¿Qué te provoca{' '}
-                <span className="relative inline-grid min-w-[14.5ch] align-baseline">
-                  <span className="col-start-1 row-start-1 invisible" aria-hidden="true">
-                    {PROVOCA_TITLE_LONGEST_TERM}?
-                  </span>
+                <span className="provoca-stage-question__stack">
+                  {/* Todas comparten celda: la más alta reserva el espacio real
+                      con esta fuente y este ancho, sin cortar las frases largas. */}
+                  {PROVOCA_TITLE_TERMS.map((term) => (
+                    <span key={term} className="provoca-stage-question__measure" aria-hidden="true">
+                      ¿Qué te provoca {term}?
+                    </span>
+                  ))}
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.span
                       key={currentProvocaTitleTerm}
                       aria-hidden="true"
-                      className="col-start-1 row-start-1 inline-block bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text pr-2 text-transparent"
+                      className="provoca-stage-question__current bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text pr-2 text-transparent"
                       initial={{ opacity: 0, y: 8, filter: 'blur(5px)' }}
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, y: -7, filter: 'blur(5px)' }}
                       transition={{ duration: 0.45, ease: 'easeOut' }}
                     >
-                      {currentProvocaTitleTerm}?
+                      ¿Qué te provoca {currentProvocaTitleTerm}?
                     </motion.span>
                   </AnimatePresence>
                 </span>
               </h3>
              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleShareVoiceAction}
-                  disabled={isShareButtonInSendMode && isSendVoiceDisabled}
-                  className={`ge-chip-action ge-mobile-cta-width provoca-share-cta w-full sm:w-auto gap-2 ${
-                    isVoiceInputOpen ? 'ge-chip-action--active' : 'ge-chip-action--primary'
-                  }`}
-                >
-                  {isShareButtonInSendMode ? (
-                    <>
-                      <Send size={18} />
-                      {isSubmittingVoice ? 'Dejando…' : 'Dejar mi réplica'}
-                    </>
-                  ) : (
-                    'Comparte tu forma de decirlo'
-                  )}
-                </Button>
-              </div>
               <AnimatePresence initial={false}>
                 {isVoiceInputOpen ? (
                   <motion.div
@@ -1068,15 +1098,26 @@ export const ProvocaSection = () => {
                     transition={{ duration: 0.22, ease: 'easeOut' }}
                     className="mt-4"
                   >
-                    <textarea
-                      ref={voiceTextareaRef}
-                      aria-label="Comparte algo que cambió tu forma de mirar, sentir o recordar"
-                      value={voiceDraft}
-                      onChange={(event) => setVoiceDraft(event.target.value)}
-                      rows={3}
-                      className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Contesta con lo que alguna de estas preguntas te haga sentir…"
-                    />
+                    <div className="provoca-stage-composer">
+                      <textarea
+                        ref={voiceTextareaRef}
+                        aria-label="Comparte algo que cambió tu forma de mirar, sentir o recordar"
+                        value={voiceDraft}
+                        onChange={(event) => setVoiceDraft(event.target.value)}
+                        rows={3}
+                        className="form-surface w-full px-4 py-3 resize-none"
+                        placeholder="Contéstale lo que te provoca…"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSubmitVoice}
+                        disabled={!hasVoiceDraftText || isSendVoiceDisabled}
+                        className="cabina-escritura-accion provoca-stage-submit"
+                      >
+                        <Send size={15} aria-hidden="true" />
+                        {isSubmittingVoice ? 'Dejando…' : 'Dejar mi réplica'}
+                      </button>
+                    </div>
 
                     {/* Cuando el texto vino de la Memoria, aquí se cumplen las dos
                         cosas que ella promete: corregir —lo que se publique
@@ -1173,14 +1214,15 @@ export const ProvocaSection = () => {
                 ) : null}
               </AnimatePresence>
             </div>
-            <div className="min-w-0 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                 
-              </div>
+            <div
+              className="provoca-stage-response min-w-0 space-y-4"
+              data-voice-state={isSilvestrePlaying ? 'speaking' : isSilvestreThinking ? 'thinking' : 'idle'}
+            >
+              <div className="provoca-stage-response__spacer flex items-center justify-between gap-3" />
               {visibleTestimonials.map((item, index) => (
                 <div
                   key={`${item.id}-${index}-${item.displayVariant}`}
-                  className={`flex h-[230px] flex-col rounded-2xl bg-black/30 md:h-[240px] ${
+                  className={`provoca-stage-voice flex h-[230px] flex-col rounded-2xl bg-black/30 md:h-[240px] ${
                     item.isPending
                       ? 'border border-dashed border-amber-200/35'
                       : 'border border-white/10'
@@ -1194,7 +1236,7 @@ export const ProvocaSection = () => {
                       </span>
                     ) : null}
                   </div>
-                  <div className="mb-4 min-h-0 flex-1 overflow-y-auto pr-2">
+                  <div className="provoca-stage-quote mb-4 min-h-0 flex-1 overflow-y-auto pr-2">
                     <p
                       className={`text-slate-200 italic leading-relaxed ${
                         item.displayVariant === 'large' ? 'text-base md:text-[1.05rem]' : 'text-sm md:text-base'
@@ -1252,7 +1294,16 @@ export const ProvocaSection = () => {
                   </div>
                 </div>
               ))}
-              <div className="ui-segmented ui-segmented--rect grid-cols-2 w-full">
+              <div className="provoca-stage-resonance" aria-hidden="true">
+                <span className="provoca-stage-resonance__line" />
+                <span className="provoca-stage-resonance__bars">
+                  {[8, 15, 24, 12, 34, 18, 26, 14, 7].map((height, index) => (
+                    <span key={index} style={{ '--bar-height': `${height}px`, '--bar-delay': `${index * -0.11}s` }} />
+                  ))}
+                </span>
+                <span className="provoca-stage-resonance__line" />
+              </div>
+              <div className="provoca-stage-actions ui-segmented ui-segmented--rect grid-cols-2 w-full">
                 <Button
                   type="button"
                   variant="outline"
@@ -1268,7 +1319,7 @@ export const ProvocaSection = () => {
                   variant="outline"
                   onClick={() => handleListenToObra(visibleTestimonials[0])}
                   disabled={isEscucharButtonDisabled || visibleTestimonials.length === 0}
-                  className={`ui-segmented__btn ui-segmented__btn--secondary w-full justify-center gap-2 text-center whitespace-normal ${
+                  className={`provoca-stage-listen ui-segmented__btn ui-segmented__btn--secondary w-full justify-center gap-2 text-center whitespace-normal ${
                     isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
                   } ${isSilvestreThinking ? 'thinking-blink' : ''}`}
                   aria-pressed={isEscucharButtonActive}
@@ -1351,7 +1402,7 @@ export const ProvocaSection = () => {
               </AnimatePresence>
             </div>
           </div>
-          </div>
+          </motion.div>
           </motion.div>
         </div>
       </section>

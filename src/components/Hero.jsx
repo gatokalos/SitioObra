@@ -74,7 +74,7 @@ const HERO_INACTIVE_SIGNAL_DRIFT_START_MS = HERO_INACTIVE_SIGNAL_REVEAL_MS - 100
 // El margen conserva el primer «Ante» completo durante el segundo de
 // desplazamiento que antecede a la llegada al [#].
 const HERO_INACTIVE_SIGNAL_TEXT_OFFSET = 24;
-const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instalada.';
+const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más como app instalada.';
 // Tras cerrar el sheet de instrucciones, no se vuelve a interceptar el primer
 // tap del hashtag hasta que pase este tiempo — sin esto, cada visita nueva
 // repetía la misma pregunta aunque el usuario ya hubiera contestado.

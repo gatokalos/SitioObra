@@ -3122,6 +3122,299 @@ body {
   pointer-events: none;
 }
 
+/* Superficie compartida de La Réplica; el título de sección permanece fuera. */
+.provoca-stage-shell {
+  isolation: isolate;
+  scroll-margin-top: 1rem;
+  border-color: rgba(196, 149, 230, 0.38);
+  background:
+    radial-gradient(70% 85% at 0% 0%, rgba(109, 54, 133, 0.24), transparent 68%),
+    radial-gradient(60% 25% at 100% 100%, rgba(166, 79, 45, 0.16), transparent 80%),
+    #06050a;
+  box-shadow: inset 0 1px 0 rgba(232, 214, 255, 0.12), 0 20px 65px rgba(0, 0, 0, 0.24);
+}
+
+.provoca-stage-shell::after {
+  content: '';
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(6, 5, 10, 0.2) 42%, rgba(6, 5, 10, 0.12) 64%, rgba(6, 5, 10, 0.3)),
+    linear-gradient(0deg, rgba(6, 5, 10, 0.96), transparent 55%),
+    url('/assets/replica-tiger-desktop.png') right top / cover no-repeat;
+  opacity: 0.78;
+}
+
+.provoca-stage-content {
+  position: relative;
+  z-index: 1;
+  gap: clamp(2rem, 3vw, 3.5rem);
+}
+
+.provoca-stage-question {
+  min-height: 2.3em;
+  margin-bottom: 1.25rem;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+  line-height: 1.15;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+.provoca-stage-question__stack {
+  display: grid;
+  min-width: 0;
+  min-height: 2.3em;
+}
+.provoca-stage-question__measure,
+.provoca-stage-question__current {
+  grid-area: 1 / 1;
+  min-width: 0;
+  padding-right: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.provoca-stage-question__measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.provoca-stage-shell .form-surface {
+  border-radius: 14px;
+  border-color: rgba(207, 190, 225, 0.44);
+  background: linear-gradient(165deg, rgba(164, 157, 180, 0.21), rgba(77, 69, 94, 0.26));
+  color: #f1edf6;
+  caret-color: #e9d5ff;
+  font-size: 16px;
+  box-shadow: inset 0 1px 0 rgba(245, 237, 255, 0.14), 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.provoca-stage-shell .form-surface::placeholder { color: rgba(218, 214, 229, 0.7); }
+.provoca-stage-shell textarea.form-surface { min-height: 7rem; }
+.provoca-stage-shell input.form-surface { min-height: 2.75rem; }
+.provoca-stage-shell .form-surface:focus,
+.provoca-stage-shell .form-surface:focus-visible {
+  border-color: rgba(216, 180, 254, 0.85);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.16), inset 0 1px 0 rgba(245, 237, 255, 0.18);
+}
+
+.provoca-stage-entry .provoca-share-cta {
+  min-width: min(18rem, 100%);
+  border-color: rgba(192, 132, 252, 0.5);
+  background: linear-gradient(120deg, rgba(115, 57, 159, 0.88), rgba(69, 28, 103, 0.9));
+  box-shadow: inset 0 1px 0 rgba(233, 213, 255, 0.22), 0 0 22px rgba(126, 34, 206, 0.1);
+}
+
+.provoca-stage-response { padding-top: clamp(1.5rem, 3vw, 3rem); }
+.provoca-stage-response__spacer { display: none; }
+
+.provoca-stage-shell .provoca-stage-voice {
+  height: auto;
+  min-height: 14rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.provoca-stage-voice > div:first-child > svg { display: none; }
+.provoca-stage-quote { max-height: 12rem; }
+.provoca-stage-quote > p {
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+  line-height: 1.55;
+  color: #eeeaf3;
+  text-shadow: 0 2px 14px #050409, 0 0 25px #050409;
+}
+
+.provoca-stage-resonance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  height: 2.75rem;
+  color: #c084fc;
+  opacity: 0.66;
+  transition: opacity 0.4s ease;
+}
+
+.provoca-stage-resonance__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.75));
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.26);
+}
+.provoca-stage-resonance__line:last-child { transform: rotate(180deg); }
+.provoca-stage-resonance__bars { display: flex; align-items: center; gap: 5px; height: 36px; }
+.provoca-stage-resonance__bars > span {
+  width: 2px;
+  height: var(--bar-height);
+  border-radius: 2px;
+  background: currentColor;
+  box-shadow: 0 0 7px rgba(192, 132, 252, 0.48);
+  transform: scaleY(0.7);
+}
+[data-voice-state='speaking'] .provoca-stage-resonance { opacity: 1; }
+[data-voice-state='speaking'] .provoca-stage-resonance__bars > span {
+  animation: provoca-voice-resonance 0.8s ease-in-out var(--bar-delay) infinite alternate;
+}
+[data-voice-state='thinking'] .provoca-stage-resonance {
+  animation: provoca-listening-glow 2.2s ease-in-out infinite;
+}
+
+.provoca-stage-shell .provoca-stage-actions {
+  gap: 0.75rem;
+  overflow: visible;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.provoca-stage-actions > .ui-segmented__btn {
+  min-height: 2.9rem;
+  border: 1px solid rgba(199, 184, 218, 0.36) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(160deg, rgba(77, 69, 88, 0.4), rgba(17, 14, 24, 0.7)) !important;
+  box-shadow: inset 0 1px 0 rgba(245, 237, 255, 0.1) !important;
+}
+.provoca-stage-actions > .provoca-stage-listen {
+  border-color: rgba(201, 148, 252, 0.65) !important;
+  background: linear-gradient(120deg, rgba(142, 62, 190, 0.92), rgba(85, 32, 128, 0.94)) !important;
+  box-shadow: inset 0 1px 0 rgba(245, 237, 255, 0.25), 0 0 22px rgba(139, 92, 246, 0.18) !important;
+}
+.provoca-stage-actions > .ui-segmented__btn:focus-visible {
+  outline: 2px solid rgba(216, 180, 254, 0.85);
+  outline-offset: 3px;
+}
+
+
+.provoca-stage-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 23rem);
+  margin: 0 auto 1.5rem;
+}
+.provoca-stage-entry .miniverse-inline-threshold {
+  width: 100%;
+  height: 7.5rem;
+  margin-bottom: 0.75rem;
+}
+.provoca-stage-entry .miniverse-inline-threshold__mark {
+  transition: opacity 0.25s ease, box-shadow 0.25s ease;
+}
+.provoca-stage-entry--open .miniverse-inline-threshold__mark {
+  opacity: 0.4;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.08);
+}
+.provoca-stage-shell[hidden] { display: none; }
+.provoca-stage-composer { position: relative; }
+.provoca-stage-shell .provoca-stage-composer textarea {
+  display: block;
+  padding-bottom: 3.75rem;
+}
+.provoca-stage-shell .provoca-stage-submit {
+  position: absolute;
+  inset: auto 0.7rem 0.7rem auto;
+  display: inline-flex;
+  min-height: 2.25rem;
+}
+.provoca-stage-shell .provoca-stage-submit:focus-visible {
+  outline: 2px solid rgba(216, 180, 254, 0.8);
+  outline-offset: 3px;
+}
+
+@media (min-width: 1024px) {
+  .provoca-stage-shell::after { display: block; }
+  .provoca-stage-content { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+  .provoca-stage-entry { display: none; }
+}
+
+/* Una sola tarjeta móvil: escritura arriba, la mirada y la voz debajo.
+   Los campos y controles conservan sus acciones y su orden. */
+@media (max-width: 1023px) {
+  /* La entrada ocupa una pantalla antes de revelar la ficha: el archivo
+     contiguo empieza fuera de esta primera vista, incluso al ocultar la barra del navegador. */
+  .provoca-continuum--collapsed {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+  .provoca-stage-shell {
+    margin-inline: -0.5rem;
+    padding: 1.75rem 1.1rem;
+  }
+  .provoca-stage-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .provoca-stage-question {
+    font-size: clamp(1.3rem, 5.6vw, 1.8rem);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+  }
+  .provoca-stage-question__stack { min-height: 2.4em; }
+  .provoca-stage-entry .provoca-share-cta {
+    min-height: 2.9rem;
+    min-width: 0;
+    width: 100%;
+  }
+  .provoca-stage-shell textarea.form-surface { min-height: 8rem; }
+  .provoca-stage-shell .provoca-stage-submit { min-height: 2.75rem; }
+  .provoca-stage-response {
+    position: relative;
+    isolation: isolate;
+    padding-top: 2.5rem;
+  }
+  .provoca-stage-response::before {
+    content: '';
+    position: absolute;
+    inset: 0 -1.1rem -1.75rem;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(6, 5, 10, 0.82), rgba(6, 5, 10, 0.45)),
+      linear-gradient(0deg, #06050a, transparent 85%),
+      url('/assets/replica-tiger-desktop.png') right top / auto 24rem no-repeat;
+  }
+  .provoca-stage-response::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.38), transparent);
+    pointer-events: none;
+  }
+  .provoca-stage-shell .provoca-stage-voice { min-height: 12rem; }
+  .provoca-stage-quote { max-height: 15rem; }
+  .provoca-stage-quote > p { font-size: 1.05rem; line-height: 1.6; }
+  .provoca-stage-shell .provoca-stage-actions {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .provoca-stage-actions > .ui-segmented__btn { min-height: 3rem; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .provoca-stage-shell { padding-inline: 1.75rem; }
+  .provoca-stage-response::before { inset-inline: -1.75rem; }
+  .provoca-stage-shell .provoca-stage-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@keyframes provoca-voice-resonance {
+  from { transform: scaleY(0.3); }
+  to { transform: scaleY(1); }
+}
+@keyframes provoca-listening-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .provoca-stage-resonance,
+  .provoca-stage-resonance__bars > span { animation: none !important; transition: none; }
+}
+
 .ge-chip-action,
 .ge-chip-filter {
   position: relative;
