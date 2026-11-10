@@ -1,10 +1,11 @@
-import React, { Suspense, useCallback, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { Sparkle, Heart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
+import useScrambleText from '@/hooks/useScrambleText';
 import {
   readMiniverseInlineOpenFromSession,
   writeMiniverseInlineOpenToSession,
@@ -16,6 +17,7 @@ const AlianzaSocial = React.lazy(() => import('@/components/AlianzaSocial'));
 const PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const TAB_QUERY_PARAM = 'heroTab';
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
+const TITLE = 'Espera, no te vayas todavía...';
 
 const readAvailableGat = () => {
   const parsed = Number.parseInt(safeGetItem(GAT_BALANCE_STORAGE_KEY) || '0', 10);
@@ -48,6 +50,9 @@ const resolveInitialTab = (search = '', availableGat = 0) => {
 // mismo despliegue — aparece junto con el contenido de miniversos cuando el
 // usuario abre la sección, no como sección aparte.
 const MiniverseInlineSection = () => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { once: true, amount: 0.8 });
+  const titleDisplay = useScrambleText(TITLE, { active: isTitleInView, hashAccents: true });
   // Persistido en sessionStorage: sin esto, volver de un portal (/portal-*)
   // remonta esta sección con isOpen=false — el scroll aterriza en el lugar
   // correcto, pero el contenido (modal + Alianza Social) ya no está.
@@ -179,8 +184,9 @@ const MiniverseInlineSection = () => {
               viewport={{ once: true }}
               className="p-8 md:p-12 text-center max-w-3xl mx-auto"
             >
-              <h3 className="font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
-                "Espera, no te vayas todavía..."
+              <h3 ref={titleRef} aria-label={TITLE} className="relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+                <span aria-hidden="true" className="invisible">{TITLE}</span>
+                <span aria-hidden="true" className="absolute inset-0">{titleDisplay}</span>
               </h3>
               <p className="text-slate-100/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
                 Echa un vistazo a lo que hace posible este universo: <br></br>

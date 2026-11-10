@@ -710,22 +710,22 @@ const Header = ({
   );
 
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#UniversoGatoEncerrado' },
+    { name: 'Primera fila', href: '#hero', description: '#AnteLaDuda' },
     station(showTerceraLlamadaNav, {
       name: 'Tercera llamada',
       href: '#bienvenida-creador',
-      description: '#TeEstabaEsperando',
+      description: '#Comenzamos',
     }),
     station(showTransmediaNav, {
       name: 'Segundo acto',
       href: '#transmedia',
-      description: '#LaObraTomaForma',
+      description: '#Las9Formas',
       secondary: TRANSMEDIA_SECONDARY_ITEMS,
     }),
     station(showIntermedioNav, {
       name: 'Intermedio',
       href: '#blog-contribuye',
-      description: '#Introspección',
+      description: '#LaObraEnTi',
       ...(showCuradoriaNav
         ? {
             secondary: [
@@ -740,7 +740,7 @@ const Header = ({
     station(showPerspectivasNav, {
       name: 'Acto final',
       href: '#provoca',
-      description: '#FormasDeDecirlo',
+      
       secondary: [{ label: 'La Réplica', href: '#provoca' }],
     }),
     station(showIntermedioNav, {

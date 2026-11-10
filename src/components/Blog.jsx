@@ -1167,7 +1167,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">#INTROSPECCIÓN</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">INTERMEDIO</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
               Cambia de lugar<br />en la obra
             </h2>
@@ -1227,7 +1227,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           </div>
 
                           <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
-                            Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
+                            Consulta a mi apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
                           </p>
 
                           <section className="camerino-apuntador-panel relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm lg:flex lg:flex-1 lg:flex-col">

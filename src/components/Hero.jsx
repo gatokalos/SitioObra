@@ -92,9 +92,9 @@ const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 // pregunta» antes de activar. Va al final del ciclo para pasarle el turno a
 // quien visita; como fantasma tardaría casi un minuto en salir.
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en ti',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
-  'Basada en una herida emocional compartida',       // el origen — intacta
-  'Arte, tecnología y una causa: una sola función',  // la función de la obra, y su economía
+  'La obra que ocurre en ti ®',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
+  'Basada en las emociones sin nombre',       // el origen — intacta
+  'Arte, tecnología y una causa: una sola investigación',  // la función de la obra, y su economía
   'Una pregunta que vuelve días después',            // el mecanismo — el cuarto movimiento
   'Tú sabes hasta dónde indagar',                    // la invitación — le pasa el turno a quien visita
 ];

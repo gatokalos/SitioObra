@@ -4,7 +4,7 @@ const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const INTERVAL_MS = 26;
 const SPLIT_FLAP_HOLD_MS = 96;
 
-const useScrambleText = (target, { active = true } = {}) => {
+const useScrambleText = (target, { active = true, hashAccents = false } = {}) => {
   const [display, setDisplay] = useState(target);
   const timerRef = useRef(null);
   const timeoutRef = useRef(null);
@@ -40,6 +40,16 @@ const useScrambleText = (target, { active = true } = {}) => {
       nonSpaceIndices.forEach((idx, pos) => {
         result[idx] = pos < revealedCount ? chars[idx] : getScrambleChar();
       });
+      if (hashAccents) {
+        // El acento solo ocupa letras pendientes; nunca altera lo ya revelado.
+        const pendingIndices = nonSpaceIndices.slice(revealedCount);
+        const hashCount = Math.min(2, Math.ceil(pendingIndices.length / 12));
+        for (let i = 0; i < hashCount; i += 1) {
+          const pick = Math.floor(Math.random() * pendingIndices.length);
+          const [index] = pendingIndices.splice(pick, 1);
+          result[index] = '#';
+        }
+      }
       return result.join('');
     };
 
@@ -66,7 +76,7 @@ const useScrambleText = (target, { active = true } = {}) => {
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     };
-  }, [target, active]);
+  }, [target, active, hashAccents]);
 
   return display;
 };

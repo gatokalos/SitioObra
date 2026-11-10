@@ -4604,7 +4604,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4646,7 +4646,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4686,7 +4686,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4726,7 +4726,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4767,7 +4767,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4807,7 +4807,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4847,7 +4847,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4887,7 +4887,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal
@@ -4927,7 +4927,7 @@ const renderDramaFeaturedWork = () => (
                       <>
                         <div className="mb-1">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          <h4 className="font-display text-2xl question-heading-voice">Lo que deja la duda
                           </h4>
                         </div>
                         <VitranaQuestionReveal

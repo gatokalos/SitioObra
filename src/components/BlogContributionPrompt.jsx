@@ -1,15 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ContributionModal from '@/components/ContributionModal';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { cn } from '@/lib/utils';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import useScrambleText from '@/hooks/useScrambleText';
 
 const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
+const TITLE_FIRST_LINE = 'Hacemos una pausa…';
+const TITLE_SECOND_LINE = 'y continuamos';
+const TITLE = `${TITLE_FIRST_LINE} ${TITLE_SECOND_LINE}`;
 
 const BlogContributionPrompt = ({ onAskQuestion = null }) => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { once: true, amount: 0.8 });
+  const titleDisplay = useScrambleText(TITLE, { active: isTitleInView, hashAccents: true });
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
@@ -105,8 +112,11 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     loading="lazy"
     className="narrative-section-logo mx-auto mb-5 object-contain"
   />
-            <h3 className="narrative-transition-title font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
-    "Hacemos una pausa… <br />y continuamos"
+            <h3 ref={titleRef} aria-label={TITLE} className="narrative-transition-title relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+    <span aria-hidden="true" className="invisible">{TITLE_FIRST_LINE}<br />{TITLE_SECOND_LINE}</span>
+    <span aria-hidden="true" className="absolute inset-0">
+      {titleDisplay.slice(0, TITLE_FIRST_LINE.length)}<br />{titleDisplay.slice(TITLE_FIRST_LINE.length + 1)}
+    </span>
   </h3>
 
   <p className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
@@ -116,16 +126,9 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
   <span className="whitespace-pre-line">
     {`Tal vez no lo sepas todavía.
 
-Y no pasa nada.
-
 Si te encuentras en medio de una que aún no tiene pies ni cabeza, 
 solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
   </span>
-
-  <span className="block mt-8">
-    #GatoEncerrado <strong>abre</strong> más de una ventana…
-  </span>
-
 
 </p>
 
@@ -138,10 +141,7 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
       Entra al camerino
     </Button>
   </div>
-    <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Y a veces, la confusión es lo que nos muestra su forma más{" "}
-    <strong>silvestre</strong>.)
-  </span>
+
 </div>
           </motion.div>
         </div>

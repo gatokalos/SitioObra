@@ -1,13 +1,21 @@
-import React, { useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useCallback, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
+import useScrambleText from '@/hooks/useScrambleText';
+
+const TITLE_FIRST_LINE = 'Tercera llamada,';
+const TITLE_SECOND_LINE = 'tercera...';
+const TITLE = `${TITLE_FIRST_LINE} ${TITLE_SECOND_LINE}`;
 
 const CREATOR_AVATAR_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png';
 
 const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { once: true, amount: 0.8 });
+  const titleDisplay = useScrambleText(TITLE, { active: isTitleInView, hashAccents: true });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,12 +62,14 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               loading="lazy"
               className="narrative-section-logo mx-auto mb-5 object-contain"
             />
-            <h3 className="narrative-transition-title font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
-              "Tercera llamada,<br />tercera..."
+            <h3 ref={titleRef} aria-label={TITLE} className="narrative-transition-title relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+              <span aria-hidden="true" className="invisible">{TITLE_FIRST_LINE}<br />{TITLE_SECOND_LINE}</span>
+              <span aria-hidden="true" className="absolute inset-0">
+                {titleDisplay.slice(0, TITLE_FIRST_LINE.length)}<br />{titleDisplay.slice(TITLE_FIRST_LINE.length + 1)}
+              </span>
             </h3>
            <div className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
-  <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
-  <p><strong>Esta obra está hecha de preguntas</strong>; y no todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
+   <p><strong>Este universo está hecho de preguntas</strong>.<br /> No todas buscan una respuesta,<br />algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>
             <div className="narrative-transition-author flex flex-col items-center gap-2 mb-8">
