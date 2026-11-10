@@ -198,8 +198,11 @@ const Header = ({
   // misión narrativa del chip, sin necesidad de mostrar cifras.
   const isGatLinktreeAudience =
     hasCompletedRealProgress && (Boolean(user) || isInstalledPWA());
+  // La entrada desde navegador depende solo de la vigencia del ritual.
+  // Conserva la autoapertura anterior exclusivamente dentro de la PWA.
+  const shouldAutoOpenGatHub = isInstalledPWA() && isGatLinktreeAudience;
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
-    () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
+    () => shouldAutoOpenGatHub && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
   const [gatOrbitLayer, setGatOrbitLayer] = useState({
     clip: null,
@@ -356,14 +359,14 @@ const Header = ({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [dismissGatPanels, isGatLinktreeOpen]);
   useEffect(() => {
-    if (!isGatLinktreeAudience || isGatLinktreeOpen) return;
+    if (!shouldAutoOpenGatHub || isGatLinktreeOpen) return;
     try {
       if (window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)) return;
     } catch {
       // Silencioso
     }
     setIsGatLinktreeOpen(true);
-  }, [isGatLinktreeAudience, isGatLinktreeOpen]);
+  }, [shouldAutoOpenGatHub, isGatLinktreeOpen]);
   const handleOpenBackstage = useCallback(async () => {
     if (!isSubscriber) {
       setGatInlinePrompt({ kind: 'backstage' });
@@ -391,7 +394,7 @@ const Header = ({
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
-  const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !hasUsedHeroIndexCue;
+  const shouldGateIndexUntilHeroReveal = location.pathname === '/' && !hasUsedHeroIndexCue;
   // Resplandor que guía la vista hacia el [#] recién revelado — se apaga en
   // cuanto el usuario lo usa, el Hero sale del viewport, o si ya se había
   // revelado en un montaje previo de esta sesión (ver wasIndexCueAlreadyUsedAtMountRef).
@@ -441,10 +444,21 @@ const Header = ({
     // a propósito NO abre el menú (eso requiere un segundo clic explícito
     // en el # ya revelado, ver handleToggleIndex).
     const handleIndexCueUsed = () => setHasUsedHeroIndexCue(true);
+    const handleSceneDeactivated = () => {
+      if (isInstalledPWA()) return;
+      setHasUsedHeroIndexCue(false);
+      setIsGatLinktreeOpen(false);
+      setIsGatInfoOpen(false);
+      wasIndexCueAlreadyUsedAtMountRef.current = false;
+      setHasOpenedIndexOnce(false);
+      setHasHeroLeftViewportOnce(false);
+    };
 
     window.addEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
+    window.addEventListener('gatoencerrado:audio-deactivated', handleSceneDeactivated);
     return () => {
       window.removeEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
+      window.removeEventListener('gatoencerrado:audio-deactivated', handleSceneDeactivated);
     };
   }, []);
 
@@ -718,18 +732,18 @@ const Header = ({
     station(showTerceraLlamadaNav, {
       name: 'Primer acto',
       href: '#bienvenida-creador',
-      description: '#Comenzamos',
+      description: '#Comenzamos?',
     }),
     station(showTransmediaNav, {
       name: 'Segundo acto',
       href: '#transmedia',
-      description: '#Las9Formas',
+      description: '#LaObraTomaForma',
       secondary: TRANSMEDIA_SECONDARY_ITEMS,
     }),
     station(showIntermedioNav, {
       name: 'Intermedio',
       href: '#blog-contribuye',
-      description: '#LaObraEnTi',
+      description: '#EnElCamerino',
       ...(showCuradoriaNav
         ? {
             secondary: [
@@ -878,7 +892,7 @@ const Header = ({
   // en los dos lugares, para no tener dos reglas distintas de "cuándo
   // aparece esto" flotando en el archivo.
   const shouldShowGatChip = Boolean(
-    isGatLinktreeOpen || (showGatChip && isGatLinktreeAudience)
+    !shouldGateIndexUntilHeroReveal && (isGatLinktreeOpen || (showGatChip && isGatLinktreeAudience))
   );
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }

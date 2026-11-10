@@ -37,9 +37,16 @@ import {
   writeHeroActivatedToSession,
   readIndexCueUsedFromSession,
   writeIndexCueUsedToSession,
-  readGatHubDismissedFromSession,
+  HERO_RITUAL_RESET_EVENT,
 } from '@/lib/heroActivation';
 import { consumePendingContinuation } from '@/lib/pendingContinuation';
+import {
+  getPwaInstallFlow,
+  nextPwaInstallStep,
+  readPwaInstallStep,
+  writePwaInstallStep,
+  PWA_INSTALL_STEP_COUNT,
+} from '@/lib/pwaInstallGuide';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
 
@@ -63,26 +70,11 @@ const HERO_HASH_INSINUATED_OPACITY = 0.28;
 // La espiral sustituye a la vieja frase mecanografiada: nace en el fondo,
 // recorre la cinta y, solo cuando alcanza al gato, enciende el [#].
 const HERO_INACTIVE_SIGNAL_REVEAL_MS = 5200;
-const PWA_HASH_WHISPERS = [
-  '¿Me voy contigo?',
-  'Soy una obra diferente',
-  '¿Miau?',
-];
-// RANURA DE COPY VACÍA A PROPÓSITO, pendiente del autor. El espacio que
-// reserva (~40 px) ya forma parte de la composición del sheet, así que
-// llenarla o quitarla cambia lo que se ve: no tocar sin decisión de Carlos.
-// Su intención declarada (2026-08-19): puente entre el tono introspectivo del
-// Estado Cero y los pasos prácticos de instalación — misma voz en primera
-// persona que usan los whispers del #, no tono de soporte técnico.
-const PWA_INSTRUCTIONS_EYEBROW = '';
-// Aviso suave al pie de las instrucciones, en el registro de «se recomienda el
-// uso de audífonos» (Carlos, 21 sep 2026). Un aviso, no una orden.
-const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instalada';
-const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
-const readHeroGatBalance = () => {
-  const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
-  return Number.isFinite(value) ? Math.max(Math.trunc(value), 0) : 0;
-};
+const HERO_INACTIVE_SIGNAL_DRIFT_START_MS = HERO_INACTIVE_SIGNAL_REVEAL_MS - 1000;
+// El margen conserva el primer «Ante» completo durante el segundo de
+// desplazamiento que antecede a la llegada al [#].
+const HERO_INACTIVE_SIGNAL_TEXT_OFFSET = 24;
+const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instalada.';
 // Tras cerrar el sheet de instrucciones, no se vuelve a interceptar el primer
 // tap del hashtag hasta que pase este tiempo — sin esto, cada visita nueva
 // repetía la misma pregunta aunque el usuario ya hubiera contestado.
@@ -110,6 +102,9 @@ const HeroInactiveSignal = ({
   centerY = null,
   onReachThreshold,
 }) => {
+  const primaryDriftRef = useRef(null);
+  const memoryDriftRef = useRef(null);
+
   useEffect(() => {
     if (typeof onReachThreshold !== 'function') return undefined;
     // Respaldo de la propia animación SVG: algunos WebKit/Chromium no emiten
@@ -121,6 +116,17 @@ const HeroInactiveSignal = ({
     );
     return () => window.clearTimeout(timerId);
   }, [onReachThreshold, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return undefined;
+    // El texto ya fluye al encenderse el gato. Su margen inicial evita perder
+    // el comienzo de la frase durante este breve anticipo.
+    const timerId = window.setTimeout(() => {
+      primaryDriftRef.current?.beginElement();
+      memoryDriftRef.current?.beginElement();
+    }, HERO_INACTIVE_SIGNAL_DRIFT_START_MS);
+    return () => window.clearTimeout(timerId);
+  }, [prefersReducedMotion]);
 
   return (
     <motion.div
@@ -243,13 +249,15 @@ const HeroInactiveSignal = ({
             textLength="2700"
             lengthAdjust="spacing"
           >
-            <textPath href="#hero-inactive-signal-path-memory" startOffset="0">
+            <textPath href="#hero-inactive-signal-path-memory" startOffset={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}>
               {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
               {!prefersReducedMotion ? (
                 <animate
+                  ref={memoryDriftRef}
                   attributeName="startOffset"
-                  from="0"
-                  to="-300"
+                  begin="indefinite"
+                  from={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}
+                  to={HERO_INACTIVE_SIGNAL_TEXT_OFFSET - 300}
                   dur="21s"
                   repeatCount="indefinite"
                 />
@@ -262,13 +270,15 @@ const HeroInactiveSignal = ({
             textLength="2700"
             lengthAdjust="spacing"
           >
-            <textPath href="#hero-inactive-signal-path-primary" startOffset="0">
+            <textPath href="#hero-inactive-signal-path-primary" startOffset={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}>
               {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
               {!prefersReducedMotion ? (
                 <animate
+                  ref={primaryDriftRef}
                   attributeName="startOffset"
-                  from="0"
-                  to="-300"
+                  begin="indefinite"
+                  from={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}
+                  to={HERO_INACTIVE_SIGNAL_TEXT_OFFSET - 300}
                   dur="18s"
                   repeatCount="indefinite"
                 />
@@ -360,15 +370,14 @@ const Hero = () => {
   const audioActivatedOnceRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
-  const [pwaHashWhisper, setPwaHashWhisper] = useState(null);
-  const lastPwaHashWhisperIndexRef = useRef(-1);
-  const lastPwaHashWhisperAtRef = useRef(0);
-  const pwaHashWhisperTimerRef = useRef(null);
+  const pwaInstallFlow = useMemo(getPwaInstallFlow, []);
+  const [pwaInstallStep, setPwaInstallStep] = useState(() => readPwaInstallStep(pwaInstallFlow.id));
+  const pwaInstructionsAnchorRef = useRef(null);
+  const lastPwaStepAtRef = useRef(0);
   const [hasEchoReachedThreshold, setHasEchoReachedThreshold] = useState(false);
   const hasCompletedEchoRevealRef = useRef(false);
   const prefersReducedMotion = useReducedMotion();
   const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
-  const [heroGatBalance, setHeroGatBalance] = useState(readHeroGatBalance);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
@@ -391,50 +400,27 @@ const Hero = () => {
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
 
-  // Se oculta mientras el sheet de instrucciones PWA está abierto — como ese
-  // sheet ya no tiene fondo propio (ver PWAInstructionsOverlay), este texto
-  // se vería detrás, mezclado con los pasos.
-  // El HUB solo reemplaza este espacio cuando hay energía real. Una sesión
-  // iniciada con 0 GAT (pero no instalada como PWA) sigue viendo el Estado
-  // Cero: ecos, hint y #3D. La PWA instalada ya no pasa por ahí — arranca
-  // con la escena activada (ver hasActivatedAudio arriba).
-  const isGatLinktreeAudience =
-    heroGatBalance > 0 && (Boolean(user) || isInstalledPwa);
-  // El HUB de Header.jsx tapa por completo esta zona del Hero mientras está
-  // abierto — pero el #3D (HashtagButton3D) igual se montaba debajo, gastando
-  // un contexto WebGL real aunque quedara oculto. En iOS eso se acumula hasta
-  // matar el contexto ("WebGL: context lost", confirmado con Web Inspector).
-  // El valor inicial reusa isGatLinktreeAudience (misma fórmula que ya usa
-  // Header.jsx para decidir si el HUB se auto-abre) en vez de duplicarla, así
-  // no hay riesgo de que las dos definiciones se desincronicen si una cambia
-  // sin la otra. El evento cubre los cambios posteriores (p. ej. cerrar el
-  // HUB con Escape, que no activa la escena).
+  // Solo un panel realmente abierto puede sustituir la espiral. El saldo y
+  // el progreso no deciden la entrada. La PWA sigue arrancando activada.
   const [isGatHubOpen, setIsGatHubOpen] = useState(
-    () => isGatLinktreeAudience && !readGatHubDismissedFromSession()
+    () => typeof document !== 'undefined' && document.body?.dataset.gatHubOpen === 'true'
   );
   useEffect(() => {
     const handleGatHubOpenChanged = (event) => setIsGatHubOpen(Boolean(event?.detail?.open));
     window.addEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
     return () => window.removeEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
   }, []);
-  // El #3D solo existe para establecer, UNA vez, la relación gato↔símbolo
-  // antes de transmigrar al # plano — no tiene que volver a aparecer nunca
-  // en la sesión (Carlos, 2026-08-18). Antes se ocultaba/mostraba con cada
-  // toggle de hasActivatedAudio/isGatHubOpen (CSS, contexto WebGL siempre
-  // vivo); ahora, en cuanto cualquiera de las dos se vuelve true POR PRIMERA
-  // VEZ, se apaga para siempre — un solo mount y un solo unmount real por
-  // sesión, no un ciclo. Eso también libera su contexto WebGL de verdad
-  // antes de que algo más (p.ej. el iframe de Juegos en la pestaña Habitar)
-  // lo necesite, en vez de acapararlo indefinidamente.
-  const [isHashtag3DRetired, setIsHashtag3DRetired] = useState(
+  // El campo de estrellas se retira al activar. Solo un nuevo ritual tras
+  // siete días de ausencia vuelve a montarlo.
+  const [isHeroRitualRetired, setIsHeroRitualRetired] = useState(
     () => hasActivatedAudio || isGatHubOpen
   );
   useEffect(() => {
-    if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
+    if (hasActivatedAudio || isGatHubOpen) setIsHeroRitualRetired(true);
   }, [hasActivatedAudio, isGatHubOpen]);
-  const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
+  const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatHubOpen;
   // Solo se retiene mientras el hint está corriendo. Si nunca se muestra
-  // (audiencia de linktree, sheet de PWA abierto, escena ya activada), el #
+  // (HUB abierto, sheet de PWA abierto, escena ya activada), el #
   // conserva su entrada completa de siempre.
   const shouldHoldHashtagInsinuated = shouldShowHeroInactiveHint && !hasEchoReachedThreshold;
   const isHeroThresholdReady =
@@ -463,27 +449,29 @@ const Hero = () => {
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
   useEffect(() => {
-    const syncGatBalance = (event) => {
-      const eventBalance = Number(event?.detail?.balance);
-      setHeroGatBalance(
-        Number.isFinite(eventBalance)
-          ? Math.max(Math.trunc(eventBalance), 0)
-          : readHeroGatBalance()
-      );
-    };
-    window.addEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
-    window.addEventListener('storage', syncGatBalance);
-    return () => {
-      window.removeEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
-      window.removeEventListener('storage', syncGatBalance);
-    };
-  }, []);
-
-  useEffect(() => {
-    writeHeroActivatedToSession(hasActivatedAudio);
+    // En navegador se registra el gesto de activación, no cada montaje: volver
+    // a una ruta no debe renovar una visita que ya venció mientras estaba fuera.
+    if (readIsRunningAsInstalledPwa()) writeHeroActivatedToSession(hasActivatedAudio);
   }, [hasActivatedAudio]);
 
-  // Bloquea el scroll mientras dure el Estado Cero (invitado, escena sin
+  useEffect(() => {
+    const resetRitual = () => {
+      setHasActivatedAudio(false);
+      setHasUsedIndexCue(false);
+      setTransmigrationOrigin(null);
+      setHasEchoReachedThreshold(false);
+      setIsGatHubOpen(false);
+      setIsHeroRitualRetired(false);
+      hasCompletedEchoRevealRef.current = false;
+      userActivatedRef.current = false;
+      audioActivatedOnceRef.current = false;
+      pauseHeroAmbient();
+    };
+    window.addEventListener(HERO_RITUAL_RESET_EVENT, resetRitual);
+    return () => window.removeEventListener(HERO_RITUAL_RESET_EVENT, resetRitual);
+  }, []);
+
+  // Bloquea el scroll mientras dure el Estado Cero (escena sin
   // activar) — antes se podía hacer scroll y asomarse al resto del sitio
   // por detrás del Hero sin haber activado nada.
   //
@@ -494,12 +482,12 @@ const Hero = () => {
   // limpia) que resuelve el caso real reportado, sin ese efecto colateral.
   useLayoutEffect(() => {
     if (typeof document === 'undefined') return undefined;
-    if (user || hasActivatedAudio) return undefined;
+    if (hasActivatedAudio) return undefined;
     document.body.classList.add('overflow-hidden');
     return () => {
       document.body.classList.remove('overflow-hidden');
     };
-  }, [user, hasActivatedAudio]);
+  }, [hasActivatedAudio]);
 
   // El núcleo de la espiral y la esfera activa comparten un mismo punto
   // físico. La esfera permanece en layout aun cuando está invisible, así que
@@ -562,7 +550,7 @@ const Hero = () => {
 
     const spawnGestureShootingStar = (event) => {
       const isGatHubOpen = document.body?.dataset.gatHubOpen === 'true';
-      const isZeroStateLocked = !user && !hasActivatedAudio;
+      const isZeroStateLocked = !hasActivatedAudio;
       if (!isZeroStateLocked && !isGatHubOpen) return;
       if (event.target?.closest?.('button, [role="button"], a')) return;
       const internalScrollRegion = event.target?.closest?.('[data-gat-hub-scroll]');
@@ -943,6 +931,7 @@ const Hero = () => {
     if (!userActivatedRef.current) {
       // Primera activación
       userActivatedRef.current = true;
+      writeHeroActivatedToSession(true);
       if (prefersReducedMotion) {
         revealHeaderIndexCueFromHero();
       } else {
@@ -967,10 +956,12 @@ const Hero = () => {
 
     // Toggle de escena: ON ↔ OFF
     if (hasActivatedAudio) {
+      writeHeroActivatedToSession(false);
       setHasActivatedAudio(false);
       setHeroAmbientMuted(true);
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-deactivated'));
     } else {
+      writeHeroActivatedToSession(true);
       if (prefersReducedMotion) {
         revealHeaderIndexCueFromHero();
       } else {
@@ -1003,33 +994,16 @@ const Hero = () => {
     !readHeroPwaPromptRecentlyDeclined()
   ), [hasActivatedAudio, isInstalledPwa, isMobileViewport, user]);
 
-  const showNextPwaHashWhisper = useCallback(() => {
+  const advancePwaInstallGuide = useCallback(() => {
     const now = Date.now();
-    if (now - lastPwaHashWhisperAtRef.current < 650) return;
-    lastPwaHashWhisperAtRef.current = now;
-    // Los whispers arman una secuencia narrativa deliberada (de "¿me voy
-    // contigo?" a "instálame como aplicación") — al azar podían salir fuera
-    // de orden. Ahora avanzan uno por uno y dan la vuelta al llegar al final.
-    const nextIndex = (lastPwaHashWhisperIndexRef.current + 1) % PWA_HASH_WHISPERS.length;
-    lastPwaHashWhisperIndexRef.current = nextIndex;
-    setPwaHashWhisper({
-      id: now,
-      text: PWA_HASH_WHISPERS[nextIndex],
-    });
-    if (pwaHashWhisperTimerRef.current) {
-      window.clearTimeout(pwaHashWhisperTimerRef.current);
-    }
-    pwaHashWhisperTimerRef.current = window.setTimeout(() => {
-      setPwaHashWhisper(null);
-      pwaHashWhisperTimerRef.current = null;
-    }, 1650);
+    if (now - lastPwaStepAtRef.current < 350) return;
+    lastPwaStepAtRef.current = now;
+    setPwaInstallStep(nextPwaInstallStep);
   }, []);
 
-  useEffect(() => () => {
-    if (pwaHashWhisperTimerRef.current) {
-      window.clearTimeout(pwaHashWhisperTimerRef.current);
-    }
-  }, []);
+  useEffect(() => {
+    writePwaInstallStep(pwaInstallFlow.id, pwaInstallStep);
+  }, [pwaInstallFlow.id, pwaInstallStep]);
 
   const handleHeroHashClick = useCallback(() => {
     // En Estado Cero la espiral debe completar el viaje antes de que el gato
@@ -1044,10 +1018,11 @@ const Hero = () => {
       return;
     }
     if (isHeroPwaInstructionsOpen) {
-      showNextPwaHashWhisper();
+      advancePwaInstallGuide();
       return;
     }
     if (shouldInterceptHeroActivationForPwa()) {
+      setPwaInstallStep((step) => Math.max(1, step));
       setIsHeroPwaInstructionsOpen(true);
       return;
     }
@@ -1057,15 +1032,12 @@ const Hero = () => {
     isHeroThresholdReady,
     isHeroPwaInstructionsOpen,
     shouldInterceptHeroActivationForPwa,
-    showNextPwaHashWhisper,
+    advancePwaInstallGuide,
   ]);
 
-  // Único punto de salida del sheet de instrucciones (la X) — cerrar
-  // siempre continúa a la escena, nunca deja al usuario "varado" con el
-  // hashtag inerte.
+  // «Quizá más tarde» continúa a la escena y conserva el paso de la guía.
   const handleDeclineHeroPwaInstall = useCallback(() => {
     safeSetItem(HERO_PWA_PROMPT_DECLINED_KEY, String(Date.now()));
-    setPwaHashWhisper(null);
     setIsHeroPwaInstructionsOpen(false);
     handleIsotipoClick();
   }, [handleIsotipoClick]);
@@ -1373,12 +1345,8 @@ const Hero = () => {
         className="min-h-screen relative overflow-hidden flex flex-col"
       >
         <AnimatePresence>
-          {/* Mismo criterio que isHashtag3DRetired: si el HUB ya abrió solo
-              (usuario que regresa con GAT>0), la escena ya cuenta como
-              activada aunque hasActivatedAudio nunca se haya puesto true a
-              mano — el entorno del ritual (estrellas) no debe seguir
-              montado detrás del HUB. */}
-          {!isHashtag3DRetired && (
+          {/* El entorno del ritual se retira al activar o abrir el HUB. */}
+          {!isHeroRitualRetired && (
               <motion.div
                 key="hero-starfield"
                 aria-hidden="true"
@@ -1569,7 +1537,7 @@ const Hero = () => {
                   ambos coexistan visiblemente */}
               <motion.div
                 ref={hashtagAnchorRef}
-                initial={{ opacity: HERO_HASH_INSINUATED_OPACITY, scale: 0.94 }}
+                initial={{ opacity: hasActivatedAudio ? 0 : HERO_HASH_INSINUATED_OPACITY, scale: 0.94 }}
                 animate={{
                   opacity: hasActivatedAudio
                     ? 0
@@ -1610,34 +1578,19 @@ const Hero = () => {
                 tabIndex={hasActivatedAudio || !isHeroThresholdReady ? -1 : 0}
                 onKeyDown={handleHeroHashKeyDown}
                 aria-hidden={hasActivatedAudio}
-                aria-label="Activar escena"
+                aria-label={isHeroPwaInstructionsOpen
+                  ? (pwaInstallStep < PWA_INSTALL_STEP_COUNT ? 'Mostrar el siguiente paso de instalación' : 'Guía de instalación completa')
+                  : 'Activar escena'}
+                aria-describedby={isHeroPwaInstructionsOpen ? 'pwa-install-title pwa-install-current-step' : undefined}
                 aria-disabled={!isHeroThresholdReady}
                 onClick={handleHeroHashClick}
               >
-                <div className="hero-pwa-hash-whisper-anchor" aria-live="polite">
-                  <AnimatePresence mode="wait">
-                    {isHeroPwaInstructionsOpen && pwaHashWhisper ? (
-                      <motion.span
-                        key={pwaHashWhisper.id}
-                        initial={{ opacity: 0, y: 7, scale: 0.98, filter: 'blur(7px)' }}
-                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: -5, scale: 0.99, filter: 'blur(5px)' }}
-                        transition={{
-                          duration: prefersReducedMotion ? 0.14 : 0.34,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        className="hero-pwa-hash-whisper"
-                      >
-                        {pwaHashWhisper.text}
-                      </motion.span>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
+                <div ref={pwaInstructionsAnchorRef} className="hero-pwa-hash-whisper-anchor" />
                 {/* El mismo [#] tipográfico del Programa de mano sustituye al
                     objeto 3D sin alterar la coreografía original del Hero. */}
                 <span
                   aria-hidden="true"
-                  className={`hero-hashtag-prerendered header-hashtag-mark hero-threshold-index-mark ${hasEchoReachedThreshold || isHeroPwaInstructionsOpen ? 'hero-hashtag-prerendered--awake' : ''}`}
+                  className={`hero-hashtag-prerendered header-hashtag-mark hero-threshold-index-mark ${hasEchoReachedThreshold || isHeroPwaInstructionsOpen ? 'hero-hashtag-prerendered--awake' : ''}${isHeroPwaInstructionsOpen && pwaInstallStep === PWA_INSTALL_STEP_COUNT ? ' hero-threshold-index-mark--install-complete' : ''}`}
                 >
                   [#]
                 </span>
@@ -1771,8 +1724,10 @@ const Hero = () => {
       <PWAInstructionsOverlay
         isOpen={isHeroPwaInstructionsOpen}
         onClose={handleDeclineHeroPwaInstall}
-        eyebrow={PWA_INSTRUCTIONS_EYEBROW}
         subtitle={PWA_INSTRUCTIONS_SUBTITLE}
+        steps={pwaInstallFlow.steps}
+        currentStep={pwaInstallStep}
+        anchorRef={pwaInstructionsAnchorRef}
       />
       {/* La app instalada entra directo a la escena; esto sólo se ve la
           primera vez que se abre desde la pantalla de inicio, y el toque que

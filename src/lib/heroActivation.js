@@ -1,12 +1,80 @@
-// Fuente única para "¿ya se activó la escena del Hero?", leída por Hero.jsx,
-// Header.jsx y HeroBackground (App.jsx) — los tres viven dentro de la ruta "/"
-// y se desmontan/remontan al navegar a otra ruta y volver. sessionStorage (no
-// localStorage): se resetea en una visita nueva, pero sobrevive mientras
-// navegas dentro de la misma pestaña.
+import { safeGetItem, safeSetItem } from './safeStorage.js';
+import { isInstalledPWA } from './pwaDetection.js';
+
+// Hero, Header y el fondo comparten la misma decisión de entrada. El navegador
+// recuerda el ritual durante siete días sin uso; la PWA conserva su sesión.
 export const HERO_ACTIVATED_SESSION_KEY = 'gatoencerrado:hero-activated-session';
+export const HERO_BROWSER_LAST_USE_KEY = 'gatoencerrado:hero-browser-last-use:v1';
+export const HERO_RETURN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+export const HERO_RITUAL_RESET_EVENT = 'gatoencerrado:hero-ritual-reset';
+
+let browserScene = null;
+
+const readSessionFlag = (key, value) => {
+  try {
+    return window.sessionStorage.getItem(key) === value;
+  } catch {
+    return false;
+  }
+};
+
+const clearBrowserSessionFlags = () => {
+  try {
+    window.sessionStorage.removeItem(HERO_ACTIVATED_SESSION_KEY);
+    window.sessionStorage.removeItem(HERO_INDEX_CUE_USED_SESSION_KEY);
+  } catch {
+    // La decisión compartida en memoria sigue disponible sin almacenamiento.
+  }
+};
+
+const readBrowserScene = () => {
+  if (browserScene) return browserScene;
+  const storedLastUse = safeGetItem(HERO_BROWSER_LAST_USE_KEY);
+  const now = Date.now();
+  const lastUse = Number(storedLastUse);
+  // Migra únicamente sesiones anteriores sin fecha. Una fecha vencida o
+  // inválida nunca se rescata por una bandera vieja del índice.
+  const migrateSession = storedLastUse === null && (
+    readSessionFlag(HERO_ACTIVATED_SESSION_KEY, '1') ||
+    readSessionFlag(HERO_INDEX_CUE_USED_SESSION_KEY, 'true')
+  );
+  const isRecent = Number.isFinite(lastUse) && lastUse > 0 &&
+    now >= lastUse && now - lastUse < HERO_RETURN_WINDOW_MS;
+  const active = isRecent || migrateSession;
+  browserScene = { active, indexRevealed: active, lastUse: migrateSession ? now : lastUse };
+  if (migrateSession) safeSetItem(HERO_BROWSER_LAST_USE_KEY, String(now));
+  if (!active) clearBrowserSessionFlags();
+  return browserScene;
+};
+
+// Se llama al navegar y al volver a una pestaña, además de los gestos reales.
+// No hay un temporizador renovando la visita de una pestaña abandonada.
+export const recordHeroBrowserActivity = () => {
+  if (typeof window === 'undefined' || isInstalledPWA()) return;
+  const scene = readBrowserScene();
+  if (!scene.active) return;
+  const now = Date.now();
+  if (now >= scene.lastUse && now - scene.lastUse < 60_000) return;
+  const storedLastUse = Number(safeGetItem(HERO_BROWSER_LAST_USE_KEY));
+  const lastUse = Math.max(scene.lastUse, Number.isFinite(storedLastUse) ? storedLastUse : 0);
+  if (now < lastUse || now - lastUse >= HERO_RETURN_WINDOW_MS) {
+    browserScene = { active: false, indexRevealed: false, lastUse: 0 };
+    safeSetItem(HERO_BROWSER_LAST_USE_KEY, '0');
+    clearBrowserSessionFlags();
+    window.dispatchEvent(new CustomEvent(HERO_RITUAL_RESET_EVENT));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:audio-deactivated'));
+    return;
+  }
+  // Limita escrituras durante scroll/touch sin perder el último uso de la visita.
+  if (now - scene.lastUse >= 60_000) {
+    scene.lastUse = now;
+    safeSetItem(HERO_BROWSER_LAST_USE_KEY, String(now));
+  }
+};
 
 export const readHeroActivatedFromSession = () => {
   if (typeof window === 'undefined') return false;
+  if (!isInstalledPWA()) return readBrowserScene().active;
   try {
     return window.sessionStorage.getItem(HERO_ACTIVATED_SESSION_KEY) === '1';
   } catch {
@@ -16,6 +84,17 @@ export const readHeroActivatedFromSession = () => {
 
 export const writeHeroActivatedToSession = (isActivated) => {
   if (typeof window === 'undefined') return;
+  if (!isInstalledPWA()) {
+    const scene = readBrowserScene();
+    scene.active = isActivated;
+    if (isActivated) {
+      scene.lastUse = Date.now();
+      safeSetItem(HERO_BROWSER_LAST_USE_KEY, String(scene.lastUse));
+    } else {
+      scene.indexRevealed = false;
+      clearBrowserSessionFlags();
+    }
+  }
   try {
     if (isActivated) {
       window.sessionStorage.setItem(HERO_ACTIVATED_SESSION_KEY, '1');
@@ -34,6 +113,7 @@ export const HERO_INDEX_CUE_USED_SESSION_KEY = 'gatoencerrado:hero-index-cue-use
 
 export const readIndexCueUsedFromSession = () => {
   if (typeof window === 'undefined') return false;
+  if (!isInstalledPWA()) return readBrowserScene().indexRevealed;
   try {
     return window.sessionStorage.getItem(HERO_INDEX_CUE_USED_SESSION_KEY) === 'true';
   } catch {
@@ -43,6 +123,10 @@ export const readIndexCueUsedFromSession = () => {
 
 export const writeIndexCueUsedToSession = () => {
   if (typeof window === 'undefined') return;
+  if (!isInstalledPWA()) {
+    const scene = readBrowserScene();
+    scene.indexRevealed = true;
+  }
   try {
     window.sessionStorage.setItem(HERO_INDEX_CUE_USED_SESSION_KEY, 'true');
   } catch {

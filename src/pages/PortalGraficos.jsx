@@ -37,7 +37,7 @@ const GRAFICOS_INTRO = (
       Nadie se ve como cree que se ve, y siempre hay alguien decidiendo qué se mira. Las emociones también se juzgan por <em>su apariencia</em>.
     </p>
     <p className="text-base leading-relaxed text-slate-200/80 mt-3">
-     En el cine alguien elige qué mostrar y en qué orden. La imagen no da esa tregua: llega de golpe, entera, como una superficie que vuelve a aparecer con los ojos cerrados.
+     En La proyección alguien elige qué mostrar y en qué orden. La imagen no da esa tregua: llega de golpe, entera, como una superficie que vuelve a aparecer con los ojos cerrados.
     </p>
   </>
 );

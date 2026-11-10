@@ -20,12 +20,13 @@ import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
   readHeroActivatedFromSession,
+  recordHeroBrowserActivity,
   readObraDestacadaRevealedFromSession,
   writeBeforeLeavingRevealedToSession,
   writeObraDestacadaRevealedToSession,
 } from '@/lib/heroActivation';
 
-const pageTitle = '#GatoEncerrado — La obra que ocurre en tu mente';
+const pageTitle = '#GatoEncerrado — La obra que ocurre en ti ®';
 const pageDescription =
   'Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
@@ -488,6 +489,24 @@ const hasFractalGalleryDeepLinkIntent = (locationLike) => getLocationHashAnchor(
 
 function App() {
   const location = useLocation();
+  useEffect(() => {
+    const recordVisibleUse = () => {
+      if (document.visibilityState !== 'hidden') recordHeroBrowserActivity();
+    };
+    recordVisibleUse();
+    window.addEventListener('pageshow', recordVisibleUse);
+    document.addEventListener('visibilitychange', recordVisibleUse);
+    window.addEventListener('pointerdown', recordVisibleUse, { passive: true });
+    window.addEventListener('keydown', recordVisibleUse);
+    window.addEventListener('scroll', recordVisibleUse, { passive: true });
+    return () => {
+      window.removeEventListener('pageshow', recordVisibleUse);
+      document.removeEventListener('visibilitychange', recordVisibleUse);
+      window.removeEventListener('pointerdown', recordVisibleUse);
+      window.removeEventListener('keydown', recordVisibleUse);
+      window.removeEventListener('scroll', recordVisibleUse);
+    };
+  }, [location.pathname]);
   const { user } = useAuth();
   const { shouldShowToast, dismissToast, emailHash } = useEmailRedirect();
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
