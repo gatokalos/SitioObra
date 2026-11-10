@@ -997,10 +997,17 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     }
   }, [isMobileViewport]);
 
-  const handleFaqSearchSubmit = useCallback((query) => {
+  // Con qué origen viaja cada pregunta al apuntador (10 nov 2026): la que
+  // llegó prellenada desde una vitrina, un artículo o Provoca no es una voz de
+  // la persona, aunque la mande ella con el botón; la escrita o dictada sí.
+  // Tomarla del vestíbulo trae su propio origen desde handleFaqPromptSelect.
+  const handleFaqSearchSubmit = useCallback((query, meta) => {
     shouldScrollToFaqResponseRef.current = isMobileViewport;
-    faqSearch(query);
-  }, [faqSearch, isMobileViewport]);
+    const texto = (query ?? faqQuery ?? '').trim();
+    const origen = meta?.origen
+      ?? (lastAppliedPrefillRef.current && texto === lastAppliedPrefillRef.current.trim() ? 'prellenada' : 'propia');
+    faqSearch(query, { ...meta, origen });
+  }, [faqSearch, faqQuery, isMobileViewport]);
 
   const handleFaqPromptSelect = useCallback((prompt) => {
     const texto = typeof prompt === 'string' ? prompt : prompt?.texto;
@@ -1014,7 +1021,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     setFaqInputMode('text');
     setFaqMicError('');
     setFaqQuery(texto);
-    handleFaqSearchSubmit(texto);
+    handleFaqSearchSubmit(texto, { origen: 'vestibulo', vestibuloId: prompt?.id ?? null });
   }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening]);
 
   useEffect(() => {

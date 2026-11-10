@@ -40,7 +40,11 @@ export function useSearch() {
     setErrorMessage('');
   }, []);
 
-  const search = useCallback(async (rawQuery) => {
+  // `meta.origen` (10 nov 2026): de dónde viene la pregunta — 'propia'
+  // (escrita o dictada), 'vestibulo' (tomada de las Voces del vestíbulo, con
+  // `meta.vestibuloId`) o 'prellenada' (traída desde una vitrina, un artículo o
+  // Provoca). El servidor solo guarda como voz candidata la propia.
+  const search = useCallback(async (rawQuery, meta = {}) => {
     const q = (rawQuery ?? query).trim();
     if (!q || q.length < 2) return;
     if (!RAW_API_URL) {
@@ -66,7 +70,11 @@ export function useSearch() {
       const res = await fetch(`${RAW_API_URL}/api/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q }),
+        body: JSON.stringify({
+          query: q,
+          ...(meta.origen ? { origen: meta.origen } : {}),
+          ...(meta.vestibuloId ? { vestibulo_id: meta.vestibuloId } : {}),
+        }),
         signal: controller.signal,
       });
 
