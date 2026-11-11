@@ -164,7 +164,6 @@ const BlogSection = ({ showBuscador = false }) => {
 
 const HERO_GUEST_CABINA_DESKTOP_SRC = '/assets/gato-cabina-desktop-crt-animated-v1.webp';
 const HERO_GUEST_CABINA_DESKTOP_STATIC_SRC = '/assets/gato-cabina-desktop-crt-v1.webp';
-const HERO_GUEST_CABINA_MOBILE_SRC = '/assets/gato-cabina-mobile-crt-animated-v1.webp';
 const HERO_GUEST_CABINA_MOBILE_STATIC_SRC = '/assets/gato-cabina-mobile-crt-v1.webp';
 
 const HERO_BACKGROUND_VARIANTS = {
@@ -281,7 +280,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
               media="(prefers-reduced-motion: reduce)"
               srcSet={HERO_GUEST_CABINA_DESKTOP_STATIC_SRC}
             />
-            <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_SRC} />
+            <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_STATIC_SRC} />
             <img
               className={`${backgroundVariant.className} hero-guest-cabina`}
               style={{
