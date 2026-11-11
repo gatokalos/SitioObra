@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
+import { RAW_API_URL } from '@/hooks/useSearch';
 
 // La pregunta con la que cada forma llama al apuntador (Carlos, 21 sep 2026).
 // Son preguntas de información: quien abre el librito quiere saber qué es esta
@@ -20,6 +21,23 @@ const FORMA_ID_POR_NOMBRE = {
   'El cuerpo': 'movimiento',
   'El riesgo': 'juegos',
   'La pregunta': 'oraculo',
+};
+// Sinergia que pidió Carlos (11 nov 2026): el librito y el vestíbulo son la misma
+// pregunta. El librito prellena la voz del vestíbulo que tiene asignada esta forma
+// (la más elegida, porque así viene ordenada la lista), y la manda como voz
+// elegida, así que cuenta en el ranking y la coda toma la forma del autor. Las
+// preguntas de abajo quedan como respaldo para una forma sin voz asignada; se
+// curan desde el Backstage, no desde aquí. Una sola lectura por página.
+let vestibuloPromesa = null;
+const leerVestibulo = () => {
+  if (!RAW_API_URL) return Promise.resolve([]);
+  if (!vestibuloPromesa) {
+    vestibuloPromesa = fetch(`${RAW_API_URL}/api/vestibulo`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (Array.isArray(d?.preguntas) ? d.preguntas : []))
+      .catch(() => []);
+  }
+  return vestibuloPromesa;
 };
 const PREGUNTA_POR_FORMA = {
   'El drama':      '¿Por qué el drama es la forma de la que emerge #GatoEncerrado?',
@@ -61,14 +79,27 @@ const RelatedReadingTooltipButton = ({
   const hiddenTranslateClass = placement === 'above' ? 'translate-y-1' : '-translate-y-1';
   const [panelStyle, setPanelStyle] = useState(null);
 
+  const formaId = FORMA_ID_POR_NOMBRE[miniversoLabel ?? ''] ?? '';
+  const [vozDeForma, setVozDeForma] = useState(null);
+  useEffect(() => {
+    if (!formaId) return undefined;
+    let vigente = true;
+    leerVestibulo().then((lista) => {
+      if (!vigente) return;
+      const voz = lista.find((v) => v && v.forma === formaId && typeof v.texto === 'string' && v.texto.trim() && v.id);
+      setVozDeForma(voz ?? null);
+    });
+    return () => { vigente = false; };
+  }, [formaId]);
+
   const apuntadorHref = useMemo(() => {
-    const question = PREGUNTA_POR_FORMA[miniversoLabel ?? ''] ?? '';
-    const formaId = FORMA_ID_POR_NOMBRE[miniversoLabel ?? ''] ?? '';
-    const params = question
-      ? `?apuntador_q=${encodeURIComponent(question)}${formaId ? `&apuntador_forma=${formaId}` : ''}`
-      : '';
-    return `/${params}#dialogo-critico`;
-  }, [miniversoLabel]);
+    const question = vozDeForma?.texto ?? PREGUNTA_POR_FORMA[miniversoLabel ?? ''] ?? '';
+    if (!question) return '/#dialogo-critico';
+    const params = new URLSearchParams({ apuntador_q: question });
+    if (vozDeForma?.id) params.set('apuntador_voz', vozDeForma.id);
+    if (formaId) params.set('apuntador_forma', formaId);
+    return `/?${params.toString()}#dialogo-critico`;
+  }, [miniversoLabel, formaId, vozDeForma]);
 
   const handleAskApuntador = () => {
     setIsOpen(false);

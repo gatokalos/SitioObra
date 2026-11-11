@@ -95,7 +95,9 @@ const NOMBRE_FORMA_VOZ = {
   juegos: 'El riesgo',
   oraculo: 'La pregunta',
 };
-const AMBITO_VOZ = { obra: 'la obra', recorrido: 'el recorrido', intermedio: 'el Intermedio', adentro: 'adentro' };
+// «el universo» para el ámbito de la obra entera (Carlos, 11 nov 2026): «la obra»
+// se confundía con la puesta en escena, que es El drama. El id guardado sigue siendo 'obra'.
+const AMBITO_VOZ = { obra: 'el universo', recorrido: 'el recorrido', intermedio: 'el Intermedio', adentro: 'adentro' };
 const leyendaDeVoz = (voz) => {
   if (!voz) return null;
   const principal = NOMBRE_FORMA_VOZ[voz.forma] ?? AMBITO_VOZ[voz.ambito] ?? null;
@@ -755,12 +757,17 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   // Desde qué vitrina llegó el prellenado (11 nov 2026): viaja al servidor como
   // `forma` para que la coda hable de esa forma y no de la más parecida.
   const lastAppliedPrefillFormaRef = useRef(null);
+  // Si el prellenado es una voz del vestíbulo (el librito de una vitrina, 11 nov
+  // 2026), al preguntarla tal cual cuenta como voz elegida, igual que desde la lista.
+  const lastAppliedPrefillVozRef = useRef(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const prefill = params.get('apuntador_q');
     if (!prefill || prefill === lastAppliedPrefillRef.current) return;
     lastAppliedPrefillRef.current = prefill;
     lastAppliedPrefillFormaRef.current = params.get('apuntador_forma') || null;
+    const voz = params.get('apuntador_voz') || '';
+    lastAppliedPrefillVozRef.current = /^[0-9a-f-]{36}$/i.test(voz) ? voz : null;
     setFaqQuery(prefill);
     setFaqInputMode('text');
     const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 600);
@@ -1033,8 +1040,15 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const handleFaqSearchSubmit = useCallback((query, meta) => {
     shouldScrollToFaqResponseRef.current = isMobileViewport;
     const texto = (query ?? faqQuery ?? '').trim();
-    const origen = meta?.origen
-      ?? (lastAppliedPrefillRef.current && texto === lastAppliedPrefillRef.current.trim() ? 'prellenada' : 'propia');
+    const esPrellenadaTalCual = !meta?.origen && Boolean(lastAppliedPrefillRef.current) && texto === lastAppliedPrefillRef.current.trim();
+    if (esPrellenadaTalCual && lastAppliedPrefillVozRef.current) {
+      // Vino del librito de una vitrina y es una voz del vestíbulo: cuenta como elegida.
+      const vozId = lastAppliedPrefillVozRef.current;
+      if (RAW_API_URL) fetch(`${RAW_API_URL}/api/vestibulo/${vozId}/elegir`, { method: 'POST', keepalive: true }).catch(() => {});
+      faqSearch(query, { ...meta, origen: 'vestibulo', vestibuloId: vozId });
+      return;
+    }
+    const origen = meta?.origen ?? (esPrellenadaTalCual ? 'prellenada' : 'propia');
     const forma = origen === 'prellenada' && !meta?.origen ? lastAppliedPrefillFormaRef.current : null;
     faqSearch(query, { ...meta, origen, ...(forma ? { forma } : {}) });
   }, [faqSearch, faqQuery, isMobileViewport]);
