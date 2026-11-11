@@ -162,14 +162,14 @@ const BlogSection = ({ showBuscador = false }) => {
   return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} showBuscador={showBuscador} />;
 };
 
-const HERO_GUEST_CABINA_DESKTOP_SRC = '/assets/gato-cabina-desktop-crt-animated-v1.webp';
+const HERO_GUEST_CABINA_DESKTOP_ONCE_SRC = '/assets/gato-cabina-desktop-crt-once-v1.webp';
 const HERO_GUEST_CABINA_DESKTOP_STATIC_SRC = '/assets/gato-cabina-desktop-crt-v1.webp';
 const HERO_GUEST_CABINA_MOBILE_STATIC_SRC = '/assets/gato-cabina-mobile-crt-v1.webp';
 
 const HERO_BACKGROUND_VARIANTS = {
   guest: {
     alt: 'Cabina de adivinación con cortinas rojas y un gato dentro',
-    src: HERO_GUEST_CABINA_DESKTOP_SRC,
+    src: HERO_GUEST_CABINA_DESKTOP_STATIC_SRC,
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
@@ -290,7 +290,9 @@ const HeroBackground = ({ isAuthenticated = false }) => {
                 transition: 'opacity 2.2s ease, filter 2.2s ease',
               }}
               alt={backgroundVariant.alt}
-              src={backgroundVariant.src}
+              src={isHeroSceneRevealed
+                ? HERO_GUEST_CABINA_DESKTOP_ONCE_SRC
+                : HERO_GUEST_CABINA_DESKTOP_STATIC_SRC}
               loading="eager"
               decoding="async"
               fetchPriority="high"
