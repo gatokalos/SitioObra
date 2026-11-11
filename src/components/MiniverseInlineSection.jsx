@@ -44,7 +44,7 @@ const resolveInitialTab = (search = '', availableGat = 0) => {
 };
 
 // "Antes de irte" — último espacio antes de Salida, después de Team
-// ("Créditos de la función"). No depende de sesión a propósito: el botón es
+// ("Créditos del estreno escénico"). No depende de sesión a propósito: el botón es
 // de descubrimiento, no de autenticación. Alianza Social (antes solo para
 // autenticados, como sección hermana en App.jsx) ahora vive DENTRO de este
 // mismo despliegue — aparece junto con el contenido de miniversos cuando el

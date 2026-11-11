@@ -222,6 +222,9 @@ export const ProvocaSection = () => {
   const [huellaDeOrigen, setHuellaDeOrigen] = useState(null);
   const voiceTextareaRef = useRef(null);
   const replicaCardRef = useRef(null);
+  const obraInfoRef = useRef(null);
+  const obraInfoTriggerRef = useRef(null);
+  const obraInfoScrollRef = useRef(null);
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
@@ -363,6 +366,10 @@ export const ProvocaSection = () => {
     };
   }, []);
 
+  const handleOpenObraInfo = useCallback(() => {
+    obraInfoScrollRef.current = window.scrollY;
+    setIsObraInfoOpen(true);
+  }, []);
   const handleCloseObraInfo = useCallback(() => setIsObraInfoOpen(false), []);
   const handleCloseListenLimit = useCallback(() => setIsListenLimitOpen(false), []);
 
@@ -374,13 +381,21 @@ export const ProvocaSection = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (!isObraInfoOpen) return undefined;
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') handleCloseObraInfo();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCloseObraInfo, isObraInfoOpen]);
+    if (!isObraInfoOpen && obraInfoScrollRef.current === null) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      if (isObraInfoOpen) {
+        if (!isProvocaDesktopViewport()) scrollToReplicaCard();
+        obraInfoRef.current?.focus({ preventScroll: true });
+      } else {
+        if (!isProvocaDesktopViewport()) {
+          window.scrollTo({ top: obraInfoScrollRef.current, behavior: 'instant' });
+        }
+        obraInfoTriggerRef.current?.focus({ preventScroll: true });
+        obraInfoScrollRef.current = null;
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isObraInfoOpen, scrollToReplicaCard]);
 
   useEffect(() => {
     const userId = user?.id ?? null;
@@ -1023,7 +1038,7 @@ export const ProvocaSection = () => {
               </span>
             </h2>
             <p className="provoca-stage-description">
-              Ninguna obra termina en el acto final. Hasta aquí hablo ella.
+              Ninguna obra termina en el acto final. Hasta aquí habló ella.
               <span className="hidden lg:inline"><br /><em>Ahora te toca</em>.</span>
             </p>
           </header>
@@ -1059,7 +1074,7 @@ export const ProvocaSection = () => {
           {confettiBursts.map((burst) => (
             <ConfettiBurst key={burst} seed={burst} />
           ))}
-          <div className="provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]">
+          <div hidden={isObraInfoOpen} className="provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]">
             <div className="min-w-0">
               <h3
                 className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
@@ -1190,22 +1205,22 @@ export const ProvocaSection = () => {
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Contacto directo con Isabel Ayuda para la Vida, A.C."
-                    className="group/isabel inline-flex min-h-16 w-full items-center gap-3 rounded-xl border border-emerald-300/30 bg-black/25 px-3 py-2.5 text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-200/55 hover:bg-emerald-300/[0.08] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_10px_28px_rgba(0,0,0,0.26),0_0_18px_rgba(52,211,153,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60"
+                    className="group/isabel inline-flex min-h-16 min-w-0 w-full items-center gap-3 rounded-xl border border-emerald-300/30 bg-black/25 px-3 py-2.5 text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-200/55 hover:bg-emerald-300/[0.08] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_10px_28px_rgba(0,0,0,0.26),0_0_18px_rgba(52,211,153,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60"
                   >
                     <img
                       src="/assets/isabel_banner.png"
                       alt="Isabel Ayuda para la Vida, A.C."
                       loading="lazy"
-                      className="h-9 w-auto max-w-[8.5rem] shrink-0 rounded-md object-contain sm:h-10"
+                      className="h-9 min-w-0 w-auto max-w-[8.5rem] rounded-md object-contain sm:h-10 lg:shrink-0"
                     />
-                    <span className="h-9 w-px shrink-0 bg-emerald-200/15" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 text-[0.65rem] font-semibold uppercase leading-relaxed tracking-[0.14em]">
+                    <span className="hidden h-9 w-px shrink-0 bg-emerald-200/15 lg:block" aria-hidden="true" />
+                    <span className="hidden min-w-0 flex-1 text-[0.65rem] font-semibold uppercase leading-relaxed tracking-[0.14em] lg:block">
                       Contacto directo
                     </span>
                     <ArrowUpRight
                       size={16}
                       aria-hidden="true"
-                      className="shrink-0 text-emerald-200/75 transition-transform duration-300 group-hover/isabel:-translate-y-0.5 group-hover/isabel:translate-x-0.5 group-hover/isabel:text-white"
+                      className="ml-auto shrink-0 text-emerald-200/75 transition-transform duration-300 group-hover/isabel:-translate-y-0.5 group-hover/isabel:translate-x-0.5 group-hover/isabel:text-white lg:ml-0"
                     />
                   </a>
                 </div>
@@ -1339,9 +1354,10 @@ export const ProvocaSection = () => {
               <button
               
                 type="button"
-                onClick={() => setIsObraInfoOpen(true)}
+                ref={obraInfoTriggerRef}
+                onClick={handleOpenObraInfo}
                 className="group/info inline-flex w-fit items-center gap-2 text-left text-[14px] text-slate-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
-                aria-haspopup="dialog"
+                aria-controls="provoca-obra-info"
                 aria-expanded={isObraInfoOpen}
               >
                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition group-hover/info:border-cyan-200/40 group-hover/info:text-white">
@@ -1402,100 +1418,55 @@ export const ProvocaSection = () => {
               </AnimatePresence>
             </div>
           </div>
+          {isObraInfoOpen && (
+            <motion.div
+              id="provoca-obra-info"
+              ref={obraInfoRef}
+              role="region"
+              aria-labelledby="provoca-obra-info-title"
+              tabIndex={-1}
+              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.28 }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.stopPropagation();
+                  handleCloseObraInfo();
+                }
+              }}
+              className="provoca-stage-info"
+            >
+              <div className="provoca-stage-resonance" aria-hidden="true">
+                <span className="provoca-stage-resonance__line" />
+                <span className="provoca-stage-resonance__bars">
+                  {[8, 15, 24, 12, 34, 18, 26, 14, 7].map((height, index) => (
+                    <span key={index} style={{ '--bar-height': `${height}px` }} />
+                  ))}
+                </span>
+                <span className="provoca-stage-resonance__line" />
+              </div>
+              <p className="provoca-stage-eyebrow">LA VOZ DE LA OBRA</p>
+              <h3 id="provoca-obra-info-title" className="font-display">
+                ¿Quién o qué responde?
+              </h3>
+              <div className="provoca-stage-info__copy">
+                  <p>La obra tiene un archivo interno: escenas, capas dramáticas, símbolos, estructura emocional. Esta voz lo consulta en tiempo real cuando alguien escribe.</p>
+                  <p>No interpreta lo que viste. No aconseja. Encuentra en ese archivo lo que resuena con lo que trajiste —y lo devuelve en voz alta.</p>
+                  <p>Cada reacción se genera en el momento. No se repite.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseObraInfo}
+                className="provoca-stage-info__return"
+              >
+                Volver a La Réplica
+              </button>
+            </motion.div>
+          )}
           </motion.div>
           </motion.div>
         </div>
       </section>
-
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {isObraInfoOpen ? (
-            <motion.div
-              className="fixed inset-0 z-[600] flex items-center justify-center px-4"
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              <motion.div
-                className="absolute inset-0 bg-[#04020f] backdrop-blur-[18px]"
-                variants={PROVOCA_INFO_BACKDROP_VARIANTS}
-                aria-hidden="true"
-                onClick={handleCloseObraInfo}
-              />
-
-              <motion.div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="provoca-obra-info-title"
-                variants={PROVOCA_INFO_PANEL_VARIANTS}
-                className="relative z-10 flex max-h-[100dvh] w-full max-w-lg flex-col items-center overflow-y-auto px-5 py-10 text-center"
-              >
-                <button
-                  type="button"
-                  onClick={handleCloseObraInfo}
-                  className="absolute right-2 pwa-safe-top z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
-                  aria-label="Cerrar"
-                >
-                  <X size={18} />
-                </button>
-
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-1/2 top-20 h-64 w-64 -translate-x-1/2 rounded-full blur-[72px]"
-                  style={{ background: 'radial-gradient(circle, rgba(217,160,54,0.3) 0%, rgba(109,40,217,0.18) 48%, transparent 72%)' }}
-                />
-
-                <div className="relative" aria-hidden="true">
-                  <motion.img
-                    src="/assets/laObraDorada.png"
-                    alt=""
-                    className="h-28 w-28 object-contain sm:h-32 sm:w-32"
-                    animate={prefersReducedMotion ? undefined : {
-                      scale: [1, 1.08, 1],
-                      filter: [
-                        'drop-shadow(0 0 12px rgba(139,92,246,0.4))',
-                        'drop-shadow(0 0 28px rgba(251,191,36,0.62))',
-                        'drop-shadow(0 0 12px rgba(139,92,246,0.4))',
-                      ],
-                    }}
-                    transition={{ duration: 1.4, ease: 'easeInOut' }}
-                    draggable="false"
-                  />
-                </div>
-
-                <p className="relative mt-8 text-[0.68rem] uppercase tracking-[0.32em] text-amber-100/55">
-                  LA VOZ DE LA OBRA
-                </p>
-                <h2
-                  id="provoca-obra-info-title"
-                  className="relative mt-3 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
-                >
-                  ¿Qué es la voz que responde?
-                </h2>
-
-                <div className="relative mt-7 max-w-md space-y-3 text-left text-sm leading-relaxed text-slate-300 sm:text-base">
-                  <p>La obra tiene un archivo interno: escenas, capas dramáticas, símbolos, estructura emocional. Esta voz lo consulta en tiempo real cuando alguien escribe.</p>
-                  <p>No interpreta lo que viste. No aconseja. Encuentra en ese archivo lo que resuena con lo que trajiste —y lo devuelve en voz alta.</p>
-                  <p>Cada reacción se genera en el momento. No se repite.</p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleCloseObraInfo}
-                  className="group relative mt-9 inline-flex min-h-14 w-full max-w-sm items-center justify-center overflow-hidden rounded-full border border-violet-200/25 bg-white/[0.06] px-7 py-4 text-base font-semibold text-white shadow-[0_16px_50px_rgba(109,40,217,0.28)] backdrop-blur-md transition-all duration-300 hover:scale-[1.015] hover:border-violet-200/45 hover:bg-white/[0.1] hover:shadow-[0_18px_58px_rgba(139,92,246,0.4)] active:scale-[0.985]"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-r from-[#1f2f63]/55 via-[#6e30ab]/55 to-[#d91f8b]/55 opacity-80 transition-opacity duration-300 group-hover:opacity-100"
-                  />
-                  <span className="relative">Volver a La Réplica</span>
-                </button>
-              </motion.div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>,
-        document.body,
-      )}
 
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
@@ -1876,7 +1847,7 @@ const About = () => {
                   className="ge-chip-action ge-chip-action--primary"
                 >
                   <Users size={20} />
-                  Créditos de la función
+                  Créditos del estreno escénico
                 </Button>
                 <Button
                   variant="outline"

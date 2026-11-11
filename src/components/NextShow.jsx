@@ -37,7 +37,7 @@ const NextShow = () => {
     [activeShowId]
   );
 
-  // Caída del Telón: revela Obra Destacada + Créditos de la función
+  // Caída del Telón: revela Obra Destacada + Créditos del estreno escénico
   const handlePrimaryAction = useCallback(() => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));

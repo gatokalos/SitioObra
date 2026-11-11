@@ -1018,7 +1018,7 @@ function App() {
                     )}
 
                     {/* "Antes de irte" tiene un revelado propio: su CTA no abre
-                        Obra fundacional ni Créditos de la función. */}
+                        Obra fundacional ni Créditos del estreno escénico. */}
                     {isBeforeLeavingVisible && (
                       <DeferredSection fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
                         <Suspense fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>

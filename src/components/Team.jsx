@@ -1180,7 +1180,7 @@ const Team = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Créditos de la función
+            Créditos del estreno escénico
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
           

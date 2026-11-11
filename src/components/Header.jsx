@@ -769,7 +769,7 @@ const Header = ({
         ? {
             secondary: [
               { label: 'Obra fundacional', href: '#about' },
-              { label: 'Créditos de la función', href: '#team' },
+              { label: 'Créditos del estreno escénico', href: '#team' },
               { label: 'Galería fractal', href: '#instagram' },
             ],
           }

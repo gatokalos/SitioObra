@@ -1175,7 +1175,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
             className="text-center mb-16"
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">INTERMEDIO</p>
-            <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
+            <h2 className="camerino-section-title font-display text-4xl md:text-5xl font-medium mb-6">
               Cambia de lugar<br />en la obra
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
@@ -1206,7 +1206,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                     transition={{ duration: 0.45, ease: 'easeOut', delay: 0.08 }}
                     className="camerino-panel relative overflow-hidden rounded-2xl border p-5 md:p-8"
                   >
-                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/60 to-transparent" />
+                    <div className="camerino-panel-highlight" aria-hidden="true" />
 
                     <div className="relative z-10 space-y-7">
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
@@ -1216,7 +1216,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                               <img
                                 src="/assets/header-logo.png"
                                 alt="Es un gato encerrado"
-                                className="h-12 w-12 shrink-0 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)] md:h-14 md:w-14"
+                                className="h-12 w-12 shrink-0 object-contain opacity-90 drop-shadow-[0_0_16px_rgba(167,139,250,0.28)] md:h-14 md:w-14"
                               />
                               <div>
                                 <p className="text-[10px] uppercase tracking-[0.32em] text-violet-300/65">
@@ -1273,9 +1273,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 onMicClick={handleFaqMicClick}
                                 onSecondaryCtaClick={handleFaqInputModeToggle}
                                 tone={{
-                                  border: 'rgba(196,181,253,0.62)',
-                                  dot: 'rgba(221,214,254,0.96)',
-                                  glow: '0 0 38px rgba(139,92,246,0.5)',
+                                  border: 'rgba(199,184,218,0.45)',
+                                  dot: 'rgba(238,232,245,0.96)',
+                                  glow: '0 0 24px rgba(139,92,246,0.22)',
                                 }}
                               />
                             ) : (
@@ -1296,7 +1296,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                   }}
                                   placeholder="¿Qué quieres preguntarle al apuntador?"
                                   disabled={faqIsLoading}
-                                  className="w-full resize-none rounded-2xl border border-violet-100/30 bg-white/90 px-4 py-3 text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
+                                  className="camerino-query w-full resize-none rounded-2xl border px-4 py-3 text-sm leading-relaxed outline-none disabled:opacity-60"
                                 />
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                   <button
@@ -1310,7 +1310,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                     type="button"
                                     onClick={() => handleFaqSearchSubmit()}
                                     disabled={faqIsLoading || faqQuery.trim().length < 2}
-                                    className="ge-chip-action ge-chip-action--primary ge-chip-action--compact"
+                                    className="camerino-query-submit ge-chip-action ge-chip-action--primary ge-chip-action--compact"
                                   >
                                     {faqIsLoading ? 'Consultando…' : 'Preguntar al apuntador'}
                                     {faqIsLoading ? (
@@ -1327,7 +1327,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
 
                         </div>
 
-                        <section className="order-3 rounded-2xl border border-white/10 bg-black/15 p-5 lg:order-2">
+                        <section className="camerino-vestibulo order-3 min-w-0 lg:order-2">
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
                               <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Voces del vestíbulo</p>
@@ -1344,13 +1344,13 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                               <RefreshCw size={14} className="transition duration-300 group-hover:rotate-180" aria-hidden="true" />
                             </button>
                           </div>
-                          <div className="space-y-2">
+                          <div>
                             {faqVisiblePrompts.map((prompt) => (
                               <button
                                 type="button"
                                 key={prompt.id ?? prompt.texto}
                                 onClick={() => handleFaqPromptSelect(prompt)}
-                                className="group flex w-full items-start gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-left transition hover:border-violet-300/35 hover:bg-violet-400/[0.07]"
+                                className="camerino-question group flex w-full items-start gap-3 px-2 py-3 text-left transition"
                               >
                                 <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt.texto}</span>
                               </button>
@@ -1499,7 +1499,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                 {editorialCategories.map((category) => (
                   <article
                     key={category.key}
-                    className={`glass-effect relative overflow-hidden rounded-2xl border border-white/10 bg-black/25 p-6 transition-colors duration-300 ${
+                    className={`camerino-editorial-card relative overflow-hidden rounded-2xl border p-6 transition-colors duration-300 ${
                       activeCategory === category.key ? 'hover-glow--selected' : ''
                     }`}
                   >
