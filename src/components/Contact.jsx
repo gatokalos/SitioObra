@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,19 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
+import useScrambleText from '@/hooks/useScrambleText';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
+const CONTACT_TITLE = '¿Tienes curiosidad gatuna?';
+const CONTACT_TITLE_WORDS = CONTACT_TITLE.split(' ');
 
 const Contact = () => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { once: true, amount: 0.8 });
+  const titleDisplay = useScrambleText(CONTACT_TITLE, { active: isTitleInView, hashAccents: true });
+  const titleDisplayWords = titleDisplay.split(' ');
   const [formValues, setFormValues] = useState({
     name: '',
     role: '',
@@ -323,8 +330,16 @@ const Contact = () => {
   Salida
 </p>
 
-<h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-  ¿Tienes curiosidad gatuna?
+<h2 ref={titleRef} aria-label={CONTACT_TITLE} className="font-display text-4xl md:text-5xl font-medium mb-6 italic">
+  {CONTACT_TITLE_WORDS.map((word, index) => (
+    <React.Fragment key={word}>
+      {index > 0 ? ' ' : null}
+      <span className="relative inline-block whitespace-nowrap" aria-hidden="true">
+        <span className="invisible">{word}</span>
+        <span className="contact-title-word absolute inset-0">{titleDisplayWords[index]}</span>
+      </span>
+    </React.Fragment>
+  ))}
 </h2>
 
 <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
@@ -345,7 +360,7 @@ const Contact = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            className="glass-effect rounded-2xl p-8 relative overflow-hidden"
+            className="contact-form-panel glass-effect rounded-2xl p-8 relative overflow-hidden"
           >
             {confettiBursts.map((burst) => (
               <ConfettiBurst key={burst} seed={burst} />
@@ -440,7 +455,7 @@ const Contact = () => {
                   <Button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary flex-1"
+                    className="contact-submit ge-chip-action ge-mobile-cta-width ge-chip-action--primary flex-1"
                   >
                     <Send size={20} />
                     {status === 'loading' ? 'Enviando…' : 'Enviar'}

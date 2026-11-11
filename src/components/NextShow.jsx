@@ -1,7 +1,10 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { Calendar, DoorOpen, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import useScrambleText from '@/hooks/useScrambleText';
+
+const CLOSING_LINE = 'decirnos adiós';
 
 const SHOW_HISTORY = [
   {
@@ -31,6 +34,9 @@ const SHOW_HISTORY = [
 ];
 
 const NextShow = () => {
+  const closingLineRef = useRef(null);
+  const isClosingLineInView = useInView(closingLineRef, { once: true, amount: 0.8 });
+  const closingLineDisplay = useScrambleText(CLOSING_LINE, { active: isClosingLineInView, hashAccents: true });
   const [activeShowId, setActiveShowId] = useState('cecut');
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
@@ -70,8 +76,12 @@ const NextShow = () => {
             className="curtain-fall-card glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
           >
             <div className="curtain-fall-content relative z-10">
-              <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                Caída del telón:<br />decirnos adiós
+              <h3 aria-label={`Caída del telón: ${CLOSING_LINE}`} className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+                <span aria-hidden="true">Caída del telón:</span><br />
+                <span ref={closingLineRef} className="relative inline-block" aria-hidden="true">
+                  <span className="invisible">{CLOSING_LINE}</span>
+                  <span className="absolute inset-0 whitespace-nowrap">{closingLineDisplay}</span>
+                </span>
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
                 <p><em>Hay historias que dejan de representarse para empezar a recordarse.</em></p>
