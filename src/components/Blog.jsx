@@ -97,7 +97,8 @@ const NOMBRE_FORMA_VOZ = {
 };
 // «el universo» para el ámbito de la obra entera (Carlos, 11 nov 2026): «la obra»
 // se confundía con la puesta en escena, que es El drama. El id guardado sigue siendo 'obra'.
-const AMBITO_VOZ = { obra: 'el universo', recorrido: 'el recorrido', intermedio: 'el Intermedio', adentro: 'adentro' };
+// «la función» para el recorrido (Carlos, 11 nov 2026): abarca del Proscenio a la Salida; «los tres actos» dejaba fuera la huella y el Proscenio.
+const AMBITO_VOZ = { obra: 'el universo', recorrido: 'la función', intermedio: 'el Intermedio', adentro: 'adentro' };
 const leyendaDeVoz = (voz) => {
   if (!voz) return null;
   const principal = NOMBRE_FORMA_VOZ[voz.forma] ?? AMBITO_VOZ[voz.ambito] ?? null;
