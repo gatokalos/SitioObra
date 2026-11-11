@@ -743,6 +743,22 @@ body {
   isolation: isolate;
 }
 
+/* En escritorio el título se centra contra el viewport, no contra el
+   `container` narrativo. Así puede crecer sin heredar márgenes invisibles. */
+.hero-title-viewport {
+  max-width: 56rem;
+}
+
+@media (min-width: 769px) {
+  .hero-title-viewport {
+    position: relative;
+    left: 50%;
+    width: calc(100vw - 2rem);
+    max-width: none;
+    transform: translateX(-50%);
+  }
+}
+
 .hero-title.hero-title--measure {
   visibility: hidden;
   pointer-events: none;
@@ -2182,14 +2198,14 @@ body {
 
 @media (min-width: 769px) and (max-width: 1200px) {
   .hero-title {
-    font-size: clamp(3rem, 4vw, 4rem);
+    font-size: clamp(3.6rem, 4.8vw, 4.8rem);
     letter-spacing: 0.22em;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1200px) {
   #hero .hero-title {
-    font-size: clamp(4.25rem, 5vw, 5.15rem);
+    font-size: clamp(5.1rem, 6vw, 6.18rem);
     white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
@@ -2225,7 +2241,7 @@ body {
 
 @media (min-width: 1201px) {
   #hero .hero-title {
-    font-size: clamp(4.6rem, 4.15vw, 5.85rem);
+    font-size: clamp(5.52rem, 4.98vw, 7.02rem);
     letter-spacing: 0.25em;
     white-space: nowrap;
     overflow-wrap: normal;

@@ -162,10 +162,15 @@ const BlogSection = ({ showBuscador = false }) => {
   return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} showBuscador={showBuscador} />;
 };
 
+const HERO_GUEST_CABINA_DESKTOP_SRC = '/assets/gato-cabina-desktop-crt-animated-v1.webp';
+const HERO_GUEST_CABINA_DESKTOP_STATIC_SRC = '/assets/gato-cabina-desktop-crt-v1.webp';
+const HERO_GUEST_CABINA_MOBILE_SRC = '/assets/gato-cabina-mobile-crt-animated-v1.webp';
+const HERO_GUEST_CABINA_MOBILE_STATIC_SRC = '/assets/gato-cabina-mobile-crt-v1.webp';
+
 const HERO_BACKGROUND_VARIANTS = {
   guest: {
     alt: 'Cabina de adivinación con cortinas rojas y un gato dentro',
-    src: '/assets/gato-cabina-desktop-v1.webp',
+    src: HERO_GUEST_CABINA_DESKTOP_SRC,
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
@@ -184,8 +189,6 @@ const HERO_BACKGROUND_VARIANTS = {
     },
   },
 };
-
-const HERO_GUEST_CABINA_MOBILE_SRC = '/assets/gato-cabina-mobile-v1.webp';
 
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
@@ -270,6 +273,14 @@ const HeroBackground = ({ isAuthenticated = false }) => {
         </div>
         {isGuestCabina ? (
           <picture>
+            <source
+              media="(prefers-reduced-motion: reduce) and (max-width: 767px)"
+              srcSet={HERO_GUEST_CABINA_MOBILE_STATIC_SRC}
+            />
+            <source
+              media="(prefers-reduced-motion: reduce)"
+              srcSet={HERO_GUEST_CABINA_DESKTOP_STATIC_SRC}
+            />
             <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_SRC} />
             <img
               className={`${backgroundVariant.className} hero-guest-cabina`}
@@ -321,7 +332,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
               }}
             />
             <picture>
-              <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_SRC} />
+              <source media="(max-width: 767px)" srcSet={HERO_GUEST_CABINA_MOBILE_STATIC_SRC} />
               <img
                 className="hero-guest-cabina absolute inset-0 h-full w-full object-cover pointer-events-none"
                 style={{
@@ -336,7 +347,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
                 }}
                 alt=""
                 aria-hidden="true"
-                src={backgroundVariant.src}
+                src={HERO_GUEST_CABINA_DESKTOP_STATIC_SRC}
                 loading="lazy"
                 decoding="async"
                 fetchPriority="low"

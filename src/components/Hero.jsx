@@ -1444,7 +1444,7 @@ const Hero = () => {
               </div>
 
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
-              <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
+              <div className="hero-title-viewport mx-auto w-full">
                 {/* Mientras el sheet de instalación está abierto, el título se
                     retira casi del todo: es el único elemento del Hero que
                     compite de verdad con los pasos —el ícono del paso 4 aterriza
