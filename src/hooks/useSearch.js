@@ -74,6 +74,7 @@ export function useSearch() {
           query: q,
           ...(meta.origen ? { origen: meta.origen } : {}),
           ...(meta.vestibuloId ? { vestibulo_id: meta.vestibuloId } : {}),
+          ...(meta.forma ? { forma: meta.forma } : {}),
         }),
         signal: controller.signal,
       });

@@ -752,11 +752,15 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   // remonta y un efecto con deps [] no volvería a correr. El ref evita pisar lo
   // que la persona esté escribiendo — solo aplica cuando la pregunta cambia.
   const lastAppliedPrefillRef = useRef(null);
+  // Desde qué vitrina llegó el prellenado (11 nov 2026): viaja al servidor como
+  // `forma` para que la coda hable de esa forma y no de la más parecida.
+  const lastAppliedPrefillFormaRef = useRef(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const prefill = params.get('apuntador_q');
     if (!prefill || prefill === lastAppliedPrefillRef.current) return;
     lastAppliedPrefillRef.current = prefill;
+    lastAppliedPrefillFormaRef.current = params.get('apuntador_forma') || null;
     setFaqQuery(prefill);
     setFaqInputMode('text');
     const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 600);
@@ -1031,7 +1035,8 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     const texto = (query ?? faqQuery ?? '').trim();
     const origen = meta?.origen
       ?? (lastAppliedPrefillRef.current && texto === lastAppliedPrefillRef.current.trim() ? 'prellenada' : 'propia');
-    faqSearch(query, { ...meta, origen });
+    const forma = origen === 'prellenada' && !meta?.origen ? lastAppliedPrefillFormaRef.current : null;
+    faqSearch(query, { ...meta, origen, ...(forma ? { forma } : {}) });
   }, [faqSearch, faqQuery, isMobileViewport]);
 
   const handleFaqPromptSelect = useCallback((prompt) => {

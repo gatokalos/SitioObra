@@ -8,6 +8,19 @@ import { BookOpen } from 'lucide-react';
 // forma y por qué pertenece a la obra. Las del 20 sep le decían al visitante
 // cómo sentir y no le daban nada; Carlos las descartó. El modelo es la suya:
 // «¿Por qué el objeto se considera una forma de la obra?».
+// Id de cada forma en el servidor (miniverso_id), para que la coda hable de la
+// forma desde la que se preguntó y no de la que más se parezca (11 nov 2026).
+const FORMA_ID_POR_NOMBRE = {
+  'El drama': 'obra',
+  'La escritura': 'literatura',
+  'El objeto': 'artesanias',
+  'La imagen': 'grafico',
+  'La proyección': 'cine',
+  'La vibración': 'sonoridades',
+  'El cuerpo': 'movimiento',
+  'El riesgo': 'juegos',
+  'La pregunta': 'oraculo',
+};
 const PREGUNTA_POR_FORMA = {
   'El drama':      '¿Por qué el drama es la forma de la que emerge #GatoEncerrado?',
   'La escritura':  '¿Qué cuenta la escritura que el escenario no alcanza a decir?',
@@ -50,7 +63,10 @@ const RelatedReadingTooltipButton = ({
 
   const apuntadorHref = useMemo(() => {
     const question = PREGUNTA_POR_FORMA[miniversoLabel ?? ''] ?? '';
-    const params = question ? `?apuntador_q=${encodeURIComponent(question)}` : '';
+    const formaId = FORMA_ID_POR_NOMBRE[miniversoLabel ?? ''] ?? '';
+    const params = question
+      ? `?apuntador_q=${encodeURIComponent(question)}${formaId ? `&apuntador_forma=${formaId}` : ''}`
+      : '';
     return `/${params}#dialogo-critico`;
   }, [miniversoLabel]);
 
