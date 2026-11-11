@@ -79,6 +79,31 @@ const MINIVERSE_KEYWORDS = {
   otro: ['performance', 'híbrido', 'glitch', 'experimental'],
 };
 
+// Leyenda de procedencia de cada voz (Carlos, 11 nov 2026, variante «ámbito o
+// forma»): en la esquina de la ficha va el nombre público de la forma que el
+// autor le asignó y, si no tiene, una palabra de ámbito. «visitante» o
+// «colaborador» se añaden solo cuando la voz no es del Laboratorio: la cabecera
+// del vestíbulo ya firma al Laboratorio (D-47). Mismo estilo que «estás aquí».
+const NOMBRE_FORMA_VOZ = {
+  obra: 'El drama', drama: 'El drama', teatro: 'El drama',
+  literatura: 'La escritura',
+  artesanias: 'El objeto',
+  grafico: 'La imagen', graficos: 'La imagen',
+  cine: 'La proyección',
+  sonoridades: 'La vibración',
+  movimiento: 'El cuerpo',
+  juegos: 'El riesgo',
+  oraculo: 'La pregunta',
+};
+const AMBITO_VOZ = { obra: 'la obra', recorrido: 'el recorrido', intermedio: 'el Intermedio', adentro: 'adentro' };
+const leyendaDeVoz = (voz) => {
+  if (!voz) return null;
+  const principal = NOMBRE_FORMA_VOZ[voz.forma] ?? AMBITO_VOZ[voz.ambito] ?? null;
+  const quien = voz.origen === 'visitante' || voz.origen === 'colaborador' ? voz.origen : null;
+  if (!principal && !quien) return null;
+  return { principal, quien };
+};
+
 const STARTER_FAQ_PROMPTS = [
   '¿Por qué una obra tendría que ser una sola cosa?',
   '¿Qué cambia en una obra cuando la persona que la mira también puede modificarla?',
@@ -1350,9 +1375,19 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 type="button"
                                 key={prompt.id ?? prompt.texto}
                                 onClick={() => handleFaqPromptSelect(prompt)}
-                                className="camerino-question group flex w-full items-start gap-3 px-2 py-3 text-left transition"
+                                className="camerino-question group flex w-full items-start justify-between gap-3 px-2 py-3 text-left transition"
                               >
-                                <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt.texto}</span>
+                                <span className="min-w-0 flex-1 text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt.texto}</span>
+                                {(() => {
+                                  const leyenda = leyendaDeVoz(prompt);
+                                  if (!leyenda) return null;
+                                  return (
+                                    <span className="max-w-[9rem] shrink-0 pt-0.5 text-right text-[10px] uppercase leading-snug tracking-[0.2em] text-slate-300/85">
+                                      {leyenda.principal}
+                                      {leyenda.quien ? <span className="text-emerald-200/80">{leyenda.principal ? ' · ' : ''}{leyenda.quien}</span> : null}
+                                    </span>
+                                  );
+                                })()}
                               </button>
                             ))}
                           </div>
