@@ -239,23 +239,26 @@ const MobileMenuOverlay = ({
 
           {sessionGreeting ? (
             <section className="mt-2 rounded-2xl border border-white/10 bg-black/35 p-2" aria-label="Sesión">
-              <div className="flex items-center justify-between gap-3 rounded-xl px-3 py-3">
-                <div className="min-w-0 flex-1">
+              {/* Dos hileras (Carlos, 12 nov 2026): arriba el saludo y el correo
+                  completos, sin recortar; abajo «Cerrar sesión» como texto
+                  discreto, alineado con el saludo y no con el foquito. */}
+              <div className="flex flex-col gap-2.5 rounded-xl px-3 py-3">
+                <div className="min-w-0">
                   <p className="flex items-center gap-2 font-display text-[1.02rem] leading-tight text-slate-100">
                     <span
                       className="h-2 w-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
                       aria-hidden="true"
                     />
-                    <span className="truncate">{sessionGreeting}</span>
+                    <span className="min-w-0 break-words">{sessionGreeting}</span>
                   </p>
                   {sessionEmail ? (
-                    <p className="mt-1 truncate text-[11px] text-slate-400/85">{sessionEmail}</p>
+                    <p className="mt-1 pl-4 text-[11px] text-slate-400/85 [overflow-wrap:anywhere]">{sessionEmail}</p>
                   ) : null}
                 </div>
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
+                  className="self-start pl-4 text-xs text-slate-400 underline-offset-4 transition hover:text-slate-100 hover:underline focus-visible:text-slate-100 focus-visible:underline focus-visible:outline-none"
                 >
                   Cerrar sesión
                 </button>
