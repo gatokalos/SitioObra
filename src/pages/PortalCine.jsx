@@ -285,10 +285,11 @@ const PortalCine = () => {
     };
   }, [isReadingTooltipOpen]);
 
+  // Quirón se ve cuantas veces se quiera, con o sin sesión y sin GAT (Carlos,
+  // 12 nov 2026). Queda el aviso «Mejor en horizontal», sin la frase de cobro.
   const handleOpenFullFilm = useCallback(() => {
-    if (!requireAuth()) return;
     setIsPrecareVisible(true);
-  }, [requireAuth]);
+  }, []);
 
   const handleConfirmPrecare = useCallback(async () => {
     setIsPrecareVisible(false);
@@ -540,9 +541,6 @@ const PortalCine = () => {
                 </div>
                 <p className="text-[0.7rem] uppercase tracking-[0.28em] text-sky-300/80">Mejor en horizontal</p>
               </div>
-              <p className="mt-4 text-sm text-slate-300/85 leading-relaxed">
-                Una vez desbloqueado, el cortometraje se habilita una vez; con una huella activada puedes volver cuando quieras. ¿Quieres continuar?
-              </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <button
                   type="button"
