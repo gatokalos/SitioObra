@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
 import { useSearch, RAW_API_URL } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { leerVocesUsadas, marcarVozUsada } from '@/lib/vocesUsadas';
 import {
   BLOG_CATEGORY_CONFIG,
@@ -18,8 +16,6 @@ import { recordArticleInteraction } from '@/services/articleInteractionService';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 
-const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
-const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const INITIAL_VISIBLE_POSTS = 5;
 
 const containerVariants = {
@@ -108,10 +104,6 @@ const leyendaDeVoz = (voz) => {
   if (!principal && !quien) return null;
   return { principal, quien };
 };
-
-// El formulario de propuestas se abre desde el Camerino (Carlos, 11 nov 2026: una
-// sola puerta para proponer un texto). Se carga solo cuando alguien lo abre.
-const ContributionModal = React.lazy(() => import('@/components/ContributionModal'));
 
 const STARTER_FAQ_PROMPTS = [
   '¿Por qué una obra tendría que ser una sola cosa?',
@@ -473,14 +465,12 @@ const FullArticle = ({ post, onClose }) => {
   );
 };
 
+// Al pie de cada artículo solo queda compartir. «Quiero leer más de este autor»
+// salió el 12 nov 2026 (Carlos): prometía avisos de novedades que nadie manda.
 const ArticleInteractionPanel = ({ post }) => {
-  const { user } = useAuth();
-
   const inferredMiniverseKey = useMemo(() => inferMiniverseFromPost(post), [post]);
   const miniverseInfo = MINIVERSE_HIERARCHY[inferredMiniverseKey] ?? MINIVERSE_HIERARCHY.curaduria;
-  const [wantsNotification, setWantsNotification] = useState(false);
-  const [status, setStatus] = useState({ share: 'idle', notify: 'idle' });
-  const authorAvatar = sanitizeExternalHttpUrl(post?.author_avatar_url);
+  const [status, setStatus] = useState({ share: 'idle' });
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined') {
       return '';
@@ -491,64 +481,6 @@ const ArticleInteractionPanel = ({ post }) => {
     }
     return `${origin}/blog/${encodeURIComponent(post.slug)}`;
   }, [post?.slug]);
-
-  const handleNotify = async () => {
-    const nextNotify = !wantsNotification;
-    const authorName = post?.author?.trim() || 'este autor';
-    const articleTitle = post?.title?.trim() || 'este texto';
-    const message = `Hola, quiero recibir más información sobre ${authorName} en el Backstage.\n\nVengo de leer "${articleTitle}" y me interesa saber cómo seguir su trabajo dentro del universo #GatoEncerrado.`;
-
-    if (typeof window !== 'undefined') {
-      window.localStorage?.setItem(
-        CONTACT_PREFILL_KEY,
-        JSON.stringify({
-          source: 'blog-author-backstage',
-          articleSlug: post?.slug ?? null,
-          articleTitle,
-          author: authorName,
-          message,
-          createdAt: Date.now(),
-        })
-      );
-      window.localStorage?.setItem(
-        LOGIN_RETURN_KEY,
-        JSON.stringify({
-          anchor: '#contact',
-          action: 'blog-author-backstage',
-          source: 'blog',
-          articleSlug: post?.slug ?? null,
-        })
-      );
-      window.dispatchEvent(new CustomEvent('gatoencerrado:contact-prefill'));
-    }
-
-    setStatus((prev) => ({ ...prev, notify: 'loading' }));
-
-    if (user) {
-      const { success, error } = await recordArticleInteraction({
-        post,
-        action: 'notify',
-        notify: nextNotify,
-        miniverse: inferredMiniverseKey,
-        mostViewedMiniverse: miniverseInfo.label,
-        mostViewedMiniverseCount: miniverseInfo.views ?? null,
-      });
-
-      if (!success) {
-        console.error('[ArticleInteraction] Error guardando interacción:', error);
-        toast({ description: 'No pudimos guardar tu interacción, pero puedes escribir desde contacto.' });
-      } else {
-        setWantsNotification(nextNotify);
-      }
-    }
-
-    setStatus((prev) => ({ ...prev, notify: 'idle' }));
-
-    if (typeof document !== 'undefined') {
-      document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    toast({ description: 'Te llevé a contacto con el mensaje preparado.' });
-  };
 
   const handleShare = async () => {
     if (status.share === 'loading') {
@@ -621,9 +553,6 @@ const ArticleInteractionPanel = ({ post }) => {
     <>
       <div className="mt-10 rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
         <p className="text-base text-slate-200">¿La lectura te movió?</p>
-      <p className="text-sm text-slate-400 mt-1">
-        Clic en los botones para compartir este texto o seguir a su autor en el Backstage.
-      </p>
         <div className="mt-6 flex flex-col gap-3 md:flex-row">
           <Button
             variant="default"
@@ -634,27 +563,6 @@ const ArticleInteractionPanel = ({ post }) => {
           >
             <Send size={18} />
             Compartir este artículo
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleNotify}
-            disabled={status.notify === 'loading'}
-            className="ge-chip-action ge-chip-action--secondary ge-chip-action--wrap w-full sm:w-auto"
-          >
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-fuchsia-200/40 bg-purple-500/20 shadow-[0_0_16px_rgba(168,85,247,0.45)] overflow-hidden flex-shrink-0">
-              {authorAvatar ? (
-                <img
-                  src={authorAvatar}
-                  alt={post.author ? `Retrato de ${post.author}` : 'Autor'}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <span className="h-2.5 w-2.5 rounded-full bg-fuchsia-200/90" />
-              )}
-            </span>
-            <span>{wantsNotification ? 'Te avisaremos de novedades' : 'Quiero leer más de este autor'}</span>
           </Button>
         </div>
       </div>
@@ -739,9 +647,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   // a ver, y su lugar lo ocupa la siguiente. Vive en este navegador; para los
   // demás el vestíbulo sigue igual. Si alguien ya las usó todas, vuelven todas.
   const [vocesUsadas, setVocesUsadas] = useState(() => leerVocesUsadas());
-  // «¿Nos compartes algo de tu autoría?» abre el formulario de propuestas; antes
-  // bajaba a la Salida, que es contacto (Carlos, 11 nov 2026).
-  const [isPropuestaOpen, setIsPropuestaOpen] = useState(false);
   const descartarVoz = useCallback((id) => {
     if (!id) return;
     marcarVozUsada(id);
@@ -1560,21 +1465,13 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             <div className="flex justify-end border-t border-white/10 px-4 py-4 md:px-6">
                               <button
                                 type="button"
-                                onClick={() => setIsPropuestaOpen(true)}
+                                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                                 className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                               >
                                 ¿Nos compartes algo de tu autoría? →
                               </button>
                             </div>
                           )}
-                          {isPropuestaOpen && typeof document !== 'undefined'
-                            ? createPortal(
-                                <React.Suspense fallback={null}>
-                                  <ContributionModal open onClose={() => setIsPropuestaOpen(false)} />
-                                </React.Suspense>,
-                                document.body
-                              )
-                            : null}
                         </section>
                       )}
                       </div>

@@ -185,8 +185,26 @@ const Contact = () => {
           throw error;
         }
 
-        // La Salida es contacto: ya no copia cada mensaje en «Propuestas de texto»
-        // del Backstage (Carlos, 11 nov 2026). Los mensajes siguen en `messages`.
+        try {
+          const { error: backstageError } = await supabase.from('blog_contributions').insert({
+            name: trimmedName,
+            email: trimmedEmail.toLowerCase(),
+            proposal: trimmedMessage,
+            topic: 'contacto',
+            link: trimmedAttachmentUrl || null,
+            meta: {
+              route: 'contact',
+              city: trimmedCity || null,
+              attachment_url: trimmedAttachmentUrl || null,
+              role: trimmedRole || null,
+            },
+          });
+          if (backstageError) {
+            console.error('[Contact] No se pudo duplicar en blog_contributions:', backstageError);
+          }
+        } catch (backstageError) {
+          console.error('[Contact] Excepción duplicando en blog_contributions:', backstageError);
+        }
 
         setStatus('success');
         setFormValues({ name: '', role: '', email: '', city: '', attachmentUrl: '', message: '' });
