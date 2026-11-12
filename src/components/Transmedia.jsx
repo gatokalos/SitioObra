@@ -551,10 +551,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   } = useQuironCinemaFlow({
     activeShowcase,
     isAuthenticated,
-    availableGATokens,
-    showcaseBoosts,
-    showGuardrailPrecareOnce,
-    trackTransmediaCreditEvent,
     toast,
   });
 
@@ -1330,7 +1326,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     handlePdfPrecareConfirm,
     handlePdfPrecareClose,
     handlePdfAftercareClose,
-  } = usePdfPreview({ requireShowcaseAuth, availableGATokens, isAuthenticated, setTokenPrecareContext, toast });
+  } = usePdfPreview({ requireShowcaseAuth });
 
   const handlePdfAftercareConfirm = useCallback(() => {
     handleClosePdfPreview();
@@ -3484,7 +3480,6 @@ const renderDramaFeaturedWork = () => (
         });
       })();
       const toneTags = activeDefinition.tone ?? [];
-      const isQuironUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent);
       const copycatsPrimaryAsset = copycatsAssets[0] ?? null;
       const copycatsSecondaryAssets = copycatsAssets.slice(1);
       const quironPrimaryAsset = activeDefinition.quiron?.teaser ?? null;
@@ -3735,10 +3730,6 @@ const renderDramaFeaturedWork = () => (
 
       const proyeccionBlock = (
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
-          <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
-            <CheckCheckIcon size={14} />
-            {isQuironUnlocked ? 'Liberado' : `${SHOWCASE_REQUIRED_GAT.copycats} GAT requeridos`}
-          </span>
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
           <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
           <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.proyeccion?.description}</p>
@@ -3795,12 +3786,9 @@ const renderDramaFeaturedWork = () => (
                   ? 'Espera noticias'
                   : activeDefinition.proyeccion?.cta}
             </Button>
-            {isQuironUnlocked ? (
-              <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
-                <CheckCheckIcon size={14} />
-                Cortometraje desbloqueado
-              </span>
-            ) : (
+            {/* Quirón se ve cuantas veces se quiera (Carlos, 12 nov 2026): sin
+                etiqueta de GAT requeridos ni estado «desbloqueado». */}
+            {(
               <div className="relative flex-1 sm:flex-none">
                 <Button
                   variant="outline"
@@ -3883,11 +3871,11 @@ const renderDramaFeaturedWork = () => (
                 {activePortalExperienceDone && (
                   <button
                     type="button"
-                    onClick={isQuironUnlocked ? handleQuironPlayRequest : handleToggleQuironPrompt}
+                    onClick={handleToggleQuironPrompt}
                     disabled={isQuironUnlocking}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20 disabled:opacity-50"
                   >
-                    {isQuironUnlocked ? '▶ Ver Quirón' : isQuironUnlocking ? 'Procesando…' : '✦ Ver cortometraje ahora'}
+                    {isQuironUnlocking ? 'Procesando…' : '▶ Ver Quirón'}
                   </button>
                 )}
               </div>
@@ -4770,8 +4758,8 @@ const renderDramaFeaturedWork = () => (
                           onClose={() => { setIsCineResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           portal="cine"
-                          onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
-                          narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
+                          onOpenNarrative={handleToggleQuironPrompt}
+                          narrativeCTALabel="▶ Ver Quirón"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
@@ -5143,7 +5131,7 @@ const renderDramaFeaturedWork = () => (
         <div className="max-w-5xl mx-auto space-y-4 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
-              Cortometraje completo desbloqueado
+              Cortometraje completo
             </p>
             <Button
               variant="outline"
@@ -5312,35 +5300,6 @@ const renderDramaFeaturedWork = () => (
     )
     : null;
 
-  const quironPrecareOverlay = typeof document !== 'undefined' && isQuironPrecareVisible
-    ? createPortal(
-      <div className="fixed inset-0 z-[246] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
-        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseQuironPrecare} />
-        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de continuar</p>
-          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
-            Una vez desbloqueado, el cortometraje se habilita una vez; con una huella activada puedes volver cuando quieras. ¿Quieres continuar?
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button
-              onClick={handleConfirmQuironPrecare}
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
-            >
-              Continuar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleCloseQuironPrecare}
-              className="inline-flex items-center justify-center rounded-full border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
-            >
-              Cancelar
-            </Button>
-          </div>
-        </div>
-      </div>,
-      document.body,
-    )
-    : null;
 
   const tokenPrecareOverlay = typeof document !== 'undefined' && tokenPrecareContext
     ? createPortal(
@@ -6160,7 +6119,6 @@ const renderDramaFeaturedWork = () => (
               {causeSiteOverlay}
               {gatBalanceToastOverlay}
               {quironFullOverlay}
-              {quironPrecareOverlay}
               {quironAftercareOverlay}
               {pdfPrecareOverlay}
               {pdfAftercareOverlay}

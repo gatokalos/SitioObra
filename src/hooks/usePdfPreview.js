@@ -3,21 +3,17 @@ import { GAT_COSTS } from '@/components/transmedia/transmediaConstants';
 
 /**
  * Manages image and PDF preview state, refs, and related effects
- * (escape-to-close, container resize, end-of-document GAT notice).
+ * (escape-to-close, container resize, end-of-document aftercare).
+ *
+ * Al final de un PDF ya no se anuncia que el siguiente capítulo cuesta GAT
+ * (Carlos, 12 nov 2026: se quitó el cobro de los PDF); solo queda el
+ * aftercare de los PDF de un portal.
  *
  * @param {object} deps
  * @param {Function} deps.requireShowcaseAuth
- * @param {number}   deps.availableGATokens
- * @param {boolean}  deps.isAuthenticated
- * @param {Function} deps.setTokenPrecareContext
- * @param {Function} deps.toast
  */
 const usePdfPreview = ({
   requireShowcaseAuth,
-  availableGATokens,
-  isAuthenticated,
-  setTokenPrecareContext,
-  toast,
 }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -140,7 +136,7 @@ const usePdfPreview = ({
     return () => window.removeEventListener('resize', updateWidth);
   }, [pdfPreview]);
 
-  // Show end-of-document GAT notice via IntersectionObserver
+  // End-of-document aftercare via IntersectionObserver
   useEffect(() => {
     if (!pdfPreview || pdfLoadError || !pdfNumPages) return undefined;
     if (typeof window === 'undefined') return undefined;
@@ -166,36 +162,14 @@ const usePdfPreview = ({
             }
           } catch {}
           setIsPdfAftercareVisible(true);
-          return;
         }
-
-        const required = Number.isFinite(pdfPreview.nextChapterCost)
-          ? Number(pdfPreview.nextChapterCost)
-          : GAT_COSTS.novelaChapter;
-        const label = pdfPreview.nextChapterLabel || 'siguiente capítulo';
-        const missing = Math.max(required - availableGATokens, 0);
-
-        if (missing > 0) {
-          if (!isAuthenticated) {
-            setTokenPrecareContext({ required, missing, actionLabel: `El ${label}` });
-            return;
-          }
-          toast({
-            description: `Llegaste al final. El ${label} requiere ${required} GATokens. Te faltan ${missing}.`,
-          });
-          return;
-        }
-
-        toast({
-          description: `Llegaste al final. El ${label} requiere ${required} GATokens. Ya tienes saldo suficiente.`,
-        });
       },
       { root, threshold: 0.9 }
     );
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [availableGATokens, isAuthenticated, pdfLoadError, pdfNumPages, pdfPreview, setTokenPrecareContext, toast]);
+  }, [pdfLoadError, pdfNumPages, pdfPreview]);
 
   return {
     imagePreview,

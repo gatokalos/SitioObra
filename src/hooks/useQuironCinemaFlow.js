@@ -1,26 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { showcaseDefinitions, SHOWCASE_REQUIRED_GAT } from '@/components/transmedia/transmediaConstants';
+import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 
 /**
- * Manages the Quirón cinema unlock, playback, precare, and aftercare flow.
+ * Manages Quirón playback and aftercare.
+ *
+ * Quirón se ve cuantas veces se quiera (Carlos, 12 nov 2026): ya no cuesta GAT
+ * ni lleva el aviso previo de cobro («se habilita una vez; con una huella
+ * activada puedes volver cuando quieras»). El botón abre directo el
+ * cortometraje.
  *
  * @param {object} deps
  * @param {string|null} deps.activeShowcase - Currently active showcase ID
  * @param {boolean}     deps.isAuthenticated
- * @param {number}      deps.availableGATokens
- * @param {object}      deps.showcaseBoosts
- * @param {Function}    deps.showGuardrailPrecareOnce
- * @param {Function}    deps.trackTransmediaCreditEvent
  * @param {Function}    deps.toast
  */
 const useQuironCinemaFlow = ({
   activeShowcase,
   isAuthenticated,
-  availableGATokens,
-  showcaseBoosts,
-  showGuardrailPrecareOnce,
-  trackTransmediaCreditEvent,
   toast,
 }) => {
   const [isQuironFullVisible, setIsQuironFullVisible] = useState(false);
@@ -61,13 +58,19 @@ const useQuironCinemaFlow = ({
     return () => window.removeEventListener('keydown', preventShortcuts);
   }, [isQuironFullVisible, isQuironPlaybackUnlocked]);
 
+  // Abre el cortometraje completo (antes pasaba por el aviso de cobro).
   const handleToggleQuironPrompt = useCallback(() => {
     const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
     if (!currentDefinition?.quiron?.fullVideo) {
       toast({ description: 'No encontramos el cortometraje completo en este momento.' });
       return;
     }
-    setIsQuironPrecareVisible(true);
+    setIsQuironPrecareVisible(false);
+    setQuironSignedUrl('');
+    setIsQuironPlaybackUnlocked(false);
+    setShowQuironCommunityPrompt(false);
+    setIsQuironFullVisible(true);
+    setShouldResumeQuironPlay(true);
   }, [activeShowcase, toast]);
 
   const handleCloseQuironPrecare = useCallback(() => {
@@ -92,34 +95,10 @@ const useQuironCinemaFlow = ({
         return;
       }
 
-      if (!isAuthenticated) {
-        showGuardrailPrecareOnce({
-          actionLabel: 'este cortometraje',
-          message: 'Puedes verlo ahora y, si agotas tus GAT, activar huella para seguir sin fricción.',
-          remaining: Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0,
-        });
-      }
-
       if (isQuironUnlocking) return;
       setIsQuironUnlocking(true);
-      setShowQuironCoins(true);
 
       try {
-        const isCopycatsFullUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock);
-        if (!isCopycatsFullUnlocked) {
-          const unlockResult = await trackTransmediaCreditEvent({
-            eventKey: 'showcase_boost:copycats_full_unlock',
-            amount: -SHOWCASE_REQUIRED_GAT.copycats,
-            requiredTokens: SHOWCASE_REQUIRED_GAT.copycats,
-            actionLabel: 'Este cortometraje completo',
-            oncePerIdentity: true,
-            metadata: { source: 'transmedia_cine_full_unlock' },
-          });
-          if (!unlockResult.ok) {
-            return;
-          }
-        }
-
         let url = quironSignedUrl || '';
         if (!url) {
           const bucket = fullVideo.bucket;
@@ -136,13 +115,6 @@ const useQuironCinemaFlow = ({
         }
 
         setIsQuironPlaybackUnlocked(true);
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('gatoencerrado:miniverse-spent', {
-              detail: { id: 'cine', spent: true, amount: SHOWCASE_REQUIRED_GAT.copycats },
-            })
-          );
-        }
 
         if (autoPlay) {
           window.setTimeout(() => {
@@ -161,14 +133,9 @@ const useQuironCinemaFlow = ({
     },
     [
       activeShowcase,
-      availableGATokens,
-      isAuthenticated,
       isQuironUnlocking,
       quironSignedUrl,
-      showcaseBoosts,
-      showGuardrailPrecareOnce,
       toast,
-      trackTransmediaCreditEvent,
     ]
   );
 
