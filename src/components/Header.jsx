@@ -1602,10 +1602,12 @@ const Header = ({
                 </span>
                 {/* Foquito de sesión (Carlos, 4 nov 2026): el punto esmeralda
                     significa una sola cosa en todo el sitio, sesión encendida.
-                    Sin sesión no hay punto; el [#] sigue siendo el botón. */}
+                    Sin sesión no hay punto; el [#] sigue siendo el botón.
+                    Desde el 12 nov 2026 va al costado izquierdo, a media altura,
+                    y no empuja al [#] (Carlos). */}
                 {user ? (
                   <span
-                    className="pointer-events-none absolute right-0 top-0.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                    className="pointer-events-none absolute -left-2.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
                     aria-hidden="true"
                   />
                 ) : null}
