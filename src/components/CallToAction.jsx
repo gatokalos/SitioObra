@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
-import { Drama, HeartHandshake, Info, Palette, PawPrint, Smartphone, Volume2, VolumeX } from 'lucide-react';
+import { Drama, HeartHandshake, Info, Palette, PawPrint, Smartphone, Volume2, VolumeX, X } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -35,6 +35,16 @@ const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const PENDING_HUELLA_CLAIM_KEY = 'gatoencerrado:pending-huella-claim';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MERCH_BANNER_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato_small.mp4';
+const MERCH_TAZA_VIDEO_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4';
+const MERCH_TAZA_POSTER_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg';
+const MERCH_NOVELA_VIDEO_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4';
+const MERCH_COMBO_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -1153,6 +1163,125 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     </button>
   );
 
+  const otherHuellaStorePreview = (
+    <div
+      id="otras-huellas-preview"
+      className="flex min-h-full flex-1 flex-col gap-5"
+      role="region"
+      aria-labelledby="otras-huellas-preview-title"
+    >
+      <div className="group relative min-h-52 overflow-hidden rounded-2xl border border-cyan-200/25 bg-slate-950 sm:min-h-64">
+        <video
+          src={MERCH_BANNER_SRC}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-slate-950/55" />
+        <button
+          type="button"
+          onClick={() => setShowOtherHuellaInfo(false)}
+          className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-black/35 text-slate-100 backdrop-blur-md transition hover:border-fuchsia-200/60 hover:bg-black/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300/60"
+          aria-label="Cerrar vista previa de la tienda"
+        >
+          <X size={20} />
+        </button>
+        <div className="relative flex min-h-52 flex-col items-center justify-end px-5 py-6 text-center sm:min-h-64">
+          <img
+            src="/assets/logoapp.webp"
+            alt=""
+            className="mb-2.5 h-10 w-10 rounded-full border border-white/20 bg-black/35 object-contain p-1.5 shadow-[0_0_24px_rgba(103,232,249,0.2)]"
+          />
+          <p className="text-[0.68rem] uppercase tracking-[0.32em] text-cyan-100/85">
+            Otras huellas
+          </p>
+          <h3
+            id="otras-huellas-preview-title"
+            className="mt-1 font-serif text-3xl text-white drop-shadow-lg sm:text-4xl"
+          >
+            La tienda que viene
+          </h3>
+          <span className="mt-3 rounded-full border border-fuchsia-200/70 bg-black/35 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.25em] text-fuchsia-100 shadow-[0_0_18px_rgba(217,70,239,0.18)] backdrop-blur-md">
+            Próximamente
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <p className="shrink-0 text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-fuchsia-200">
+          Objetos de la obra
+        </p>
+        <span className="h-px flex-1 bg-gradient-to-r from-fuchsia-300/60 to-transparent" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <article className="overflow-hidden rounded-2xl border border-cyan-200/35 bg-slate-950/75">
+          <div className="relative aspect-[4/3] overflow-hidden border-b border-white/10">
+            <video
+              src={MERCH_TAZA_VIDEO_SRC}
+              poster={MERCH_TAZA_POSTER_SRC}
+              className="h-full w-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+            />
+          </div>
+          <p className="px-3 py-3 text-center text-sm font-medium text-slate-100 sm:text-base">
+            Taza artesanal
+          </p>
+        </article>
+
+        <article className="overflow-hidden rounded-2xl border border-cyan-200/35 bg-slate-950/75">
+          <div className="relative aspect-[4/3] overflow-hidden border-b border-white/10">
+            <video
+              src={MERCH_NOVELA_VIDEO_SRC}
+              className="h-full w-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+            />
+          </div>
+          <p className="px-3 py-3 text-center text-sm font-medium text-slate-100 sm:text-base">
+            Novela Ensayo
+          </p>
+        </article>
+      </div>
+
+      <article className="overflow-hidden rounded-2xl border border-fuchsia-200/35 bg-slate-950/75">
+        <div className="relative aspect-[2/1] overflow-hidden border-b border-white/10">
+          <img
+            src={MERCH_COMBO_SRC}
+            alt="Novela Mi gato encerrado acompañada por dos tazas artesanales"
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+          <p className="absolute inset-x-0 bottom-3 text-center text-base font-medium text-white sm:text-lg">
+            Novela + 2 tazas
+          </p>
+        </div>
+      </article>
+
+      <p className="mx-auto max-w-md text-center text-sm leading-relaxed text-slate-300 sm:text-base">
+        Próximamente, algunos objetos de la obra también podrán convertirse en huellas.
+      </p>
+
+      <div className="mt-auto rounded-full border border-white/20 bg-white/[0.06] px-4 py-2.5 text-center text-sm text-slate-300">
+        Vista previa · tienda aún no activa
+      </div>
+    </div>
+  );
+
   const summarySection = (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between">
@@ -1168,23 +1297,17 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           Otras huellas
           <button
             type="button"
-            onClick={() => setShowOtherHuellaInfo((prev) => !prev)}
+            onClick={() => setShowOtherHuellaInfo(true)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition hover:border-cyan-200/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
-            aria-label="Explicar otras huellas"
+            aria-label="Ver vista previa de otras huellas"
             aria-expanded={showOtherHuellaInfo}
+            aria-controls="otras-huellas-preview"
           >
             <Info size={13} />
           </button>
         </p>
         <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
       </div>
-
-      {showOtherHuellaInfo ? (
-        <div className="rounded-xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2.5 text-xs leading-relaxed text-slate-300">
-          Próximamente, algunas compras —como una taza, una novela u otros objetos de la obra— podrán convertirse en huellas. Este espacio queda preparado mientras definimos cómo registrarlas.
-        </div>
-      ) : null}
-
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <p className="text-[1.05rem] opacity-90 leading-tight">
@@ -1428,24 +1551,30 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       ))}
       <div
         ref={impactPanelRef}
-        className="relative flex flex-1 flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100"
+        className="relative flex flex-1 flex-col gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100"
       >
-        <div className="relative pr-12">
-          {counterToggleButton}
-          {impactPanelHeading}
-        </div>
+        {showOtherHuellaInfo ? (
+          otherHuellaStorePreview
+        ) : (
+          <>
+            <div className="relative pr-12">
+              {counterToggleButton}
+              {impactPanelHeading}
+            </div>
 
-        <div className="order-1">
-          {summarySection}
-        </div>
+            <div className="order-1">
+              {summarySection}
+            </div>
 
-        <div className="order-2 space-y-4 sm:order-3">
-          {simulatorSection}
-        </div>
+            <div className="order-2 space-y-4 sm:order-3">
+              {simulatorSection}
+            </div>
 
-        <div className="order-3 sm:order-2">
-          {ctaSection}
-        </div>
+            <div className="order-3 sm:order-2">
+              {ctaSection}
+            </div>
+          </>
+        )}
       </div>
       {showAftercareOverlay ? (
         <div
