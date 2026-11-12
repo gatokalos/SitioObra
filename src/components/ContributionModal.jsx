@@ -772,7 +772,7 @@ const ContributionModal = ({
                 Cada estación integra presencia física y extensión digital
               </p>
               <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-300">
-                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Presencia digital inspirada en mitologías mesoamericanas.</span></li>
+                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Presencia digital, trasunto divino de una parte del cuerpo.</span></li>
                 <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Desarrollo escénico basado en motion capture.</span></li>
                 <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Dirección sonora con música original.</span></li>
                 <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Proyección nocturna mediante videomapping láser.</span></li>

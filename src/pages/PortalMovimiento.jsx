@@ -57,7 +57,7 @@ const MOVEMENT_COLLABORATOR_CALL_ITEMS = [
   'Comunidad interesada en exploración corporal',
 ];
 const MOVEMENT_HIGHLIGHTS = [
-  'Una presencia digital inspirada en mitologías mesoamericanas.',
+  'Una presencia digital, trasunto divino de una parte del cuerpo.',
   'Diseñada con motion capture.',
   'Acompañada de música original.',
   'Proyectada con videomapping láser durante las noches.',
@@ -712,7 +712,7 @@ const PortalMovimiento = () => {
             <DiosasCarousel
               items={MOVEMENT_DIOSAS_GALLERY}
               label="Swipe-horizontal"
-              caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
+              caption="Cada clip muestra un giro 360° de los trasuntos divinos."
             />
           </div>
           */}

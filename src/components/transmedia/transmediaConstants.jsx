@@ -1146,7 +1146,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       'La Ruta de la Corporeidad es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
     diosaHighlights: [
-      'Una presencia digital inspirada en mitologías mesoamericanas.',
+      'Una presencia digital, trasunto divino de una parte del cuerpo.',
       'Diseñada con motion capture.',
       'Acompañada de música original.',
       'Proyectada con videomapping láser durante las noches.',

@@ -120,7 +120,6 @@ export function useSearch() {
               origen: event.origen ?? 'huellas',
               forma: event.forma,
               huellas: event.huellas ?? [],
-              pregunta: event.pregunta ?? null,
             });
           } else if (event.type === 'done') {
             setSources(event.sources ?? []);

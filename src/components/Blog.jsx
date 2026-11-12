@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { leerVocesUsadas, marcarVozUsada } from '@/lib/vocesUsadas';
 import {
   BLOG_CATEGORY_CONFIG,
   BLOG_CATEGORY_ORDER,
@@ -728,9 +729,24 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   // El vestíbulo mostraba 3 de 15: doce preguntas escondidas tras un botón que
   // casi nadie pulsa. En escritorio hay columna de sobra (mockup de Carlos,
   // 20 sep); en móvil la columna es todo lo que hay, así que ahí siguen tres.
+  // La voz usada se descarta (Carlos, 11 nov 2026): quien ya tomó una pregunta
+  // del vestíbulo —desde la lista o desde el librito de una vitrina— no la vuelve
+  // a ver, y su lugar lo ocupa la siguiente. Vive en este navegador; para los
+  // demás el vestíbulo sigue igual. Si alguien ya las usó todas, vuelven todas.
+  const [vocesUsadas, setVocesUsadas] = useState(() => leerVocesUsadas());
+  const descartarVoz = useCallback((id) => {
+    if (!id) return;
+    marcarVozUsada(id);
+    setVocesUsadas((prev) => (prev.has(id) ? prev : new Set([...prev, id])));
+  }, []);
+  const vestibuloVigente = useMemo(() => {
+    const sinUsar = vestibuloPrompts.filter((p) => !p.id || !vocesUsadas.has(p.id));
+    return sinUsar.length ? sinUsar : vestibuloPrompts;
+  }, [vestibuloPrompts, vocesUsadas]);
   const FAQ_PAGE_SIZE = isMobileViewport ? 3 : 7;
-  const faqPageCount = Math.max(1, Math.ceil(vestibuloPrompts.length / FAQ_PAGE_SIZE));
-  const faqVisiblePrompts = vestibuloPrompts.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
+  const faqPageCount = Math.max(1, Math.ceil(vestibuloVigente.length / FAQ_PAGE_SIZE));
+  const faqPaginaVigente = Math.min(faqPage, faqPageCount - 1);
+  const faqVisiblePrompts = vestibuloVigente.slice(faqPaginaVigente * FAQ_PAGE_SIZE, (faqPaginaVigente + 1) * FAQ_PAGE_SIZE);
   const camerinoLightState = faqIsListening
     ? 'listening'
     : faqStatus === 'searching' || faqStatus === 'streaming'
@@ -1044,15 +1060,19 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     const esPrellenadaTalCual = !meta?.origen && Boolean(lastAppliedPrefillRef.current) && texto === lastAppliedPrefillRef.current.trim();
     if (esPrellenadaTalCual && lastAppliedPrefillVozRef.current) {
       // Vino del librito de una vitrina y es una voz del vestíbulo: cuenta como elegida.
+      // Lleva la forma de la vitrina: solo así el servidor sabe que llegó desde
+      // un miniverso y suma las voces de esa forma (Carlos, 11 nov 2026).
       const vozId = lastAppliedPrefillVozRef.current;
+      const formaDeVitrina = lastAppliedPrefillFormaRef.current;
       if (RAW_API_URL) fetch(`${RAW_API_URL}/api/vestibulo/${vozId}/elegir`, { method: 'POST', keepalive: true }).catch(() => {});
-      faqSearch(query, { ...meta, origen: 'vestibulo', vestibuloId: vozId });
+      descartarVoz(vozId);
+      faqSearch(query, { ...meta, origen: 'vestibulo', vestibuloId: vozId, ...(formaDeVitrina ? { forma: formaDeVitrina } : {}) });
       return;
     }
     const origen = meta?.origen ?? (esPrellenadaTalCual ? 'prellenada' : 'propia');
     const forma = origen === 'prellenada' && !meta?.origen ? lastAppliedPrefillFormaRef.current : null;
     faqSearch(query, { ...meta, origen, ...(forma ? { forma } : {}) });
-  }, [faqSearch, faqQuery, isMobileViewport]);
+  }, [faqSearch, faqQuery, isMobileViewport, descartarVoz]);
 
   const handleFaqPromptSelect = useCallback((prompt) => {
     const texto = typeof prompt === 'string' ? prompt : prompt?.texto;
@@ -1062,12 +1082,13 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     if (prompt?.id && RAW_API_URL) {
       fetch(`${RAW_API_URL}/api/vestibulo/${prompt.id}/elegir`, { method: 'POST', keepalive: true }).catch(() => {});
     }
+    if (prompt?.id) descartarVoz(prompt.id);
     if (faqIsListening) stopFaqListening({ discard: true });
     setFaqInputMode('text');
     setFaqMicError('');
     setFaqQuery(texto);
     handleFaqSearchSubmit(texto, { origen: 'vestibulo', vestibuloId: prompt?.id ?? null });
-  }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening]);
+  }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening, descartarVoz]);
 
   useEffect(() => {
     // Antes disparaba con 'searching'/'streaming': en ese momento la respuesta
@@ -1382,7 +1403,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             </div>
                             <button
                               type="button"
-                              onClick={() => setFaqPage((p) => (p + 1) % faqPageCount)}
+                              onClick={() => setFaqPage((faqPaginaVigente + 1) % faqPageCount)}
                               aria-label="Mostrar otras rutas"
                               className="group rounded-full border border-violet-200/20 p-2 text-violet-200/70 transition hover:border-violet-200/45 hover:text-violet-100"
                             >
@@ -1456,7 +1477,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                   forma. Textuales, breves y sin nombre; sólo de
                                   quienes lo autorizaron (D-37 §3.2). Se eligen por
                                   divergencia entre sí, no por parecido con la
-                                  pregunta, y cierran preguntando, no dictaminando. */}
+                                  pregunta. Salen solo cuando la pregunta llegó desde
+                                  un miniverso, y terminan con las voces: sin
+                                  pregunta de cierre (Carlos, 11 nov 2026). */}
                               {faqCoda && faqCoda.huellas.length > 0 && (
                                 <div className="border-t border-white/10 pt-4">
                                   <p className="mb-3 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">
@@ -1481,11 +1504,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                       </li>
                                     ))}
                                   </ul>
-                                  {faqCoda.pregunta && (
-                                    <p className="mt-4 text-sm leading-relaxed text-violet-200/90">
-                                      {faqCoda.pregunta}
-                                    </p>
-                                  )}
                                 </div>
                               )}
 

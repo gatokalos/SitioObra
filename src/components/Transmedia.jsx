@@ -3214,7 +3214,7 @@ const renderDramaFeaturedWork = () => (
               <DiosasCarousel
                 items={activeDefinition.diosasGallery}
                 label="Swipe-horizontal"
-                caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
+                caption="Cada clip muestra un giro 360° de los trasuntos divinos."
               />
             ) : null}
           </div>

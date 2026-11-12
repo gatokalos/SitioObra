@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { RAW_API_URL } from '@/hooks/useSearch';
+import { leerVocesUsadas } from '@/lib/vocesUsadas';
 
 // La pregunta con la que cada forma llama al apuntador (Carlos, 21 sep 2026).
 // Son preguntas de información: quien abre el librito quiere saber qué es esta
@@ -28,6 +29,8 @@ const FORMA_ID_POR_NOMBRE = {
 // elegida, así que cuenta en el ranking y la coda toma la forma del autor. Las
 // preguntas de abajo quedan como respaldo para una forma sin voz asignada; se
 // curan desde el Backstage, no desde aquí. Una sola lectura por página.
+// Una voz que esta persona ya usó no se le vuelve a ofrecer (Carlos, 11 nov 2026):
+// toma la siguiente de la misma forma, o la pregunta de respaldo.
 let vestibuloPromesa = null;
 const leerVestibulo = () => {
   if (!RAW_API_URL) return Promise.resolve([]);
@@ -86,7 +89,8 @@ const RelatedReadingTooltipButton = ({
     let vigente = true;
     leerVestibulo().then((lista) => {
       if (!vigente) return;
-      const voz = lista.find((v) => v && v.forma === formaId && typeof v.texto === 'string' && v.texto.trim() && v.id);
+      const usadas = leerVocesUsadas();
+      const voz = lista.find((v) => v && v.forma === formaId && typeof v.texto === 'string' && v.texto.trim() && v.id && !usadas.has(v.id));
       setVozDeForma(voz ?? null);
     });
     return () => { vigente = false; };
