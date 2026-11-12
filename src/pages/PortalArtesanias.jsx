@@ -5,7 +5,6 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import ARExperience from '@/components/ar/ARExperience';
@@ -152,7 +151,6 @@ const PortalArtesanias = () => {
   const [obraCardIndex, setObraCardIndex] = useState(0);
   const obraCardDirRef = useRef(0);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('artesanias').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('artesanias').l2Answer);
@@ -348,11 +346,6 @@ const PortalArtesanias = () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, [isTazaARActive]);
-
-  const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -625,11 +618,6 @@ const PortalArtesanias = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="taza"
-        />
       </div>
 
       {isTazaARActive ? (

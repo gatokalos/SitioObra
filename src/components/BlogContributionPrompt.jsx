@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ContributionModal from '@/components/ContributionModal';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { cn } from '@/lib/utils';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
@@ -17,7 +16,6 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
   const titleRef = useRef(null);
   const isTitleInView = useInView(titleRef, { once: true, amount: 0.8 });
   const titleDisplay = useScrambleText(TITLE, { active: isTitleInView, hashAccents: true });
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
 
@@ -32,7 +30,6 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
   );
 
   const handleOpenContribution = useCallback(() => {
-    setIsContributionOpen(true);
     setShowOnboardingHint(false);
     onboardingStoredRef.current = true;
     safeSetItem(BLOG_ONBOARDING_KEY, 'seen');
@@ -55,16 +52,6 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
       onboardingStoredRef.current = true;
     }, 6000);
     return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    const handleResumeContribution = () => {
-      setIsContributionOpen(true);
-    };
-    window.addEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
-    return () => {
-      window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
-    };
   }, []);
 
   return (
@@ -146,7 +133,6 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
           </motion.div>
         </div>
       </section>
-      <ContributionModal open={isContributionOpen} onClose={() => setIsContributionOpen(false)} />
     </>
   );
 };

@@ -9,7 +9,6 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -101,7 +100,6 @@ const PortalGraficos = () => {
   const [latestGraficosReading, setLatestGraficosReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('grafico').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('grafico').l2Answer);
@@ -305,10 +303,11 @@ const PortalGraficos = () => {
     setIsPdfOpen(true);
   }, [requireAuth]);
 
+  // «Sumarme al laboratorio» baja a la Salida: el formulario viejo de propuestas se
+  // borró (Carlos, 12 nov 2026). La Salida no pide iniciar sesión.
   const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
+    navigate('/#contact');
+  }, [navigate]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -520,11 +519,6 @@ const PortalGraficos = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="grafico"
-        />
       </div>
 
       {isPdfOpen ? createPortal(

@@ -6,7 +6,6 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -122,7 +121,6 @@ const PortalCine = () => {
   const [latestCineReading, setLatestCineReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('cine').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('cine').l2Answer);
@@ -286,11 +284,6 @@ const PortalCine = () => {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isReadingTooltipOpen]);
-
-  const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
 
   const handleOpenFullFilm = useCallback(() => {
     if (!requireAuth()) return;
@@ -610,11 +603,6 @@ const PortalCine = () => {
           </div>,
           document.body
         )}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="cine"
-        />
       </div>
     </div>
   );

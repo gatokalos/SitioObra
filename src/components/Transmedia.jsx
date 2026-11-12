@@ -82,6 +82,7 @@ import useShowcaseTransition from '@/hooks/useShowcaseTransition';
 import useTransmediaCredits from '@/hooks/useTransmediaCredits';
 import useGatBalanceToast from '@/hooks/useGatBalanceToast';
 import useExplorerBadge from '@/hooks/useExplorerBadge';
+import { marcarLlegadaParaProponer } from '@/lib/salidaPropuesta';
 import useMiniversoUnlocks from '@/hooks/useMiniversoUnlocks';
 import useMerchCheckout from '@/hooks/useMerchCheckout';
 import usePdfPreview from '@/hooks/usePdfPreview';
@@ -108,7 +109,6 @@ const MARIANA_GALLERY = [
 ];
 
 const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
-const ContributionModal = lazy(() => import('@/components/ContributionModal'));
 const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
 const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/AutoficcionPreviewOverlay'));
 const LiteraturaAppOverlay = lazy(() => import('@/components/novela/LiteraturaAppOverlay'));
@@ -237,7 +237,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [miniverseInitialTabId, setMiniverseInitialTabId] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const hasHandledDeepLinkRef = useRef(false);
-  const [returnShowcaseId, setReturnShowcaseId] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
   const supportSectionRef = useRef(null);
@@ -488,19 +487,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   } = useTransmediaCredits({ isAuthenticated, userId: user?.id, toast });
   const { isMerchCheckoutLoading, handleOpenNovelaReserve } = useMerchCheckout({ userEmail: user?.email, activeShowcase, toast });
   const [movementPendingAction, setMovementPendingAction] = useState(null);
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
-  const [hasLoadedContributionModal, setHasLoadedContributionModal] = useState(false);
-  const [contributionCategoryId, setContributionCategoryId] = useState(null);
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
 
   useEffect(() => {
     if (isMiniverseOpen) setHasLoadedMiniverseModal(true);
   }, [isMiniverseOpen]);
-
-  useEffect(() => {
-    if (isContributionOpen) setHasLoadedContributionModal(true);
-  }, [isContributionOpen]);
 
   useEffect(() => {
     if (showAutoficcionPreview) setHasLoadedAutoficcionPreview(true);
@@ -586,7 +578,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     showcaseBoosts,
     baseEnergyByShowcase,
     trackTransmediaCreditEvent,
-    setIsContributionOpen,
   });
 
   useEffect(() => {
@@ -621,13 +612,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, [isAuthenticated, resetQuironOnLogout]);
 
   // silvestre storage handled in useSilvestreVoice
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const handleResumeContribution = () => setIsContributionOpen(true);
-    window.addEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
-    return () => window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
-  }, []);
 
 
 
@@ -1822,28 +1806,20 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     window.open('https://gatoencerrado.ai', '_blank', 'noopener,noreferrer');
   }, []);
 
-  const handleOpenContribution = useCallback(
-    (categoryId = null) => {
-      if (activeShowcase) {
-        setReturnShowcaseId(activeShowcase);
-        setActiveShowcase(null);
-      } else {
-        setReturnShowcaseId(null);
-      }
-      setContributionCategoryId(categoryId);
-      setIsContributionOpen(true);
+  // El formulario viejo de propuestas se borró (Carlos, 12 nov 2026: «es de otra
+  // arquitectura»). Quien quiere responder con un texto suyo o sumarse a una
+  // convocatoria baja a la Salida; si viene a proponer un texto, la Salida lo sabe
+  // y le muestra su ficha.
+  const handleIrALaSalida = useCallback(
+    (paraProponerDesde = null) => {
+      handleCloseShowcase();
+      if (paraProponerDesde) marcarLlegadaParaProponer(paraProponerDesde);
+      window.setTimeout(() => {
+        document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
     },
-    [activeShowcase]
+    [handleCloseShowcase]
   );
-
-  const handleReturnToShowcase = useCallback(() => {
-    if (!returnShowcaseId) return;
-    setIsContributionOpen(false);
-    setContributionCategoryId(null);
-    const targetId = returnShowcaseId;
-    setReturnShowcaseId(null);
-    requestAnimationFrame(() => openMiniverseById(targetId));
-  }, [openMiniverseById, returnShowcaseId]);
 
   const renderCommunityBlock = useCallback(
     (
@@ -1862,7 +1838,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // const comments = publicContributions[showcaseId] ?? [];
       // const isLoading = publicContributionsLoading[showcaseId];
       // const error = publicContributionsError[showcaseId];
-      const categoryId = getContributionCategoryForShowcase(showcaseId);
 
       return (
         <div className={className}>
@@ -1911,7 +1886,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               <Button
                 variant="outline"
                 className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
-                onClick={() => handleOpenContribution(categoryId)}
+                onClick={() => handleIrALaSalida(showcaseId)}
               >
                 {ctaLabel}
               </Button>
@@ -1928,7 +1903,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       getContributionCategoryForShowcase,
       getTopicForShowcase,
       handleReadingBadgeClick,
-      handleOpenContribution,
+      handleIrALaSalida,
       isMobileViewport,
       latestBlogPostByShowcase,
       readingGlowDismissedByShowcase,
@@ -3374,7 +3349,7 @@ const renderDramaFeaturedWork = () => (
               {activePortalExperienceDone && (
                 <button
                   type="button"
-                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                  onClick={() => handleIrALaSalida()}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
                 >
                   ✦ Inscríbete a los talleres coreográficos
@@ -4574,7 +4549,7 @@ const renderDramaFeaturedWork = () => (
                               <div className="flex justify-end">
                                 <Button
                                   type="button"
-                                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                                  onClick={() => handleIrALaSalida()}
                                   className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
                                 >
                                   Convocatoria abierta
@@ -4875,7 +4850,7 @@ const renderDramaFeaturedWork = () => (
                           onClose={() => { setIsMovimientoResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           portal="movimiento"
-                          onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                          onOpenNarrative={() => handleIrALaSalida()}
                           narrativeCTALabel="✦ Ver los talleres"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
@@ -5447,7 +5422,7 @@ const renderDramaFeaturedWork = () => (
             <Button
               onClick={() => {
                 handleCloseMovementActionOverlay();
-                handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'));
+                handleIrALaSalida();
               }}
               className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-600/80 to-cyan-500/70 px-6 py-3 text-sm font-semibold text-white hover:from-emerald-500 hover:to-cyan-400"
             >
@@ -6211,21 +6186,6 @@ const renderDramaFeaturedWork = () => (
             onSelectMiniverse={handleSelectMiniverse}
             shelved={isMiniverseShelved}
             stayOpenOnSelect
-          />
-        </Suspense>
-      ) : null}
-      {hasLoadedContributionModal ? (
-        <Suspense fallback={null}>
-          <ContributionModal
-            open={isContributionOpen}
-            onClose={() => {
-              setIsContributionOpen(false);
-              setContributionCategoryId(null);
-              setReturnShowcaseId(null);
-            }}
-            initialCategoryId={contributionCategoryId}
-            presentation="sheet"
-            onReturnToShowcase={returnShowcaseId ? handleReturnToShowcase : null}
           />
         </Suspense>
       ) : null}

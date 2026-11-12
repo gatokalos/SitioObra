@@ -12,7 +12,6 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -276,7 +275,6 @@ const PortalMovimiento = () => {
   const [latestMovimientoReading, setLatestMovimientoReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('movimiento').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('movimiento').l2Answer);
@@ -457,10 +455,11 @@ const PortalMovimiento = () => {
     }
   }, [reactionStatus, requireAuth, user]);
 
+  // «Convocatoria abierta» baja a la Salida: el formulario viejo de propuestas se
+  // borró (Carlos, 12 nov 2026). La Salida no pide iniciar sesión.
   const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
+    navigate('/#contact');
+  }, [navigate]);
 
   const movimientoReadingAuthorLabel = (latestMovimientoReading?.author || '').trim() || 'autor invitado';
   const movimientoReadingThumbnailUrl =
@@ -840,11 +839,6 @@ const PortalMovimiento = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="movimiento"
-        />
       </div>
     </div>
   );

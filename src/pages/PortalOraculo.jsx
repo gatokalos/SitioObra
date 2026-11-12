@@ -8,7 +8,6 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -92,7 +91,6 @@ const PortalOraculo = () => {
   const [latestOraculoReading, setLatestOraculoReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('oraculo').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('oraculo').l2Answer);
@@ -249,11 +247,6 @@ const PortalOraculo = () => {
   }, [oraculoUrl, requireAuth]);
 
   const handleCloseOraculoIframe = useCallback(() => setIsOraculoIframeOpen(false), []);
-
-  const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -490,11 +483,6 @@ const PortalOraculo = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="oraculo"
-        />
       </div>
     </div>
 

@@ -11,8 +11,8 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import useScrambleText from '@/hooks/useScrambleText';
 import {
   SALIDA_PROPUESTA_EVENT,
-  olvidarLlegadaDesdeCamerino,
-  vieneDelCamerino,
+  lugarDeLlegada,
+  olvidarLlegadaParaProponer,
 } from '@/lib/salidaPropuesta';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
@@ -21,15 +21,16 @@ const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 const CONTACT_TITLE = '¿Tienes curiosidad gatuna?';
 const CONTACT_TITLE_WORDS = CONTACT_TITLE.split(' ');
 // La ficha tiene dos voces (Carlos, 12 nov 2026). Quien llega por cualquier
-// lado escribe un mensaje; quien baja desde el botón del Camerino viene a
-// proponer un texto, y mientras tanto el título de la Salida se queda tenue.
+// lado escribe un mensaje; quien baja desde el botón del Camerino (o desde
+// «Improvisa una respuesta» en una vitrina) viene a proponer un texto, y
+// mientras tanto el título de la Salida se queda tenue.
 // «¿Vienes a otra cosa?» devuelve la ficha y el título de siempre.
 const COPY_FICHA = {
   mensaje: {
     titulo: 'Envíame un Mensaje',
     entrada: null,
     mensaje: 'Mensaje *',
-    mensajePlaceholder: 'Cuéntanos todo...',
+    mensajePlaceholder: 'Cuéntame todo...',
     material: 'Material',
     materialPlaceholder: 'Drive, portfolio, video...',
     faltan: 'Completa nombre, email y mensaje antes de enviar.',
@@ -63,7 +64,8 @@ const Contact = () => {
   });
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [vieneAProponer, setVieneAProponer] = useState(() => vieneDelCamerino());
+  const [proponeDesde, setProponeDesde] = useState(() => lugarDeLlegada());
+  const vieneAProponer = Boolean(proponeDesde);
   const [ultimoEnvioFuePropuesta, setUltimoEnvioFuePropuesta] = useState(false);
   const [cambiandoFicha, setCambiandoFicha] = useState(false);
   const cambioDeFichaRef = useRef(null);
@@ -83,15 +85,15 @@ const Contact = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const alLlegarDesdeCamerino = () => {
+    const alLlegarParaProponer = () => {
       if (cambioDeFichaRef.current) window.clearTimeout(cambioDeFichaRef.current);
       setCambiandoFicha(false);
-      setVieneAProponer(true);
+      setProponeDesde(lugarDeLlegada());
       setStatus('idle');
     };
-    window.addEventListener(SALIDA_PROPUESTA_EVENT, alLlegarDesdeCamerino);
+    window.addEventListener(SALIDA_PROPUESTA_EVENT, alLlegarParaProponer);
     return () => {
-      window.removeEventListener(SALIDA_PROPUESTA_EVENT, alLlegarDesdeCamerino);
+      window.removeEventListener(SALIDA_PROPUESTA_EVENT, alLlegarParaProponer);
       if (cambioDeFichaRef.current) window.clearTimeout(cambioDeFichaRef.current);
     };
   }, []);
@@ -99,10 +101,10 @@ const Contact = () => {
   // «¿Vienes a otra cosa?»: el texto de la ficha se desvanece, entra el de
   // siempre y el título de afuera recupera su luz.
   const escribirOtraCosa = useCallback(() => {
-    olvidarLlegadaDesdeCamerino();
+    olvidarLlegadaParaProponer();
     setCambiandoFicha(true);
     cambioDeFichaRef.current = window.setTimeout(() => {
-      setVieneAProponer(false);
+      setProponeDesde(null);
       setCambiandoFicha(false);
       cambioDeFichaRef.current = null;
     }, CAMBIO_DE_FICHA_MS);
@@ -242,7 +244,7 @@ const Contact = () => {
             city: trimmedCity || null,
             attachment_url: trimmedAttachmentUrl || null,
             message: trimmedMessage,
-            origen: vieneAProponer ? 'camerino' : null,
+            origen: proponeDesde,
           },
         });
 
@@ -259,7 +261,7 @@ const Contact = () => {
             link: trimmedAttachmentUrl || null,
             meta: {
               route: 'contact',
-              origen: vieneAProponer ? 'camerino' : null,
+              origen: proponeDesde,
               city: trimmedCity || null,
               attachment_url: trimmedAttachmentUrl || null,
               role: trimmedRole || null,
@@ -275,8 +277,8 @@ const Contact = () => {
         // Mandado el texto, la Salida vuelve a ser la de siempre; el aviso
         // verde dice que el texto llegó.
         setUltimoEnvioFuePropuesta(vieneAProponer);
-        olvidarLlegadaDesdeCamerino();
-        setVieneAProponer(false);
+        olvidarLlegadaParaProponer();
+        setProponeDesde(null);
         setStatus('success');
         setFormValues({ name: '', role: '', email: '', city: '', attachmentUrl: '', message: '' });
         fireConfetti();
@@ -287,7 +289,7 @@ const Contact = () => {
         toast({ description: 'No pudimos enviar tu mensaje. Intenta de nuevo.' });
       }
     },
-    [formValues, status, vieneAProponer, copy.faltan]
+    [formValues, status, vieneAProponer, proponeDesde, copy.faltan]
   );
 
   const handleSocialClick = (url) => {
@@ -499,7 +501,7 @@ const Contact = () => {
                   value={formValues.city}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, city: event.target.value }))}
                   className="form-surface w-full px-4 py-3"
-                  placeholder="¿Desde dónde nos visitas?"
+                  placeholder="¿Desde dónde me visitas?"
                 />
               </div>
         

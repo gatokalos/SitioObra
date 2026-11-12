@@ -4,7 +4,6 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -91,7 +90,6 @@ const PortalJuegos = () => {
   const [showLoginHint, setShowLoginHint] = useState(false);
   const [latestJuegosReading, setLatestJuegosReading] = useState(null);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('juegos').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('juegos').l2Answer);
@@ -239,11 +237,6 @@ const PortalJuegos = () => {
       cancelled = true;
     };
   }, [user?.id]);
-
-  const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -699,11 +692,6 @@ const PortalJuegos = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="apps"
-        />
       </div>
     </div>
   );

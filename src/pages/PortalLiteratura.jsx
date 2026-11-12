@@ -4,7 +4,6 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -104,7 +103,6 @@ const PortalLiteratura = () => {
   const [latestLiteraturaReading, setLatestLiteraturaReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => readResonanceProgress('literatura').l1Done);
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('literatura').l2Answer);
@@ -242,11 +240,6 @@ const PortalLiteratura = () => {
     };
   }, [isReadingTooltipOpen]);
 
-
-  const handleOpenCommunityComposer = useCallback(() => {
-    if (!requireAuth()) return;
-    setIsContributionOpen(true);
-  }, [requireAuth]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -438,11 +431,6 @@ const PortalLiteratura = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <ContributionModal
-          open={isContributionOpen}
-          onClose={() => setIsContributionOpen(false)}
-          initialCategoryId="miniverso_novela"
-        />
       </div>
 
       <LiteraturaAppOverlay

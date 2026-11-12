@@ -17,7 +17,6 @@ import {
  * @param {object}   deps.showcaseBoosts
  * @param {object}   deps.baseEnergyByShowcase
  * @param {Function} deps.trackTransmediaCreditEvent
- * @param {Function} deps.setIsContributionOpen
  */
 const useExplorerBadge = ({
   allShowcasesUnlocked,
@@ -25,7 +24,6 @@ const useExplorerBadge = ({
   showcaseBoosts,
   baseEnergyByShowcase,
   trackTransmediaCreditEvent,
-  setIsContributionOpen,
 }) => {
   const storedBadge = readStoredJson(EXPLORER_BADGE_STORAGE_KEY, null);
   const initialExplorerBadge = storedBadge ? { ...DEFAULT_BADGE_STATE, ...storedBadge } : DEFAULT_BADGE_STATE;
@@ -74,10 +72,8 @@ const useExplorerBadge = ({
     const ctaSection = document.getElementById('cta');
     if (ctaSection) {
       ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
     }
-    setIsContributionOpen(true);
-  }, [setIsContributionOpen]);
+  }, []);
 
   const handleExplorerReward = useCallback(
     async (rewardType = 'subscriber') => {
