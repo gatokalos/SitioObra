@@ -77,10 +77,10 @@ const NextShow = () => {
           >
             <div className="curtain-fall-content relative z-10">
               <h3 aria-label={`Caída del telón: ${CLOSING_LINE}`} className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                <span aria-hidden="true">Caída del telón:</span><br />
+                <span aria-hidden="true" className="titulo-perlado">Caída del telón:</span><br />
                 <span ref={closingLineRef} className="relative inline-block" aria-hidden="true">
                   <span className="invisible">{CLOSING_LINE}</span>
-                  <span className="absolute inset-0 whitespace-nowrap">{closingLineDisplay}</span>
+                  <span className="titulo-perlado absolute inset-0 whitespace-nowrap">{closingLineDisplay}</span>
                 </span>
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">

@@ -84,17 +84,17 @@ const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 // pregunta» antes de activar. Va al final del ciclo para pasarle el turno a
 // quien visita; como fantasma tardaría casi un minuto en salir.
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en ti ®',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
+  'La obra que ocurre en ti',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
   'Basada en emociones sin nombre',       // el origen — intacta
   'Arte, tecnología y una causa: investigar creando',  // la función de la obra, y su economía
-  'Una pregunta que vuelve días después',            // el mecanismo — el cuarto movimiento
+  'Una duda que vuelve días después',            // el mecanismo — el cuarto movimiento
   'Tú sabes hasta dónde indagar',                    // la invitación — le pasa el turno a quien visita
 ];
 
 const HERO_GHOST_SUBTITLES = [
   'Sí: aquí hay gato encerrado',                     // el premio final del que se quedó; título del artículo
-  'Un universo que cambia de forma',                        // el gato escondido en el número
-  '(Tal vez esto empieza al revés)',                 // la pregunta llega antes que la obra, a propósito
+  'Una narrativa, nueve vidas, un universo',                        // el gato escondido en el número
+  'No hay una sola respuesta: hay muchas formas de rodearla',                // el premio del que se quedó; el gozne sin nombre (11 nov)
 ];
 
 const HeroInactiveSignal = ({
@@ -1491,7 +1491,7 @@ const Hero = () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: hasActivatedAudio ? 1.1 : 0.8, ease: 'easeOut', delay: hasActivatedAudio ? 0 : 0.25 }}
-                  className="mt-2 flex justify-center px-8"
+                  className="hero-subtitle-row mt-2 flex justify-center px-8"
                 >
                   <span className="hero-subtitle-track relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-200/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>

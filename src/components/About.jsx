@@ -23,7 +23,6 @@ import {
   TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
-import { isSafariBrowser } from '@/lib/browser';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
@@ -207,7 +206,6 @@ const isLargeVoiceCard = (item) => getNormalizedVoiceLength(item?.quote) >= PROV
 export const ProvocaSection = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isSafari = isSafariBrowser();
   const prefersReducedMotion = useReducedMotion();
   const [confettiBursts, setConfettiBursts] = useState([]);
   const [isObraInfoOpen, setIsObraInfoOpen] = useState(false);
@@ -1026,16 +1024,13 @@ export const ProvocaSection = () => {
               ACTO FINAL
             </p>
             <h2
-              className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}
+              className="provoca-act-title provoca-act-title--section"
               aria-label="La réplica"
             >
-              <span aria-hidden="true">
-                {isSafari ? (
-                  <>LA RÉPLICA</>
-                ) : (
-                  <>LA R<span className="provoca-act-title__accented">E</span>PLICA</>
-                )}
-              </span>
+              {/* La É es la del alfabeto, no una tilde dibujada aparte: con la
+                  capa de texto del Hero (index.css), Safari y Chrome la trazan
+                  con el mismo contorno que las demás letras (12 nov 2026). */}
+              <span aria-hidden="true">LA RÉPLICA</span>
             </h2>
             <p className="provoca-stage-description">
               Ninguna obra termina en el acto final. Hasta aquí habló ella.
@@ -1847,7 +1842,9 @@ const About = () => {
                   className="ge-chip-action ge-chip-action--primary"
                 >
                   <Users size={20} />
-                  Créditos del estreno escénico
+                  {/* Una palabra por botón (Carlos, 12 nov 2026): los títulos de
+                      abajo y el Programa de mano conservan los nombres completos. */}
+                  Créditos
                 </Button>
                 <Button
                   variant="outline"
@@ -1857,7 +1854,7 @@ const About = () => {
                   className="ge-chip-action ge-chip-action--secondary"
                 >
                   <Camera size={20} />
-                  Galería fractal
+                  Galería
                 </Button>
               </div>
             </div>

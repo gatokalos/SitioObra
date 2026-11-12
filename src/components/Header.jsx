@@ -758,8 +758,7 @@ const Header = ({
     station(showPerspectivasNav, {
       name: 'Acto final',
       href: '#provoca',
-      
-      secondary: [{ label: 'La Réplica', href: '#provoca' }],
+      description: '#TeToca',
     }),
     station(showIntermedioNav, {
       name: 'Caída del telón',

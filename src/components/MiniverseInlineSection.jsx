@@ -186,7 +186,7 @@ const MiniverseInlineSection = () => {
             >
               <h3 ref={titleRef} aria-label={TITLE} className="relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
                 <span aria-hidden="true" className="invisible">{TITLE}</span>
-                <span aria-hidden="true" className="absolute inset-0">{titleDisplay}</span>
+                <span aria-hidden="true" className="titulo-perlado absolute inset-0">{titleDisplay}</span>
               </h3>
               <p className="text-slate-100/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
                 Echa un vistazo a lo que hace posible este universo: <br></br>

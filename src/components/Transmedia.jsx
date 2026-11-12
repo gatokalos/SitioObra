@@ -5615,14 +5615,14 @@ const renderDramaFeaturedWork = () => (
                   en el pozo de la Bienvenida y el acto dos abre con «LA FORMA», con
                   la misma letra que «LA RÉPLICA» del acto final (About.jsx). */}
               <h2
-                className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}
+                className="provoca-act-title provoca-act-title--section"
                 aria-label="Las nueve formas"
               >
                 <span aria-hidden="true">LAS NUEVE FORMAS</span>
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     Este universo cabe en nueve versos.<br />
-    De cada uno, nace un <em>miniverso</em>. <br /><strong>Encuentra el tuyo.</strong>
+    De cada uno, nace un <em>miniverso</em>. <br /><strong>Forma parte de uno.</strong>
            </p>
             </motion.div>
           ) : null}

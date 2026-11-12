@@ -32,7 +32,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
   }, [location.hash, location.pathname, location.search, navigate]);
 
   return (
-    <section id="bienvenida-creador" className="narrative-transition-section py-24 relative min-h-[520px]">
+    <section id="bienvenida-creador" className="narrative-transition-section desktop-viewport-scene py-24 relative min-h-[520px]">
       <div className="narrative-transition-divider section-divider mb-24"></div>
       <div className="container mx-auto px-6">
         <motion.div
@@ -64,7 +64,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             />
             <h3 ref={titleRef} aria-label={TITLE} className="narrative-transition-title relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
               <span aria-hidden="true" className="invisible">{TITLE_FIRST_LINE}<br />{TITLE_SECOND_LINE}</span>
-              <span aria-hidden="true" className="absolute inset-0">
+              <span aria-hidden="true" className="titulo-perlado absolute inset-0">
                 {titleDisplay.slice(0, TITLE_FIRST_LINE.length)}<br />{titleDisplay.slice(TITLE_FIRST_LINE.length + 1)}
               </span>
             </h3>

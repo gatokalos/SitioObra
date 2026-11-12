@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
 import { useSearch, RAW_API_URL } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
@@ -573,6 +573,7 @@ const ArticleInteractionPanel = ({ post }) => {
 
 const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = false }) => {
   const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
   const {
     query: faqQuery,
     setQuery: setFaqQuery,
@@ -1488,7 +1489,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
               </AnimatePresence>
 
               <div className="grid gap-6 md:grid-cols-3">
-                {editorialCategories.map((category) => (
+                {editorialCategories.map((category, categoryIndex) => (
                   <article
                     key={category.key}
                     className={`camerino-editorial-card relative overflow-hidden rounded-2xl border p-6 transition-colors duration-300 ${
@@ -1516,7 +1517,22 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       className="mt-3 self-start px-0 inline-flex items-center gap-1 text-purple-300 hover:text-white"
                     >
                       {category.ctaLabel}
-                      <ArrowRight size={14} />
+                      <span className="editorial-card-arrow inline-flex" aria-hidden="true">
+                        <motion.span
+                          className="inline-flex"
+                          initial={false}
+                          whileInView={isMobileViewport && !prefersReducedMotion ? { x: [0, 7, 0], opacity: [0.72, 1, 0.86] } : undefined}
+                          viewport={{ once: true, amount: 0.8 }}
+                          transition={{
+                            duration: 0.72,
+                            delay: categoryIndex * 0.12,
+                            times: [0, 0.48, 1],
+                            ease: 'easeOut',
+                          }}
+                        >
+                          <ArrowRight size={14} />
+                        </motion.span>
+                      </span>
                     </Button>
                   </article>
                 ))}

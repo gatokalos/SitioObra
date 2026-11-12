@@ -9,7 +9,7 @@ const SITE_ORIGIN =
 const FALLBACK_IMAGE = `${SITE_ORIGIN}/assets/logoapp.png`;
 
 const SITE_DEFAULTS = {
-  title: '#GatoEncerrado — La obra que ocurre en ti ®',
+  title: '#GatoEncerrado — La obra que ocurre en ti',
   siteName: '#GatoEncerrado',
   description:
     'Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.',

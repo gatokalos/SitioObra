@@ -26,7 +26,7 @@ import {
   writeObraDestacadaRevealedToSession,
 } from '@/lib/heroActivation';
 
-const pageTitle = '#GatoEncerrado — La obra que ocurre en ti ®';
+const pageTitle = '#GatoEncerrado — La obra que ocurre en ti';
 const pageDescription =
   'Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
@@ -881,6 +881,9 @@ function App() {
   useEffect(() => {
     if (location.pathname !== '/') return;
     if (!hasCuradoriaDeepLinkIntent(location)) return;
+    const [curadoriaAnchor, curadoriaHashQuery = ''] = String(location.hash || '').split('?');
+    const hasEditorialFocus = curadoriaAnchor === '#dialogo-critico'
+      && new URLSearchParams(curadoriaHashQuery).has('focus');
     // #dialogo-critico vive detrás de DOS gates independientes:
     // (1) canShowPostHeroContent — nada post-hero existe en el DOM hasta
     //     que la persona activa el hero (gesto de audio requerido por el
@@ -898,7 +901,12 @@ function App() {
     if (!canShowPostHeroContent) return;
     setIsCuradoriaVisible(true);
     setShowBlogBuscador(true);
-    window.setTimeout(() => scrollToSection('dialogo-critico'), 120);
+    // Una línea editorial tiene un destino más profundo: Blog selecciona la
+    // categoría y desplaza a su parrilla de artículos. Volver a mover aquí el
+    // viewport al comienzo de la sección pisaba ese scroll 120 ms después.
+    if (!hasEditorialFocus) {
+      window.setTimeout(() => scrollToSection('dialogo-critico'), 120);
+    }
   }, [canShowPostHeroContent, hasGuestUnlockedCuradoria, isAuthenticated, location, scrollToSection]);
 
   useEffect(() => {
