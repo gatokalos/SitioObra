@@ -23,6 +23,7 @@ import {
   TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
+import { irALaAlianza } from '@/lib/revelarAlianza';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
@@ -1402,7 +1403,7 @@ export const ProvocaSection = () => {
                     <motion.button
                       type="button"
                       variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
-                      onClick={() => document.getElementById('apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      onClick={() => irALaAlianza('apoya')}
                       className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
                     >
                       Ver cómo funciona todo esto

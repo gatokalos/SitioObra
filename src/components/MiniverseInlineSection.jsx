@@ -11,6 +11,12 @@ import {
   writeMiniverseInlineOpenToSession,
 } from '@/lib/heroActivation';
 
+import {
+  ALIANZA_PENDIENTE_KEY,
+  REVELAR_ALIANZA_EVENT,
+  alianzaYaRevelada,
+} from '@/lib/revelarAlianza';
+
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const AlianzaSocial = React.lazy(() => import('@/components/AlianzaSocial'));
 
@@ -57,6 +63,8 @@ const MiniverseInlineSection = () => {
   // remonta esta sección con isOpen=false — el scroll aterriza en el lugar
   // correcto, pero el contenido (modal + Alianza Social) ya no está.
   const [isOpen, setIsOpen] = useState(readMiniverseInlineOpenFromSession);
+  // En escritorio la alianza espera un gesto (src/lib/revelarAlianza.js).
+  const [alianzaRevelada, setAlianzaRevelada] = useState(alianzaYaRevelada);
   const location = useLocation();
   const [initialTabId, setInitialTabId] = useState(() =>
     resolveInitialTab(location.search, readAvailableGat())
@@ -120,6 +128,44 @@ const MiniverseInlineSection = () => {
     if (pendiente) abrirImpulsa();
     window.addEventListener('gatoencerrado:abrir-impulsa', abrirImpulsa);
     return () => window.removeEventListener('gatoencerrado:abrir-impulsa', abrirImpulsa);
+  }, []);
+
+  // Revelar la alianza: desde «Dejar huella» (sin destino, CallToAction baja
+  // solo) o desde otra puerta (con destino). Si la sección no estaba montada,
+  // el destino espera en sessionStorage y se atiende al montar.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const revelar = (destino) => {
+      try { window.sessionStorage.removeItem(ALIANZA_PENDIENTE_KEY); } catch {}
+      setAlianzaRevelada(true);
+      if (!destino) return;
+      setIsOpen(true);
+      writeMiniverseInlineOpenToSession();
+      window.setTimeout(() => {
+        document.getElementById(destino)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    };
+    let pendiente = null;
+    try { pendiente = window.sessionStorage.getItem(ALIANZA_PENDIENTE_KEY); } catch {}
+    if (pendiente) revelar(pendiente);
+    // Un enlace directo a la alianza también la revela, y baja a ella: el
+    // navegador ya intentó llegar al ancla cuando aún estaba escondida.
+    const porEnlace = () => {
+      const ancla = String(window.location.hash || '').split('?')[0];
+      if (ancla !== '#apoya' && ancla !== '#cta') return;
+      setAlianzaRevelada(true);
+      window.setTimeout(() => {
+        document.getElementById(ancla.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    };
+    porEnlace();
+    const alPedir = (event) => revelar(event?.detail?.destino ?? null);
+    window.addEventListener(REVELAR_ALIANZA_EVENT, alPedir);
+    window.addEventListener('hashchange', porEnlace);
+    return () => {
+      window.removeEventListener(REVELAR_ALIANZA_EVENT, alPedir);
+      window.removeEventListener('hashchange', porEnlace);
+    };
   }, []);
 
   const handleOpen = useCallback(() => {
@@ -208,11 +254,15 @@ const MiniverseInlineSection = () => {
           con px-0 en mobile (edge-to-edge a propósito); envolverla en mi
           contenedor le rompía ese ancho y la planitud del fondo. Sin imagen
           de fondo aquí, tal como se pidió. */}
+      {/* En escritorio, montada pero escondida hasta el gesto: así su
+          regreso tras iniciar sesión (CallToAction) sigue escuchando, y su
+          animación de entrada ocurre al revelarse, no antes. */}
       {isOpen && (
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.36, ease: 'easeOut', delay: 0.08 }}
+          hidden={!isMobileViewport && !alianzaRevelada}
         >
           <SectionErrorBoundary
             fallback={(

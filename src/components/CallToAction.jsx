@@ -14,6 +14,7 @@ import {
 } from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { revelarAlianza } from '@/lib/revelarAlianza';
 import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
@@ -459,11 +460,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       safeRemoveItem(LOGIN_RETURN_KEY);
       setIsLoginPulseActive(false);
       pendingAutoCheckout.current = true;
+      // En escritorio la alianza puede estar escondida: se revela antes de bajar.
+      revelarAlianza();
 
       window.setTimeout(() => {
         const target = document.getElementById('cta') || embeddedCheckoutRef.current;
         target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-      }, 80);
+      }, 160);
     } catch {
       safeRemoveItem(LOGIN_RETURN_KEY);
     }
@@ -902,8 +905,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
+    // «Dejar huella» (Carlos, 12 nov 2026): en escritorio revela la alianza y
+    // baja cuando ya está a la vista, para que su entrada ocurra con el gesto.
     const handleOpenHuellaActivation = () => {
-      document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      revelarAlianza();
+      window.setTimeout(() => {
+        document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
       if (!user && !embeddedClientSecret) {
         setShowGuestCheckoutIdentity(true);
       }

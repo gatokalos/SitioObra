@@ -42,6 +42,7 @@ import {
 } from '@/lib/transmediaSectionAudio';
 import { Volume2, VolumeX } from 'lucide-react';
 import GATChip from '@/components/portal/GATChip';
+import { irALaAlianza } from '@/lib/revelarAlianza';
 import { ORACULO_URL } from '@/components/transmedia/transmediaConstants';
 const TABS = [
   { id: 'escaparate', label: 'Expande', icon: Sparkles },
@@ -1636,9 +1637,8 @@ const MiniverseModal = ({
       return;
     }
     onClose?.();
-    setTimeout(() => {
-      document.querySelector('#apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 140);
+    // Revela la alianza si espera escondida (escritorio) y baja a ella.
+    setTimeout(() => irALaAlianza('apoya'), 140);
   }, [onClose, stopModalMediaPlayback]);
 
   const handleOpenHuellaActivation = useCallback(() => {
