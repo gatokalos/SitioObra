@@ -14,6 +14,7 @@ import {
 } from '@/lib/blogCategories';
 import { recordArticleInteraction } from '@/services/articleInteractionService';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { marcarLlegadaDesdeCamerino } from '@/lib/salidaPropuesta';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 
 const INITIAL_VISIBLE_POSTS = 5;
@@ -1465,7 +1466,12 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             <div className="flex justify-end border-t border-white/10 px-4 py-4 md:px-6">
                               <button
                                 type="button"
-                                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                onClick={() => {
+                                  // Baja a la Salida, que recibe a quien viene a proponer
+                                  // un texto con su propia ficha (Carlos, 12 nov 2026).
+                                  marcarLlegadaDesdeCamerino();
+                                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }}
                                 className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                               >
                                 ¿Nos compartes algo de tu autoría? →

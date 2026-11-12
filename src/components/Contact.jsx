@@ -9,12 +9,44 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import useScrambleText from '@/hooks/useScrambleText';
+import {
+  SALIDA_PROPUESTA_EVENT,
+  olvidarLlegadaDesdeCamerino,
+  vieneDelCamerino,
+} from '@/lib/salidaPropuesta';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 const CONTACT_TITLE = '¿Tienes curiosidad gatuna?';
 const CONTACT_TITLE_WORDS = CONTACT_TITLE.split(' ');
+// La ficha tiene dos voces (Carlos, 12 nov 2026). Quien llega por cualquier
+// lado escribe un mensaje; quien baja desde el botón del Camerino viene a
+// proponer un texto, y mientras tanto el título de la Salida se queda tenue.
+// «¿Vienes a otra cosa?» devuelve la ficha y el título de siempre.
+const COPY_FICHA = {
+  mensaje: {
+    titulo: 'Envíame un Mensaje',
+    entrada: null,
+    mensaje: 'Mensaje *',
+    mensajePlaceholder: 'Cuéntanos todo...',
+    material: 'Material',
+    materialPlaceholder: 'Drive, portfolio, video...',
+    faltan: 'Completa nombre, email y mensaje antes de enviar.',
+    exito: 'Tu mensaje llegó.',
+  },
+  propuesta: {
+    titulo: 'Envíame tu texto',
+    entrada: 'Lo voy a leer con calma. Si entra a la Curaduría Reflexiva, se publica con tu firma.',
+    mensaje: 'Tu texto o su resumen *',
+    mensajePlaceholder: 'Pega aquí tu texto, o cuéntame de qué trata…',
+    material: 'Texto completo',
+    materialPlaceholder: 'Enlace a Drive, Docs o PDF…',
+    faltan: 'Completa nombre, email y tu texto antes de enviar.',
+    exito: 'Tu texto llegó. Lo voy a leer con calma.',
+  },
+};
+const CAMBIO_DE_FICHA_MS = 220;
 
 const Contact = () => {
   const titleRef = useRef(null);
@@ -31,6 +63,11 @@ const Contact = () => {
   });
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [vieneAProponer, setVieneAProponer] = useState(() => vieneDelCamerino());
+  const [ultimoEnvioFuePropuesta, setUltimoEnvioFuePropuesta] = useState(false);
+  const [cambiandoFicha, setCambiandoFicha] = useState(false);
+  const cambioDeFichaRef = useRef(null);
+  const copy = COPY_FICHA[vieneAProponer ? 'propuesta' : 'mensaje'];
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
@@ -43,6 +80,33 @@ const Contact = () => {
     user?.user_metadata?.name ||
     user?.user_metadata?.alias ||
     (user?.email ? user.email.split('@')[0] : '');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const alLlegarDesdeCamerino = () => {
+      if (cambioDeFichaRef.current) window.clearTimeout(cambioDeFichaRef.current);
+      setCambiandoFicha(false);
+      setVieneAProponer(true);
+      setStatus('idle');
+    };
+    window.addEventListener(SALIDA_PROPUESTA_EVENT, alLlegarDesdeCamerino);
+    return () => {
+      window.removeEventListener(SALIDA_PROPUESTA_EVENT, alLlegarDesdeCamerino);
+      if (cambioDeFichaRef.current) window.clearTimeout(cambioDeFichaRef.current);
+    };
+  }, []);
+
+  // «¿Vienes a otra cosa?»: el texto de la ficha se desvanece, entra el de
+  // siempre y el título de afuera recupera su luz.
+  const escribirOtraCosa = useCallback(() => {
+    olvidarLlegadaDesdeCamerino();
+    setCambiandoFicha(true);
+    cambioDeFichaRef.current = window.setTimeout(() => {
+      setVieneAProponer(false);
+      setCambiandoFicha(false);
+      cambioDeFichaRef.current = null;
+    }, CAMBIO_DE_FICHA_MS);
+  }, []);
 
   const handleOpenCauseSite = useCallback(() => {
     if (!CAUSE_SITE_URL) {
@@ -162,7 +226,7 @@ const Contact = () => {
       const trimmedMessage = formValues.message.trim();
 
       if (!trimmedName || !trimmedEmail || !trimmedMessage) {
-        toast({ description: 'Completa nombre, email y mensaje antes de enviar.' });
+        toast({ description: copy.faltan });
         return;
       }
 
@@ -178,6 +242,7 @@ const Contact = () => {
             city: trimmedCity || null,
             attachment_url: trimmedAttachmentUrl || null,
             message: trimmedMessage,
+            origen: vieneAProponer ? 'camerino' : null,
           },
         });
 
@@ -190,10 +255,11 @@ const Contact = () => {
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
             proposal: trimmedMessage,
-            topic: 'contacto',
+            topic: vieneAProponer ? 'propuesta' : 'contacto',
             link: trimmedAttachmentUrl || null,
             meta: {
               route: 'contact',
+              origen: vieneAProponer ? 'camerino' : null,
               city: trimmedCity || null,
               attachment_url: trimmedAttachmentUrl || null,
               role: trimmedRole || null,
@@ -206,6 +272,11 @@ const Contact = () => {
           console.error('[Contact] Excepción duplicando en blog_contributions:', backstageError);
         }
 
+        // Mandado el texto, la Salida vuelve a ser la de siempre; el aviso
+        // verde dice que el texto llegó.
+        setUltimoEnvioFuePropuesta(vieneAProponer);
+        olvidarLlegadaDesdeCamerino();
+        setVieneAProponer(false);
         setStatus('success');
         setFormValues({ name: '', role: '', email: '', city: '', attachmentUrl: '', message: '' });
         fireConfetti();
@@ -216,7 +287,7 @@ const Contact = () => {
         toast({ description: 'No pudimos enviar tu mensaje. Intenta de nuevo.' });
       }
     },
-    [formValues, status]
+    [formValues, status, vieneAProponer, copy.faltan]
   );
 
   const handleSocialClick = (url) => {
@@ -326,6 +397,9 @@ const Contact = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
+          <div
+            className={`transition-opacity duration-500 ease-out ${vieneAProponer && !cambiandoFicha ? 'opacity-50' : 'opacity-100'}`}
+          >
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
   Salida
 </p>
@@ -347,6 +421,7 @@ const Contact = () => {
   <br /><br />
   También puedes escribirme para <strong>entrevistas, prensa o colaboraciones.</strong>
 </p>
+          </div>
         </motion.div>
 
         {/* Dos hileras, no dos columnas (Carlos, 11 sep 2026). Al retirarse el
@@ -365,9 +440,22 @@ const Contact = () => {
             {confettiBursts.map((burst) => (
               <ConfettiBurst key={burst} seed={burst} />
             ))}
-            <h3 className="font-display text-2xl font-medium text-slate-100 mb-8">
-              Envíame un Mensaje
+            <div className={`transition-opacity duration-200 ease-out ${cambiandoFicha ? 'opacity-0' : 'opacity-100'}`}>
+            <h3 className={`font-display text-2xl font-medium text-slate-100 ${copy.entrada ? 'mb-2' : 'mb-8'}`}>
+              {copy.titulo}
             </h3>
+            {copy.entrada ? (
+              <p className="mb-8 text-sm leading-relaxed text-slate-300/80">
+                {copy.entrada}{' '}
+                <button
+                  type="button"
+                  onClick={escribirOtraCosa}
+                  className="text-purple-200 underline underline-offset-4 hover:text-white"
+                >
+                  ¿Vienes a otra cosa? Escríbeme un mensaje.
+                </button>
+              </p>
+            ) : null}
 
             <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-2">
               <div>
@@ -416,25 +504,25 @@ const Contact = () => {
               </div>
         
               <div className="lg:col-span-2">
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje *</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">{copy.mensaje}</label>
                 <textarea
                   name="message"
                   rows={5}
                   value={formValues.message}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, message: event.target.value }))}
                   className="form-surface w-full px-4 py-3 resize-none"
-                  placeholder="Cuéntanos todo..."
+                  placeholder={copy.mensajePlaceholder}
                 ></textarea>
               </div>
               <div className="lg:col-span-2">
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Material</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">{copy.material}</label>
                 <input
                   name="attachmentUrl"
                   type="url"
                   value={formValues.attachmentUrl}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, attachmentUrl: event.target.value }))}
                   className="form-surface w-full px-4 py-3"
-                  placeholder="Drive, portfolio, video..."
+                  placeholder={copy.materialPlaceholder}
                 />
               </div>
               <div className="min-h-[52px] lg:col-span-2">
@@ -446,7 +534,7 @@ const Contact = () => {
 
                 {status === 'success' ? (
                   <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                    Tu mensaje llegó. Te escribiremos a la brevedad.
+                    {ultimoEnvioFuePropuesta ? COPY_FICHA.propuesta.exito : COPY_FICHA.mensaje.exito}
                   </div>
                 ) : null}
               </div>
@@ -467,6 +555,7 @@ const Contact = () => {
               </div>
               
             </form>
+            </div>
           </motion.div>
 
           {/* Aquí estaba el bloque "Prensa · Descargar dossier": retirado el 11
