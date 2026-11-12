@@ -13,8 +13,10 @@ import {
 
 import {
   ALIANZA_PENDIENTE_KEY,
+  ALIANZA_REVELADA_KEY,
   REVELAR_ALIANZA_EVENT,
   alianzaYaRevelada,
+  regresoDeHuellaPendiente,
 } from '@/lib/revelarAlianza';
 
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
@@ -130,40 +132,69 @@ const MiniverseInlineSection = () => {
     return () => window.removeEventListener('gatoencerrado:abrir-impulsa', abrirImpulsa);
   }, []);
 
-  // Revelar la alianza: desde «Dejar huella» (sin destino, CallToAction baja
-  // solo) o desde otra puerta (con destino). Si la sección no estaba montada,
-  // el destino espera en sessionStorage y se atiende al montar.
+  // Revelar la alianza. En escritorio se MONTA con el gesto (no antes y
+  // escondida): así sus animaciones de entrada —los bloques y las barras del
+  // modelo— ocurren al revelarse, como cuando se abría la taquilla.
+  // - «Dejar huella» manda gatoencerrado:open-huella-activation. Si la alianza
+  //   aún no está montada, nadie lo escucha: se revela aquí y se reenvía el
+  //   aviso cuando CallToAction ya existe, para que baje y siga su flujo.
+  // - Las demás puertas mandan revelar-alianza con un destino (o lo dejan
+  //   esperando en sessionStorage si la sección no estaba montada).
+  // - El regreso tras iniciar sesión para dejar huella la revela al montar.
+  // - Un enlace directo a #apoya o #cta también.
+  const estadoAlianzaRef = useRef({ revelada: alianzaRevelada, movil: isMobileViewport });
+  estadoAlianzaRef.current = { revelada: alianzaRevelada, movil: isMobileViewport };
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    // Espera a que el destino exista y tenga caja (el bloque se carga aparte).
+    const cuandoExista = (id, alLlegar) => {
+      let intentos = 0;
+      const probar = () => {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().height > 0) { alLlegar(el); return; }
+        intentos += 1;
+        if (intentos < 50) window.setTimeout(probar, 100);
+      };
+      window.setTimeout(probar, 120);
+    };
+    const bajarA = (id) => cuandoExista(id, (el) => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     const revelar = (destino) => {
       try { window.sessionStorage.removeItem(ALIANZA_PENDIENTE_KEY); } catch {}
       setAlianzaRevelada(true);
       if (!destino) return;
       setIsOpen(true);
       writeMiniverseInlineOpenToSession();
-      window.setTimeout(() => {
-        document.getElementById(destino)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 350);
+      bajarA(destino);
     };
     let pendiente = null;
     try { pendiente = window.sessionStorage.getItem(ALIANZA_PENDIENTE_KEY); } catch {}
     if (pendiente) revelar(pendiente);
-    // Un enlace directo a la alianza también la revela, y baja a ella: el
-    // navegador ya intentó llegar al ancla cuando aún estaba escondida.
+    if (regresoDeHuellaPendiente()) setAlianzaRevelada(true);
     const porEnlace = () => {
       const ancla = String(window.location.hash || '').split('?')[0];
       if (ancla !== '#apoya' && ancla !== '#cta') return;
       setAlianzaRevelada(true);
-      window.setTimeout(() => {
-        document.getElementById(ancla.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 350);
+      bajarA(ancla.slice(1));
     };
     porEnlace();
     const alPedir = (event) => revelar(event?.detail?.destino ?? null);
+    const alDejarHuella = () => {
+      const { revelada, movil } = estadoAlianzaRef.current;
+      if (revelada || movil) return; // CallToAction ya está montado y lo atiende
+      setAlianzaRevelada(true);
+      try { window.sessionStorage.setItem(ALIANZA_REVELADA_KEY, '1'); } catch {}
+      cuandoExista('cta', () => {
+        window.setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('gatoencerrado:open-huella-activation'));
+        }, 80);
+      });
+    };
     window.addEventListener(REVELAR_ALIANZA_EVENT, alPedir);
+    window.addEventListener('gatoencerrado:open-huella-activation', alDejarHuella);
     window.addEventListener('hashchange', porEnlace);
     return () => {
       window.removeEventListener(REVELAR_ALIANZA_EVENT, alPedir);
+      window.removeEventListener('gatoencerrado:open-huella-activation', alDejarHuella);
       window.removeEventListener('hashchange', porEnlace);
     };
   }, []);
@@ -254,15 +285,13 @@ const MiniverseInlineSection = () => {
           con px-0 en mobile (edge-to-edge a propósito); envolverla en mi
           contenedor le rompía ese ancho y la planitud del fondo. Sin imagen
           de fondo aquí, tal como se pidió. */}
-      {/* En escritorio, montada pero escondida hasta el gesto: así su
-          regreso tras iniciar sesión (CallToAction) sigue escuchando, y su
-          animación de entrada ocurre al revelarse, no antes. */}
-      {isOpen && (
+      {/* En escritorio se monta con el gesto (ver arriba); en el teléfono,
+          al abrir la sección, como siempre. */}
+      {isOpen && (isMobileViewport || alianzaRevelada) && (
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.36, ease: 'easeOut', delay: 0.08 }}
-          hidden={!isMobileViewport && !alianzaRevelada}
         >
           <SectionErrorBoundary
             fallback={(

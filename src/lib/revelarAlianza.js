@@ -1,9 +1,11 @@
 // La alianza (Impacto social + Modelo anual por tramos, AlianzaSocial.jsx) vive
-// dentro de «Antes de irte». En escritorio espera escondida hasta un gesto
-// (Carlos, 12 nov 2026): «Dejar huella» la revela con su animación de entrada,
+// dentro de «Antes de irte». En escritorio espera un gesto (Carlos, 12 nov
+// 2026): «Dejar huella» la revela con su animación de entrada,
 // en vez de recorrer unos pocos píxeles hacia algo que ya estaba a la vista. En
 // el teléfono se ve desde que se abre la sección, como siempre.
 //
+// En escritorio la alianza se monta con el gesto, no antes, para que sus
+// animaciones de entrada ocurran al revelarse.
 // Las puertas vivas pasan por aquí para no llegar a un hueco: «Dejar huella» y
 // «En alianza con:» (panel de Impulsa), «Ver cómo funciona todo esto» (Acto
 // final), el regreso tras iniciar sesión para dejar huella y el enlace /#apoya.
@@ -22,6 +24,22 @@ const escribir = (clave, valor) => {
 };
 
 export const alianzaYaRevelada = () => typeof window !== 'undefined' && leer(ALIANZA_REVELADA_KEY) === '1';
+
+// El regreso tras iniciar sesión para dejar huella (CallToAction.jsx, misma
+// clave LOGIN_RETURN_KEY): la alianza tiene que estar montada para que el
+// pago siga solo.
+export const regresoDeHuellaPendiente = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const crudo = window.localStorage.getItem('gatoencerrado:login-return');
+    if (!crudo) return false;
+    const pendiente = JSON.parse(crudo);
+    return pendiente?.anchor === '#cta'
+      && (pendiente?.action === 'cta-huella-login' || pendiente?.action === 'cta-huella-login-status');
+  } catch {
+    return false;
+  }
+};
 
 // Revela sin moverse: quien llama hace su propio desplazamiento después.
 export const revelarAlianza = () => {
