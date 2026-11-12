@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
 import { useSearch, RAW_API_URL } from '@/hooks/useSearch';
@@ -107,6 +108,10 @@ const leyendaDeVoz = (voz) => {
   if (!principal && !quien) return null;
   return { principal, quien };
 };
+
+// El formulario de propuestas se abre desde el Camerino (Carlos, 11 nov 2026: una
+// sola puerta para proponer un texto). Se carga solo cuando alguien lo abre.
+const ContributionModal = React.lazy(() => import('@/components/ContributionModal'));
 
 const STARTER_FAQ_PROMPTS = [
   '¿Por qué una obra tendría que ser una sola cosa?',
@@ -734,6 +739,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   // a ver, y su lugar lo ocupa la siguiente. Vive en este navegador; para los
   // demás el vestíbulo sigue igual. Si alguien ya las usó todas, vuelven todas.
   const [vocesUsadas, setVocesUsadas] = useState(() => leerVocesUsadas());
+  // «¿Nos compartes algo de tu autoría?» abre el formulario de propuestas; antes
+  // bajaba a la Salida, que es contacto (Carlos, 11 nov 2026).
+  const [isPropuestaOpen, setIsPropuestaOpen] = useState(false);
   const descartarVoz = useCallback((id) => {
     if (!id) return;
     marcarVozUsada(id);
@@ -1552,13 +1560,21 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             <div className="flex justify-end border-t border-white/10 px-4 py-4 md:px-6">
                               <button
                                 type="button"
-                                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                onClick={() => setIsPropuestaOpen(true)}
                                 className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                               >
                                 ¿Nos compartes algo de tu autoría? →
                               </button>
                             </div>
                           )}
+                          {isPropuestaOpen && typeof document !== 'undefined'
+                            ? createPortal(
+                                <React.Suspense fallback={null}>
+                                  <ContributionModal open onClose={() => setIsPropuestaOpen(false)} />
+                                </React.Suspense>,
+                                document.body
+                              )
+                            : null}
                         </section>
                       )}
                       </div>

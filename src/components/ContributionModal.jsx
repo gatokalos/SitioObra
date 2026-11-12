@@ -214,7 +214,8 @@ const ContributionModal = ({
           ...prev,
           ...parsed.formState,
         }));
-        setNotifyOnPublish(Boolean(parsed.notifyOnPublish));
+        // Sin casilla, no se restaura un seguimiento viejo (11 nov 2026).
+        setNotifyOnPublish(false);
         const storedCategory = CATEGORIES.find((item) => item.id === parsed.selectedCategory);
         if (storedCategory) {
           setSelectedCategory(storedCategory);
@@ -248,10 +249,8 @@ const ContributionModal = ({
       setFormState({
         ...storedState,
       });
-      const storedNotify = storedFormRef.current.notifyOnPublish;
-      setNotifyOnPublish(
-        typeof storedNotify === 'boolean' ? storedNotify : isAuthenticated
-      );
+      // La casilla de seguimiento no está en pantalla: siempre apagada (11 nov 2026).
+      setNotifyOnPublish(false);
       const storedCategory = CATEGORIES.find(
         (item) => item.id === storedFormRef.current.selectedCategory
       );
@@ -781,7 +780,7 @@ const ContributionModal = ({
                 Te invitamos a participar en este proceso de activación territorial y creación colectiva.
               </p>
             </section>
-            {renderNotifyPreference()}
+            {/* «Quiero ser parte de este hilo» queda fuera mientras nadie mande ese aviso (Carlos, 11 nov 2026). */}
           </div>
         ) : (
           <div className="space-y-4 lg:sticky lg:top-1">
@@ -805,7 +804,7 @@ const ContributionModal = ({
                 </div>
               </div>
             </section>
-            {renderNotifyPreference()}
+            {/* «Quiero ser parte de este hilo» queda fuera mientras nadie mande ese aviso (Carlos, 11 nov 2026). */}
           </div>
         )}
       </div>
