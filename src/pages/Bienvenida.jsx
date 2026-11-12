@@ -373,7 +373,9 @@ const Bienvenida = () => {
         {iframeSrc ? (
           <iframe
             ref={iframeRef}
-            title="Bienvenida"
+            // Nombre del marco: algunos navegadores lo muestran al pasar el cursor;
+            // en pantalla el visitante solo lee «Primer acto» (12 nov 2026).
+            title="Primer acto"
             src={iframeSrc}
             className="h-full w-full border-0"
             allow="camera; microphone; fullscreen; web-share; clipboard-write"
