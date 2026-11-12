@@ -25,7 +25,7 @@ const AlianzaSocial = React.lazy(() => import('@/components/AlianzaSocial'));
 const PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const TAB_QUERY_PARAM = 'heroTab';
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
-const TITLE = 'Espera, no te vayas todavía...';
+const TITLE = '«Espera, no te vayas todavía…»';
 
 const readAvailableGat = () => {
   const parsed = Number.parseInt(safeGetItem(GAT_BALANCE_STORAGE_KEY) || '0', 10);

@@ -1211,7 +1211,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             id="otras-huellas-preview-title"
             className="mt-1 font-serif text-3xl text-white drop-shadow-lg sm:text-4xl"
           >
-            La tienda que viene
+            La tiendita
           </h3>
           <span className="mt-3 rounded-full border border-fuchsia-200/70 bg-black/35 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.25em] text-fuchsia-100 shadow-[0_0_18px_rgba(217,70,239,0.18)] backdrop-blur-md">
             Próximamente
@@ -1281,7 +1281,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       </article>
 
       <p className="mx-auto max-w-md text-center text-sm leading-relaxed text-slate-300 sm:text-base">
-        Próximamente, algunos objetos de la obra también podrán convertirse en huellas.
+        Próximamente, algunos objetos de #GatoEncerrado también podrán convertirse en huellas.
       </p>
 
       <div className="mt-auto rounded-full border border-white/20 bg-white/[0.06] px-4 py-2.5 text-center text-sm text-slate-300">
