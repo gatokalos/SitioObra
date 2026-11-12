@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { PawPrint, Send, Smartphone } from 'lucide-react';
 import CallToAction from '@/components/CallToAction';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
@@ -16,8 +16,55 @@ import { supabase } from '@/lib/supabaseClient';
 const noopAuth = () => true;
 const IMAGE_PREVIEW_DATASET_KEY = 'gatoImagePreviewOpen';
 
-const AlianzaSocial = () => {
+// entradaLateral (escritorio, Carlos 12 nov 2026): la alianza se monta con el
+// gesto «Dejar huella» y la página baja hasta ella. Si los bloques se animaran
+// al entrar a la vista, la animación ocurriría durante el desplazamiento y no
+// se notaría. Por eso esperan a que el desplazamiento termine y entonces
+// entran: la causa social desde la izquierda, el modelo desde la derecha.
+const ENTRADA_ESPERA_MIN_MS = 600;
+const ENTRADA_QUIETUD_MS = 180;
+
+const AlianzaSocial = ({ entradaLateral = false }) => {
   const sectionRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const [entradaLista, setEntradaLista] = useState(false);
+
+  useEffect(() => {
+    if (!entradaLateral || entradaLista || typeof window === 'undefined') return undefined;
+    const montadaEn = Date.now();
+    let ultimoScroll = 0;
+    const alDesplazar = () => { ultimoScroll = Date.now(); };
+    const revisar = window.setInterval(() => {
+      const ahora = Date.now();
+      if (ahora - montadaEn < ENTRADA_ESPERA_MIN_MS) return;
+      if (ahora - ultimoScroll < ENTRADA_QUIETUD_MS) return;
+      const r = sectionRef.current?.getBoundingClientRect();
+      if (r && r.top < window.innerHeight * 0.85 && r.bottom > 0) setEntradaLista(true);
+    }, 120);
+    window.addEventListener('scroll', alDesplazar, { passive: true });
+    return () => {
+      window.clearInterval(revisar);
+      window.removeEventListener('scroll', alDesplazar);
+    };
+  }, [entradaLateral, entradaLista]);
+
+  // lado: -1 izquierda, 1 derecha. Sin entradaLateral, la entrada de siempre.
+  const entrada = (lado, retraso = 0) => {
+    if (!entradaLateral) {
+      return {
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0.7, ease: 'easeOut', delay: retraso },
+        viewport: { once: true, amount: 0.15 },
+      };
+    }
+    const fuera = { opacity: 0, x: reduceMotion ? 0 : lado * 56 };
+    return {
+      initial: fuera,
+      animate: entradaLista ? { opacity: 1, x: 0 } : fuera,
+      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: retraso },
+    };
+  };
 
   const [imagePreview, setImagePreview] = useState(null);
   const [openCauseIds, setOpenCauseIds] = useState(new Set());
@@ -179,10 +226,7 @@ const AlianzaSocial = () => {
 
             {/* Columna izquierda: causa social */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.15 }}
+              {...entrada(-1)}
               className="glass-effect rounded-none sm:rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden mb-0 sm:mb-0"
             >
               <div
@@ -310,21 +354,16 @@ const AlianzaSocial = () => {
             <div className="space-y-0 sm:space-y-5">
               <motion.div
                 id="cta"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
-                viewport={{ once: true, amount: 0.15 }}
+                {...entrada(1, 0.12)}
                 className="relative"
               >
                 <div className="rounded-none sm:rounded-2xl overflow-hidden">
-                  <CallToAction barsIntroDelayMs={900} />
+                  {/* Con entrada lateral, las barras esperan a que el bloque entre. */}
+                  <CallToAction barsIntroDelayMs={entradaLateral ? 1500 : 900} />
                 </div>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-                viewport={{ once: true, amount: 0.15 }}
+                {...entrada(1, 0.24)}
                 className="relative overflow-hidden rounded-none sm:rounded-2xl border-t sm:border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7"
               >
                 <div

@@ -183,7 +183,10 @@ const MiniverseInlineSection = () => {
       if (revelada || movil) return; // CallToAction ya está montado y lo atiende
       setAlianzaRevelada(true);
       try { window.sessionStorage.setItem(ALIANZA_REVELADA_KEY, '1'); } catch {}
-      cuandoExista('cta', () => {
+      // Baja aquí mismo (no depende de que CallToAction ya escuche) y luego
+      // reenvía el aviso para que CallToAction siga su flujo.
+      cuandoExista('cta', (el) => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.setTimeout(() => {
           window.dispatchEvent(new CustomEvent('gatoencerrado:open-huella-activation'));
         }, 80);
@@ -303,7 +306,7 @@ const MiniverseInlineSection = () => {
             )}
           >
             <Suspense fallback={null}>
-              <AlianzaSocial />
+              <AlianzaSocial entradaLateral={!isMobileViewport} />
             </Suspense>
           </SectionErrorBoundary>
         </motion.div>
