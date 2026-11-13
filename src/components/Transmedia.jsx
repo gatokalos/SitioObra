@@ -1578,8 +1578,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // Por ahora solo en escritorio (Carlos, 14 nov 2026, noche): en el teléfono
   // falta ver en el simulador cómo queda el dorso con el teclado abierto. Ahí
   // la tarjeta sigue como antes: muestra la pregunta y «Entra en escena».
+  // VITE_DORSO_MOVIL=1 lo enciende en una compilación de prueba (el simulador).
   const pideIntuicionEnLaTarjeta = (formatId) =>
-    !isVitrinaCarouselViewport &&
+    (!isVitrinaCarouselViewport || import.meta.env.VITE_DORSO_MOVIL === '1') &&
     !isAuthenticated &&
     hasBienvenidaPass &&
     formatId === recommendedShowcaseId &&
