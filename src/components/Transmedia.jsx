@@ -65,8 +65,9 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
-import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta } from '@/components/portal/ResonanceModal';
 import DorsoPrimeraIntuicion from '@/components/transmedia/DorsoPrimeraIntuicion';
+import TableroEnLaTarjeta from '@/components/transmedia/TableroEnLaTarjeta';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -217,8 +218,10 @@ const SHOWCASE_CARD_GRADIENT = {
 // el botón amarillo a iniciar sesión.
 const VITRINA_TU_FORMA_LABEL = 'Entra en escena';
 // Mientras la pregunta madre no se ha contestado, el botón dice lo que va a
-// pasar: la tarjeta gira y se contesta ahí mismo (Carlos, 14 nov 2026).
+// pasar: la tarjeta gira y se contesta ahí mismo (Carlos, 13 nov 2026).
 const VITRINA_IMPROVISA_LABEL = 'Improvisa una respuesta';
+// Quien ya contestó y dejó el tablero a medias en la tarjeta (13 nov 2026).
+const VITRINA_SIGUE_LABEL = 'Sigue donde quedaste';
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
@@ -1536,7 +1539,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     handleOpenSilvestreChat,
   });
 
-  // ── La tarjeta recomendada gira y pide la primera intuición (Carlos, 14 nov
+  // ── La tarjeta recomendada gira y pide la primera intuición (Carlos, 13 nov
   // 2026). Antes «Entra en escena» abría la ficha y la pregunta madre se
   // contestaba adentro, con la sinopsis, la obra y el verso a la vista: iba
   // contra D-66 y D-67 («sin nada delante a la hora de contestar»). Ahora la
@@ -1546,21 +1549,29 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // siempre. El giro son dos medias vueltas (la tarjeta se pone de canto y el
   // dorso entra desde el canto): así no depende de ocultar el revés en 3D,
   // que en Safari falla.
-  const ABRIR_METODO_POR_VITRINA = {
-    miniversos: setIsDramaResonanceOpen,
-    miniversoNovela: setIsLiteraturaResonanceOpen,
-    lataza: setIsArtesaniasResonanceOpen,
-    miniversoGrafico: setIsGraficosResonanceOpen,
-    copycats: setIsCineResonanceOpen,
-    miniversoSonoro: setIsSonoroResonanceOpen,
-    miniversoMovimiento: setIsMovimientoResonanceOpen,
-    apps: setIsJuegosResonanceOpen,
-    oraculo: setIsOraculoResonanceOpen,
+  // 13 nov 2026 (Carlos): al enviar ya no se salta a la ficha —«se ve
+  // totalmente disruptivo»—. El tablero del método sigue en la misma tarjeta
+  // (TableroEnLaTarjeta.jsx) hasta el botón que abre el artefacto; ahí sí se
+  // abre la ficha y, ya abierta, el artefacto. Cada forma abre el suyo con lo
+  // mismo que su tablero completo recibe en `onOpenNarrative`.
+  const ABRIR_ARTEFACTO_POR_VITRINA = {
+    miniversos: () => setIsNarrativeDramaOpen(true),
+    miniversoNovela: () => setShowLiteraturaApp(true),
+    lataza: () => handleActivateAR(),
+    miniversoGrafico: () => {
+      const sw = showcaseDefinitions.miniversoGrafico?.swipeShowcases?.[0];
+      if (sw) handleOpenGraphicSwipe(sw);
+    },
+    copycats: () => handleToggleQuironPrompt(),
+    miniversoSonoro: () => handleSonoroEnter(),
+    oraculo: () => handleOpenOraculo(),
   };
   const [tarjetaGirandoId, setTarjetaGirandoId] = useState(null);
   const [tarjetaGiradaId, setTarjetaGiradaId] = useState(null);
-  const [metodoPendienteId, setMetodoPendienteId] = useState(null);
-  // Desde la tarde del 14 nov 2026 (Carlos): quien llega del primer acto ya
+  const [artefactoPendienteId, setArtefactoPendienteId] = useState(null);
+  // Vuelve a leer el registro del método cuando la tarjeta acaba de escribirlo.
+  const [, setRegistroDeLaTarjetaTick] = useState(0);
+  // Desde la tarde del 13 nov 2026 (Carlos): quien llega del primer acto ya
   // trae la pregunta en su pase, así que la tarjeta no se la repite sobre la
   // imagen. Llega limpia, gira sola una vez y queda de dorso mientras no se
   // haya contestado. «Volver» la deja limpia el resto de la visita, con su
@@ -1575,18 +1586,34 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setDorsoCerrado(true);
     try { window.sessionStorage.setItem(DORSO_CERRADO_KEY, '1'); } catch {}
   };
-  // Por ahora solo en escritorio (Carlos, 14 nov 2026, noche): en el teléfono
+  // Por ahora solo en escritorio (Carlos, 13 nov 2026, noche): en el teléfono
   // falta ver en el simulador cómo queda el dorso con el teclado abierto. Ahí
   // la tarjeta sigue como antes: muestra la pregunta y «Entra en escena».
   // VITE_DORSO_MOVIL=1 lo enciende en una compilación de prueba (el simulador).
-  const pideIntuicionEnLaTarjeta = (formatId) =>
+  const esLaRecomendadaConPase = (formatId) =>
     (!isVitrinaCarouselViewport || import.meta.env.VITE_DORSO_MOVIL === '1') &&
     !isAuthenticated &&
     hasBienvenidaPass &&
     formatId === recommendedShowcaseId &&
     Boolean(VITRANA_QUESTION_BY_SHOWCASE[formatId]) &&
-    Boolean(SHOWCASE_TO_PORTAL[formatId]) &&
+    Boolean(SHOWCASE_TO_PORTAL[formatId]);
+  const pideIntuicionEnLaTarjeta = (formatId) =>
+    esLaRecomendadaConPase(formatId) &&
     !readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]).l1Done;
+  // Ya contestó y todavía no abre el artefacto: la tarjeta lleva el tablero.
+  // En cuanto lo abre, el recorrido vive en la ficha.
+  const tableroEnLaTarjeta = (formatId) => {
+    if (!esLaRecomendadaConPase(formatId)) return false;
+    const progreso = readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]);
+    return (
+      progreso.l1Done &&
+      !progreso.record.l2_narrative_opened &&
+      !progreso.record.l2_conv_done &&
+      !progreso.experienceDone &&
+      !progreso.l3Done
+    );
+  };
+  const laTarjetaTieneDorso = (formatId) => pideIntuicionEnLaTarjeta(formatId) || tableroEnLaTarjeta(formatId);
   const girarLaTarjeta = (formatId) => {
     if (tarjetaGirandoId || tarjetaGiradaId) return;
     // Al volver a la recomendada, la otra que estuviera encendida se apaga.
@@ -1599,7 +1626,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     }, 340);
   };
   const entrarPorLaTarjeta = (formatId) => {
-    if (!pideIntuicionEnLaTarjeta(formatId)) {
+    if (!laTarjetaTieneDorso(formatId)) {
       handleFormatClick(formatId);
       return;
     }
@@ -1607,7 +1634,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   };
   // El giro que la tarjeta hace sola al llegar: espera a que la recomendada
   // esté a la vista, deja verla limpia un instante y la voltea una vez.
-  const pideLaRecomendada = Boolean(recommendedShowcaseId) && pideIntuicionEnLaTarjeta(recommendedShowcaseId);
+  const pideLaRecomendada = Boolean(recommendedShowcaseId) && laTarjetaTieneDorso(recommendedShowcaseId);
   useEffect(() => {
     if (!pideLaRecomendada || dorsoCerrado || giroSoloHechoRef.current) return undefined;
     if (tarjetaGiradaId || tarjetaGirandoId || activeShowcase) return undefined;
@@ -1645,7 +1672,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       userId: user?.id ?? null,
       isDevAuth,
     });
-    setTarjetaGiradaId(null);
     // En el teléfono la forma vive en su portal: se va allá, y el portal abre
     // el método al llegar (portalLaunchSource 'primera-intuicion').
     const portalRoute = resolvePortalRoute({
@@ -1654,20 +1680,41 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       isMobileViewport: isVitrinaCarouselViewport,
     });
     if (isVitrinaCarouselViewport && portalRoute) {
+      setTarjetaGiradaId(null);
       navigate(portalRoute, {
         state: createPortalLaunchState(location, 'primera-intuicion', { showcaseId: formatId }),
       });
       return;
     }
-    setMetodoPendienteId(formatId);
+    // En escritorio la tarjeta se queda de dorso: ahora lleva el tablero.
+    setRegistroDeLaTarjetaTick((n) => n + 1);
+  };
+  // «Habitar la forma» desde la tarjeta: aquí sí se cambia de nivel. Se abre
+  // la ficha y, cuando termina de abrirse, el artefacto de la forma.
+  const habitarDesdeLaTarjeta = (formatId) => {
+    marcarEscenaAbierta(SHOWCASE_TO_PORTAL[formatId]);
+    setTarjetaGiradaId(null);
+    // El cuerpo no tiene ficha que abrir: su escena es la Salida.
+    if (formatId === 'miniversoMovimiento') {
+      handleIrALaSalida();
+      return;
+    }
+    // El riesgo abre su juego en otra pestaña: tiene que ser dentro del clic,
+    // o el navegador la bloquea.
+    if (formatId === 'apps') {
+      const u = sanitizeExternalHttpUrl(showcaseDefinitions.apps?.liveExperience?.url);
+      if (u) window.open(u, '_blank');
+    } else {
+      setArtefactoPendienteId(formatId);
+    }
     handleFormatClick(formatId);
   };
   useEffect(() => {
-    if (!metodoPendienteId) return;
-    if (activeShowcase !== metodoPendienteId || showcaseOpenTransition.phase !== 'idle') return;
-    ABRIR_METODO_POR_VITRINA[metodoPendienteId]?.(true);
-    setMetodoPendienteId(null);
-  }, [metodoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!artefactoPendienteId) return;
+    if (activeShowcase !== artefactoPendienteId || showcaseOpenTransition.phase !== 'idle') return;
+    ABRIR_ARTEFACTO_POR_VITRINA[artefactoPendienteId]?.();
+    setArtefactoPendienteId(null);
+  }, [artefactoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
   // El frente se queda debajo, invisible, solo para dar la medida: así el
   // dorso mide exactamente lo mismo, en teléfono y en escritorio.
   const renderDorsoDeLaTarjeta = (format, frente, className = '') => (
@@ -1682,13 +1729,44 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         style={{ transformPerspective: 1400 }}
         className="absolute inset-0"
       >
-        <DorsoPrimeraIntuicion
-          question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
-          formaTitle={format.title}
-          gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
-          onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
-          onVolver={cerrarElDorso}
-        />
+        <AnimatePresence mode="wait" initial={false}>
+          {tableroEnLaTarjeta(format.id) ? (
+            <motion.div
+              key="tablero"
+              className="h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TableroEnLaTarjeta
+                portal={SHOWCASE_TO_PORTAL[format.id]}
+                formaTitle={format.title}
+                gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
+                isDevAuth={isDevAuth}
+                onHabitar={() => habitarDesdeLaTarjeta(format.id)}
+                onVolver={cerrarElDorso}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="pregunta"
+              className="h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <DorsoPrimeraIntuicion
+                question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+                formaTitle={format.title}
+                gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
+                onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
+                onVolver={cerrarElDorso}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
@@ -5845,7 +5923,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <AnimatePresence>
-                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !pideIntuicionEnLaTarjeta(format.id) ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !laTarjetaTieneDorso(format.id) ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -5924,7 +6002,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -6073,7 +6151,7 @@ const renderDramaFeaturedWork = () => (
                 const isRecommendedTile = recommendedShowcaseId === format.id;
                 const isVitrinaRevelada =
                   desktopVitranaRevealId === format.id ||
-                  // Las vitrinas no compiten (Carlos, 14 nov 2026): si la persona
+                  // Las vitrinas no compiten (Carlos, 13 nov 2026): si la persona
                   // enciende otra, la recomendada se apaga hasta que la suelte.
                   (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId);
                 const isFocusCenterTile = index === 1;
@@ -6132,7 +6210,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                       <AnimatePresence>
-                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !pideIntuicionEnLaTarjeta(format.id) ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !laTarjetaTieneDorso(format.id) ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -6210,7 +6288,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

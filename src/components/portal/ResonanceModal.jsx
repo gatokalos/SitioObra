@@ -33,7 +33,7 @@ const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/obje
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
-const PORTAL_GRADIENT = {
+export const PORTAL_GRADIENT = {
   obra:        'from-purple-400 via-fuchsia-500 to-rose-500',
   literatura:  'from-emerald-400 via-teal-500 to-cyan-500',
   artesanias:  'from-amber-400 via-orange-500 to-rose-500',
@@ -383,7 +383,7 @@ const lsPatch = (portal, patch) => {
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
 // El envío de la primera intuición (la respuesta a la pregunta madre), fuera
-// del componente desde el 14 nov 2026: lo usan este formulario y el dorso de
+// del componente desde el 13 nov 2026: lo usan este formulario y el dorso de
 // la tarjeta recomendada en la galería (DorsoPrimeraIntuicion.jsx), donde la
 // pregunta se contesta antes de ver la ficha (D-66, D-67: «sin nada delante a
 // la hora de contestar»). Guarda lo mismo en los dos lugares y devuelve el eco.
@@ -466,6 +466,55 @@ export const enviarPrimeraIntuicion = async ({
     l2_calibration_open: false,
   });
   return acknowledgment;
+};
+
+// La expectativa (el chip de la preparación de escena) y la marca de «escena
+// abierta», fuera del componente desde el 13 nov 2026: las usa también el
+// tablero que vive en la tarjeta de la galería (TableroEnLaTarjeta.jsx), donde
+// el recorrido sigue hasta abrir el artefacto sin saltar a la ficha. Guardan
+// lo mismo en los dos lugares. `onEco` recibe el eco ajustado cuando llega.
+export const enviarExpectativa = async ({ portal, option, isDevAuth = false, onEco = null }) => {
+  const question = LEVEL2_QUESTIONS[portal]?.question ?? null;
+  const anonId = ensureAnonId();
+  lsPatch(portal, {
+    l2_option: option,
+    l2_acknowledgment: buildL2Acknowledgment(portal, option),
+    l2_ts: Date.now(),
+    l2_calibration_open: false,
+    dashboard_active_level: 2,
+  });
+  if (isDevAuth) return;
+  try {
+    await supabase.from('vitrana_resonances').insert({
+      anon_id:   anonId,
+      portal:    portal ?? null,
+      question,
+      respuesta: option,
+      level:     2,
+    });
+  } catch (_) {}
+
+  // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
+  // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
+  // nada en medio, antes de abrir el artefacto.
+  persistBaseline({
+      anon_id:              anonId,
+      miniverso_id:         portal,
+      expectativa_chip:     option,
+      ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
+      expectativa_question: question,
+    })
+    .then((data) => {
+      const acknowledgment = data?.acknowledgment?.trim();
+      if (!acknowledgment) return;
+      lsPatch(portal, { l2_acknowledgment: acknowledgment });
+      onEco?.(acknowledgment);
+    })
+    .catch(() => {});
+};
+
+export const marcarEscenaAbierta = (portal) => {
+  lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
 
 const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null }) => {
@@ -854,7 +903,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   /* Experiencia narrativa — abre la experiencia y cierra el modal */
   const handleOpenNarrativeExperience = () => {
-    lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
+    marcarEscenaAbierta(portal);
     setL2NarrativeOpened(true);
     setCalibrationQuestionOpen(false);
     onClose?.();
@@ -970,51 +1019,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   /* Nivel 1 — chip de expectativa (pre-estímulo, inmediatamente después del eco) */
   const handleExpectativaSelect = async (option) => {
     if (l1ChipDone || l2Submitting) return;
-    const fallbackAcknowledgment = buildL2Acknowledgment(portal, option);
     setL2Selection(option); // optimistic
-    setL2Acknowledgment(fallbackAcknowledgment);
+    setL2Acknowledgment(buildL2Acknowledgment(portal, option));
     setL1ChipDone(true);
     setL2Submitting(true);
     setCalibrationQuestionOpen(false);
     setDashboardActiveLevel(2);
-    const anonId = ensureAnonId();
-    lsPatch(portal, {
-      l2_option: option,
-      l2_acknowledgment: fallbackAcknowledgment,
-      l2_ts: Date.now(),
-      l2_calibration_open: false,
-      dashboard_active_level: 2,
-    });
-    if (!isDevAuth) {
-      try {
-        await supabase.from('vitrana_resonances').insert({
-          anon_id:   anonId,
-          portal:    portal ?? null,
-          question:  l2q?.question ?? null,
-          respuesta: option,
-          level:     2,
-        });
-      } catch (_) {}
-
-      // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
-      // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
-      // nada en medio, antes de abrir el artefacto.
-      persistBaseline({
-          anon_id:              anonId,
-          miniverso_id:         portal,
-          expectativa_chip:     option,
-          ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
-          expectativa_question: l2q?.question ?? null,
-        })
-        .then((data) => {
-          const acknowledgment = data?.acknowledgment?.trim();
-          if (!acknowledgment) return;
-          setL2Acknowledgment(acknowledgment);
-          lsPatch(portal, { l2_acknowledgment: acknowledgment });
-        })
-        .catch(() => {});
-    }
-
+    await enviarExpectativa({ portal, option, isDevAuth, onEco: setL2Acknowledgment });
     setL2Submitting(false);
   };
 
