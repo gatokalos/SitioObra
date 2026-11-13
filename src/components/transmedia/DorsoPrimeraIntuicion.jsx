@@ -106,7 +106,8 @@ const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnvia
           value={respuesta}
           onChange={(e) => setRespuesta(e.target.value)}
           required
-          className="form-surface w-full flex-1 resize-none px-3 py-2 text-base"
+          placeholder="No tienes que llenar todo este espacio. Pero puedes."
+          className="form-surface w-full flex-1 resize-none px-3 py-2 text-base placeholder:text-slate-600/70"
         />
       </div>
 

@@ -1575,7 +1575,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setDorsoCerrado(true);
     try { window.sessionStorage.setItem(DORSO_CERRADO_KEY, '1'); } catch {}
   };
+  // Por ahora solo en escritorio (Carlos, 14 nov 2026, noche): en el teléfono
+  // falta ver en el simulador cómo queda el dorso con el teclado abierto. Ahí
+  // la tarjeta sigue como antes: muestra la pregunta y «Entra en escena».
   const pideIntuicionEnLaTarjeta = (formatId) =>
+    !isVitrinaCarouselViewport &&
     !isAuthenticated &&
     hasBienvenidaPass &&
     formatId === recommendedShowcaseId &&
