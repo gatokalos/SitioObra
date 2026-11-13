@@ -1481,7 +1481,7 @@ export const formats = [
     title: 'La pregunta',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    vitrinaCopy: 'Como El riesgo,\nte coloca frente a algo.\nAunque la jaula queda abierta.',
+    vitrinaCopy: 'Es como El riesgo,\nte coloca frente a algo.\nPero aquí la jaula queda abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
