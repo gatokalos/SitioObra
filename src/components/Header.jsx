@@ -1605,7 +1605,7 @@ const Header = ({
                     Sin sesión no hay punto; el [#] sigue siendo el botón.
                     Desde el 12 nov 2026 va al costado izquierdo, a media altura,
                     y no empuja al [#] (Carlos). */}
-                {/* 14 nov 2026 (Carlos): turquesa, porque el esmeralda parecía un
+                {/* 13 nov 2026 (Carlos): turquesa, porque el esmeralda parecía un
                     indicador de hardware; y se apaga mientras el programa de
                     mano está abierto, que trae su propio foquito, para que no
                     haya dos a la vez. */}

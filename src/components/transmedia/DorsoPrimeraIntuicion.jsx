@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 
-// El dorso de la tarjeta recomendada en la galería (Carlos, 14 nov 2026).
+// El dorso de la tarjeta recomendada en la galería (Carlos, 13 nov 2026).
 // La pregunta madre se contesta aquí, antes de abrir la ficha: leer sobre la
 // forma y su obra antes de contestar iba contra el protocolo (D-66, D-67: la
 // pregunta se declara «sin nada delante a la hora de contestar»). De tres
@@ -43,7 +43,7 @@ const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnvia
       className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/10 p-6 text-left"
       // El dorso lleva el gradiente de su forma, el mismo del panel del frente
       // (el verdoso de El riesgo, por ejemplo), con un velo oscuro encima para
-      // que el texto se lea igual en las nueve (Carlos, 14 nov 2026).
+      // que el texto se lea igual en las nueve (Carlos, 13 nov 2026).
       style={{
         backgroundColor: '#0a0c18',
         backgroundImage: gradiente

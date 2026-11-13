@@ -1275,7 +1275,7 @@ const MiniverseModal = ({
     onClose?.();
   }, [markMiniverseVisited, onClose, selectedMiniverseId, status, stopModalMediaPlayback]);
 
-  // Habita es escaparate (Carlos, 14 nov 2026): desde aquí las apps muestran su
+  // Habita es escaparate (Carlos, 13 nov 2026): desde aquí las apps muestran su
   // demo o avisan que viene; no abren el segundo acto. Antes solo la tarjeta
   // pasaba por esta regla y los demás botones («Habitar la forma →» al
   // terminar el video, entre otros) abrían la ficha o el portal de verdad: con
