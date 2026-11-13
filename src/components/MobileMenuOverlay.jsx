@@ -246,7 +246,7 @@ const MobileMenuOverlay = ({
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 font-display text-[1.02rem] leading-tight text-slate-100">
                     <span
-                      className="h-2 w-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                      className="h-2 w-2 shrink-0 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]"
                       aria-hidden="true"
                     />
                     <span className="min-w-0 break-words">{sessionGreeting}</span>

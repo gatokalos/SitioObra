@@ -1605,9 +1605,13 @@ const Header = ({
                     Sin sesión no hay punto; el [#] sigue siendo el botón.
                     Desde el 12 nov 2026 va al costado izquierdo, a media altura,
                     y no empuja al [#] (Carlos). */}
-                {user ? (
+                {/* 14 nov 2026 (Carlos): turquesa, porque el esmeralda parecía un
+                    indicador de hardware; y se apaga mientras el programa de
+                    mano está abierto, que trae su propio foquito, para que no
+                    haya dos a la vez. */}
+                {user && !isMenuOpen ? (
                   <span
-                    className="pointer-events-none absolute -left-2.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                    className="pointer-events-none absolute -left-2.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]"
                     aria-hidden="true"
                   />
                 ) : null}
