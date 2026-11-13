@@ -304,16 +304,13 @@ const PortalLiteratura = () => {
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
                   <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Escritura que acompaña</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.miniversoNovela.iaProfile}
+                  chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
+                  chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -419,6 +416,8 @@ const PortalLiteratura = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoNovela.iaProfile}
+              chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
+              chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

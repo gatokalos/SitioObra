@@ -510,16 +510,13 @@ const PortalMovimiento = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {MOVEMENT_INTRO}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Cuerpo en tránsito</span>
-                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ritual coreográfico</span>
-                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ruta por ciudad</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.miniversoMovimiento.iaProfile}
+                  chips={['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad']}
+                  chipClassName="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -816,6 +813,8 @@ const PortalMovimiento = () => {
           <div className="hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoMovimiento.iaProfile}
+              chips={['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad']}
+              chipClassName="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

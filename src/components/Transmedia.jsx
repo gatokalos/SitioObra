@@ -4939,7 +4939,7 @@ const renderDramaFeaturedWork = () => (
               <div>{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (
                 <div className="lg:hidden mt-4">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  <IAInsightCard {...activeDefinition.iaProfile} chips={activeDefinition.chips} chipClassName={activeDefinition.chipClassName} compact />
                 </div>
               ) : null}
               {/* Botones de control — solo desktop, al fondo del contenido scrollable */}

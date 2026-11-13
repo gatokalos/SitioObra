@@ -410,16 +410,13 @@ const PortalArtesanias = () => {
                   <p>{ARTESANIAS_SUBTITLE}</p>
                   <p>{ARTESANIAS_INTRO}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Objeto narrativo</span>
-                  <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Cerámica de autor</span>
-                  <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Pieza única</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.lataza.iaProfile}
+                  chips={['Objeto narrativo', 'Cerámica de autor', 'Pieza única']}
+                  chipClassName="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -608,6 +605,8 @@ const PortalArtesanias = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.lataza.iaProfile}
+              chips={['Objeto narrativo', 'Cerámica de autor', 'Pieza única']}
+              chipClassName="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

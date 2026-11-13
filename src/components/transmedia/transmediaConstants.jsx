@@ -681,6 +681,10 @@ iaProfile: {
     ],
   },
   copycats: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Cine-ensayo', 'Archivo autoficcional', 'Cortometraje'],
+    chipClassName: 'rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100',
     label: 'La proyección',
     shareLabel: 'Cine',
     type: 'cinema',
@@ -689,11 +693,6 @@ iaProfile: {
       <>
           <p className="mt-4 text-lg font-medium leading-relaxed text-white">La <em>sobreinterpretación</em> también convierte a los otros en relato: tomar distancia revela cuánto de lo que vemos también lo pusimos nosotros.</p>
         <p className="text-slate-100/90">Una imagen puede detenerse en una herida abierta. El cine decide mostrar qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cine-ensayo</span>
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Archivo autoficcional</span>
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cortometraje</span>
-        </div>
       </>
     ),
     promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
@@ -798,6 +797,10 @@ iaProfile: {
     },
   },
   lataza: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Objeto narrativo', 'Cerámica de autor', 'WebAR vivo'],
+    chipClassName: 'rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100',
     label: 'El objeto',
     type: 'object-webar',
     slug: 'taza-que-habla',
@@ -814,11 +817,6 @@ iaProfile: {
     A diferencia de la escritura, que necesita decirse o leerse para seguir abriendo sentido, el objeto no necesita ser nombrado para sostener lo que carga — basta con tenerlo cerca.
   </p>
 
-  <div className="flex flex-wrap gap-2 mt-2">
-    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Objeto narrativo</span>
-    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Cerámica de autor</span>
-    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">WebAR vivo</span>
-  </div>
 </>
 ),
     note: 'Apunta tu cámara y aparecerá tu frase',
@@ -861,6 +859,10 @@ iaProfile: {
     },
   },
   miniversoNovela: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña'],
+    chipClassName: 'rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100',
     label: 'La escritura',
     type: 'blog-series',
     slug: null,
@@ -870,11 +872,6 @@ iaProfile: {
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
          <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Escritura que acompaña</span>
-        </div>
       </>
     ),
     cartaTitle: '#LaPreguntaInsiste',
@@ -943,6 +940,10 @@ iaProfile: {
     },
   },
   miniversoSonoro: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Diseño sonoro', 'Sueño en capas', 'Mezcla original'],
+    chipClassName: 'rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100',
     label: 'La vibración',
     type: 'audio-dream',
     intro:
@@ -953,11 +954,6 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Casi nadie se detiene a escuchar lo que ya estaba sonando.</p>
         <p className="text-base leading-relaxed text-slate-300/90 mt-3">Hay cosas que el cuerpo solo percibe con vibración: algo entra sin permiso y se queda. Basta con <em>cerrar los ojos</em> para descubrir que la obra continúa en otra parte.</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Diseño sonoro</span>
-          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Sueño en capas</span>
-          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Mezcla original</span>
-        </div>
       </>
     ),
     highlights: [
@@ -1040,6 +1036,10 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ],
   },
   miniversoGrafico: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Cómic', 'Imagen como silencio', 'Lab visual'],
+    chipClassName: 'rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100',
     label: 'La imagen',
     type: 'graphic-lab',
     introNode: (
@@ -1050,11 +1050,6 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     <p className="text-base leading-relaxed text-slate-200/80 mt-3">
       En La proyección alguien elige qué mostrar y en qué orden. La imagen no da esa tregua: llega de golpe, entera, como una superficie que vuelve a aparecer con los ojos cerrados.
     </p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
-          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
-          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
-        </div>
       </>
     ),
     cartaTitle: '#MirarmeLoQueSoy',
@@ -1121,6 +1116,10 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   miniversoMovimiento: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad'],
+    chipClassName: 'rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100',
     label: 'El cuerpo',
     intro: 'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.',
     introNode: (
@@ -1132,11 +1131,6 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       <strong> En este espacio no se interpretan emociones: se atraviesan.</strong>
     </p>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Cuerpo en tránsito</span>
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ritual coreográfico</span>
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ruta por ciudad</span>
-        </div>
       </>
     ),
     type: 'movement-ritual',
@@ -1313,6 +1307,10 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   apps: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Juego narrativo', 'App interactiva', 'Miniverso jugable'],
+    chipClassName: 'rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100',
     id: 'apps',
     label: 'El riesgo',
     type: 'apps',
@@ -1327,11 +1325,6 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay una inquietud que casi nadie confiesa: la sospecha de no ser necesario en ninguna parte.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">A veces una pregunta no pide nada a cambio. <strong>Aquí, en cambio, algo depende de ti y no sabes bien qué.</strong></p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Juego narrativo</span>
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">App interactiva</span>
-          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Miniverso jugable</span>
-        </div>
       </>
     ),
     cartaTitle: '#NoHayDesandar',
@@ -1355,6 +1348,10 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   oraculo: {
+    // Chips del bloque «Al entrar en escena» (Carlos, 12 nov 2026); antes
+    // iban en fila bajo la sinopsis.
+    chips: ['Ritual simbólico', 'Pregunta abierta', 'Huella viviente'],
+    chipClassName: 'rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100',
     label: 'La pregunta',
     type: 'oracle',
     // Pendiente: demo grabado para la tarjeta "Obra destacada" de la
@@ -1365,11 +1362,6 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">
 Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza a intuir mejor.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">El teatro necesita que alguien esté mirando para que algo sea cierto. Aquí no hay público: solo tú y lo que aparece después de la experiencia. No se interpreta nada. Se aprende a observar al observador.</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Pregunta abierta</span>
-          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Huella viviente</span>
-        </div>
       </>
     ),
     loops: [

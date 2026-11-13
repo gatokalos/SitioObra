@@ -473,6 +473,8 @@ const PortalJuegos = () => {
                 <div className="lg:hidden px-6 sm:px-8 pb-6">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
+                    chips={JUEGOS_DEFINITION.chips}
+                    chipClassName={JUEGOS_DEFINITION.chipClassName}
                     title="AL ENTRAR EN ESCENA…"
                     compact
                   />
@@ -669,6 +671,8 @@ const PortalJuegos = () => {
             <div className="order-4 hidden lg:block">
               <IAInsightCard
                 {...JUEGOS_DEFINITION.iaProfile}
+                chips={JUEGOS_DEFINITION.chips}
+                chipClassName={JUEGOS_DEFINITION.chipClassName}
                 title="AL ENTRAR EN ESCENA…"
                 compact
               />

@@ -311,16 +311,13 @@ const PortalOraculo = () => {
                 <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
                   {ORACULO_INTRO}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Pregunta abierta</span>
-                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Huella viviente</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.oraculo.iaProfile}
+                  chips={['Ritual simbólico', 'Pregunta abierta', 'Huella viviente']}
+                  chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -462,6 +459,8 @@ const PortalOraculo = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.oraculo.iaProfile}
+              chips={['Ritual simbólico', 'Pregunta abierta', 'Huella viviente']}
+              chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

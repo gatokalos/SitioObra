@@ -396,21 +396,13 @@ const PortalCine = () => {
                 <div className="space-y-3 text-lg font-light leading-relaxed text-slate-200/85">
                   {CINE_INTRO}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {CINE_TONE.map((item) => (
-                    <span
-                      key={`cine-tone-${item}`}
-                      className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.copycats.iaProfile}
+                  chips={CINE_TONE}
+                  chipClassName="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -509,6 +501,8 @@ const PortalCine = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.copycats.iaProfile}
+              chips={CINE_TONE}
+              chipClassName="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

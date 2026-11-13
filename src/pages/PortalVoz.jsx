@@ -992,16 +992,13 @@ const PortalVoz = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {SCENE_PORTAL_INTRO}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra efímera</span>
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Protagonista</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.miniversos.iaProfile}
+                  chips={['Obra efímera', 'Mirada ajena', 'Protagonista']}
+                  chipClassName="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -1537,6 +1534,8 @@ const PortalVoz = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversos.iaProfile}
+              chips={['Obra efímera', 'Mirada ajena', 'Protagonista']}
+              chipClassName="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

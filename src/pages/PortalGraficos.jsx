@@ -369,16 +369,13 @@ const PortalGraficos = () => {
                   </div>
                 </div>
                 <div>{GRAFICOS_INTRO}</div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
-                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
-                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
-                </div>
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.miniversoGrafico.iaProfile}
+                  chips={['Cómic', 'Imagen como silencio', 'Lab visual']}
+                  chipClassName="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -498,6 +495,8 @@ const PortalGraficos = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoGrafico.iaProfile}
+              chips={['Cómic', 'Imagen como silencio', 'Lab visual']}
+              chipClassName="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />

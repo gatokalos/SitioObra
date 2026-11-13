@@ -20,6 +20,11 @@ const IAInsightCard = ({
   // migración: los miniversos ya migrados pasan `notes`, los que faltan
   // siguen con las props de siempre.
   notes,
+  // Chips de la forma («Juego narrativo», «App interactiva»…) con el color de
+  // su vitrina. Van bajo el título y se ven aunque el bloque esté cerrado
+  // (Carlos, 12 nov 2026); antes iban en fila bajo la sinopsis.
+  chips,
+  chipClassName = 'rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100',
   compact = false,
   // Modo "viajar" (Memoria holográfica): con `onTravel` aparece el botón para
   // cruzar a otra forma. Sin sesión no se cruza —el visitante tiene una sola
@@ -60,6 +65,7 @@ const IAInsightCard = ({
   const isTravelMode = typeof onTravel === 'function';
   const hasNotes = Array.isArray(notes) && notes.length > 0;
   const hasBody = hasNotes || type || interaction || tokensRange || coverage;
+  const hasChips = Array.isArray(chips) && chips.length > 0;
 
   const pedirSesion = () => {
     if (onRequireLogin) {
@@ -100,7 +106,7 @@ const IAInsightCard = ({
     );
   }
 
-  if (!hasBody) {
+  if (!hasBody && !hasChips) {
     return null;
   }
 
@@ -121,6 +127,14 @@ const IAInsightCard = ({
           aria-hidden="true"
         />
       </button>
+
+      {hasChips ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {chips.map((chip) => (
+            <span key={chip} className={chipClassName}>{chip}</span>
+          ))}
+        </div>
+      ) : null}
 
       {isOpen ? (
         <div className="mt-4 space-y-2 text-purple-100/90">
