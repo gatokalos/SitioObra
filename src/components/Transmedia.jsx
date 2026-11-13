@@ -65,7 +65,8 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
-import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion } from '@/components/portal/ResonanceModal';
+import DorsoPrimeraIntuicion from '@/components/transmedia/DorsoPrimeraIntuicion';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -215,6 +216,9 @@ const SHOWCASE_CARD_GRADIENT = {
 // bloque ya dice «Al entrar en escena…». Las demás vitrinas reveladas conservan
 // el botón amarillo a iniciar sesión.
 const VITRINA_TU_FORMA_LABEL = 'Entra en escena';
+// Mientras la pregunta madre no se ha contestado, el botón dice lo que va a
+// pasar: la tarjeta gira y se contesta ahí mismo (Carlos, 14 nov 2026).
+const VITRINA_IMPROVISA_LABEL = 'Improvisa una respuesta';
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
@@ -313,7 +317,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     query.addEventListener('change', handleChange);
     return () => query.removeEventListener('change', handleChange);
   }, []);
-  const { user, session } = useAuth();
+  const { user, session, isDevAuth } = useAuth();
   const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
   const transmediaAmbientState = useSyncExternalStore(
     subscribeTransmediaAmbient,
@@ -1531,6 +1535,99 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     handleSendSilvestrePreset,
     handleOpenSilvestreChat,
   });
+
+  // ── La tarjeta recomendada gira y pide la primera intuición (Carlos, 14 nov
+  // 2026). Antes «Entra en escena» abría la ficha y la pregunta madre se
+  // contestaba adentro, con la sinopsis, la obra y el verso a la vista: iba
+  // contra D-66 y D-67 («sin nada delante a la hora de contestar»). Ahora la
+  // tarjeta gira en la galería, se contesta al dorso y, al enviar, se abre la
+  // ficha con el método ya en su tablero. Vale para quien llega con pase (sin
+  // cuenta) a su forma recomendada; quien ya contestó entra a la ficha como
+  // siempre. El giro son dos medias vueltas (la tarjeta se pone de canto y el
+  // dorso entra desde el canto): así no depende de ocultar el revés en 3D,
+  // que en Safari falla.
+  const ABRIR_METODO_POR_VITRINA = {
+    miniversos: setIsDramaResonanceOpen,
+    miniversoNovela: setIsLiteraturaResonanceOpen,
+    lataza: setIsArtesaniasResonanceOpen,
+    miniversoGrafico: setIsGraficosResonanceOpen,
+    copycats: setIsCineResonanceOpen,
+    miniversoSonoro: setIsSonoroResonanceOpen,
+    miniversoMovimiento: setIsMovimientoResonanceOpen,
+    apps: setIsJuegosResonanceOpen,
+    oraculo: setIsOraculoResonanceOpen,
+  };
+  const [tarjetaGirandoId, setTarjetaGirandoId] = useState(null);
+  const [tarjetaGiradaId, setTarjetaGiradaId] = useState(null);
+  const [metodoPendienteId, setMetodoPendienteId] = useState(null);
+  const pideIntuicionEnLaTarjeta = (formatId) =>
+    !isAuthenticated &&
+    hasBienvenidaPass &&
+    formatId === recommendedShowcaseId &&
+    Boolean(VITRANA_QUESTION_BY_SHOWCASE[formatId]) &&
+    Boolean(SHOWCASE_TO_PORTAL[formatId]) &&
+    !readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]).l1Done;
+  const entrarPorLaTarjeta = (formatId) => {
+    if (!pideIntuicionEnLaTarjeta(formatId)) {
+      handleFormatClick(formatId);
+      return;
+    }
+    if (tarjetaGirandoId || tarjetaGiradaId) return;
+    setTarjetaGirandoId(formatId);
+    window.setTimeout(() => {
+      setTarjetaGiradaId(formatId);
+      setTarjetaGirandoId(null);
+    }, 340);
+  };
+  const enviarDesdeLaTarjeta = async (formatId, { nombre, respuesta }) => {
+    await enviarPrimeraIntuicion({
+      portal: SHOWCASE_TO_PORTAL[formatId],
+      question: VITRANA_QUESTION_BY_SHOWCASE[formatId],
+      nombre,
+      respuesta,
+      userId: user?.id ?? null,
+      isDevAuth,
+    });
+    setTarjetaGiradaId(null);
+    // En el teléfono la forma vive en su portal: se va allá, y el portal abre
+    // el método al llegar (portalLaunchSource 'primera-intuicion').
+    const portalRoute = resolvePortalRoute({
+      formatId,
+      mobileOnly: true,
+      isMobileViewport: isVitrinaCarouselViewport,
+    });
+    if (isVitrinaCarouselViewport && portalRoute) {
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'primera-intuicion', { showcaseId: formatId }),
+      });
+      return;
+    }
+    setMetodoPendienteId(formatId);
+    handleFormatClick(formatId);
+  };
+  useEffect(() => {
+    if (!metodoPendienteId) return;
+    if (activeShowcase !== metodoPendienteId || showcaseOpenTransition.phase !== 'idle') return;
+    ABRIR_METODO_POR_VITRINA[metodoPendienteId]?.(true);
+    setMetodoPendienteId(null);
+  }, [metodoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  const renderDorsoDeLaTarjeta = (format, className) => (
+    <motion.div
+      key={`${format.id}-dorso`}
+      initial={{ rotateY: -90 }}
+      animate={{ rotateY: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      style={{ transformPerspective: 1400 }}
+      className={className}
+    >
+      <DorsoPrimeraIntuicion
+        question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+        formaTitle={format.title}
+        onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
+        onVolver={() => setTarjetaGiradaId(null)}
+      />
+    </motion.div>
+  );
 
   const focusMetadataImageUrl = sanitizeExternalHttpUrl(focusAppMetadata?.imageUrl ?? null);
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
@@ -5638,14 +5735,18 @@ const renderDramaFeaturedWork = () => (
                       </motion.svg>
                     </div>
                   ) : null}
+                  {tarjetaGiradaId === format.id ? (
+                    renderDorsoDeLaTarjeta(format, 'min-h-[640px] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]')
+                  ) : (
                   <motion.div
                     key={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
                     animate={
                       isSafari
-                        ? { opacity: 1, y: 0 }
-                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.01 : 1 }
+                        ? { opacity: 1, y: 0, rotateY: tarjetaGirandoId === format.id ? 90 : 0 }
+                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.01 : 1, rotateY: tarjetaGirandoId === format.id ? 90 : 0 }
                     }
+                    style={{ transformPerspective: 1400 }}
                     whileTap={isShowcaseOpenTransitionActive ? undefined : { scale: 0.985, y: -2 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.28, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px] ${
@@ -5660,7 +5761,7 @@ const renderDramaFeaturedWork = () => (
                     onClick={() => {
                       if (isShowcaseOpenTransitionActive) return;
                       if (mobileSwipeBlockTapRef.current) return;
-                      handleFormatClick(format.id);
+                      entrarPorLaTarjeta(format.id);
                     }}
                     onTouchStart={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchStart}
                     onTouchMove={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchMove}
@@ -5755,11 +5856,11 @@ const renderDramaFeaturedWork = () => (
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleFormatClick(format.id);
+                            entrarPorLaTarjeta(format.id);
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5808,6 +5909,7 @@ const renderDramaFeaturedWork = () => (
                       }`}
                     />
                   </motion.div>
+                  )}
                   {/* La fila de navegación (nombres vecinos y puntos) va en todas las vitrinas y
                       debajo de la tarjeta, como los puntos de cualquier galería (Carlos, 1 nov,
                       noche): también en la recomendada, porque el título ya dice «LAS NUEVE
@@ -5911,6 +6013,10 @@ const renderDramaFeaturedWork = () => (
                 const isTransitionDimTile =
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
+                if (tarjetaGiradaId === format.id) {
+                  return renderDorsoDeLaTarjeta(format, 'min-h-[620px]');
+                }
+                const deCanto = tarjetaGirandoId === format.id ? 90 : 0;
                 return (
                   <motion.button
                     key={format.id}
@@ -5918,9 +6024,10 @@ const renderDramaFeaturedWork = () => (
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={
                       isSafari
-                        ? { opacity: 1, y: 0 }
-                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1 }
+                        ? { opacity: 1, y: 0, rotateY: deCanto }
+                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1, rotateY: deCanto }
                     }
+                    style={{ transformPerspective: 1400 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.32, delay: index * 0.03, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
@@ -5937,7 +6044,7 @@ const renderDramaFeaturedWork = () => (
                     }`}
                     onClick={() => {
                       if (isShowcaseOpenTransitionActive) return;
-                      handleFormatClick(format.id);
+                      entrarPorLaTarjeta(format.id);
                     }}
                   >
                     <div className="relative vitrina-pozo-glass__media flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
@@ -6031,11 +6138,11 @@ const renderDramaFeaturedWork = () => (
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleFormatClick(format.id);
+                            entrarPorLaTarjeta(format.id);
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

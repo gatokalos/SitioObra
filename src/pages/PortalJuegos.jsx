@@ -153,6 +153,12 @@ const PortalJuegos = () => {
       localStorage.setItem(key, JSON.stringify({ ...existing, video_seen: true }));
     } catch {}
   }, []);
+  // Quien contestó la pregunta madre en el dorso de su tarjeta, en la galería
+  // (14 nov 2026), llega aquí con el método ya en su tablero.
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'primera-intuicion') return;
+    setIsResonanceOpen(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {

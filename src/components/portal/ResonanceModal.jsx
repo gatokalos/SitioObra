@@ -382,6 +382,92 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
+// El envío de la primera intuición (la respuesta a la pregunta madre), fuera
+// del componente desde el 14 nov 2026: lo usan este formulario y el dorso de
+// la tarjeta recomendada en la galería (DorsoPrimeraIntuicion.jsx), donde la
+// pregunta se contesta antes de ver la ficha (D-66, D-67: «sin nada delante a
+// la hora de contestar»). Guarda lo mismo en los dos lugares y devuelve el eco.
+export const enviarPrimeraIntuicion = async ({
+  portal,
+  question = null,
+  nombre = '',
+  email = '',
+  respuesta,
+  userId = null,
+  isDevAuth = false,
+}) => {
+  const anonId = ensureAnonId();
+  // El eco crudo solo queda si el ajustado no llega a tiempo o no pasa la
+  // verificación del servidor.
+  let acknowledgment = buildL1Acknowledgment(portal, respuesta);
+  if (!isDevAuth) {
+    try {
+      await supabase.from('vitrana_resonances').insert({
+        anon_id:   anonId,
+        portal:    portal ?? null,
+        question:  question ?? null,
+        nombre:    (nombre ?? '').trim() || 'Anónimo',
+        email:     email,
+        respuesta: respuesta,
+        level:     1,
+      });
+    } catch (_) {}
+
+    // Persiste la línea base en resonance_sessions. La respuesta trae el eco
+    // ajustado; se espera con plazo (ESPERA_ECO_MS). Si el plazo se agota, la
+    // petición sigue su curso y la línea base se guarda igual: el servidor
+    // escribe antes de generar el eco.
+    const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+    // Pendiente 3, cerrado por Carlos el 20 sep 2026: la firma NO viaja al
+    // instrumento. Lo que se analiza es lo que la persona escribió; la unidad
+    // de identidad es el anon_id, con puente al user_id cuando se autentica.
+    // El nombre, si alguien decidió firmar, se queda en vitrana_resonances.
+    const ecoAjustado = await esperarConPlazo(persistBaseline({
+        anon_id:             anonId,
+        miniverso_id:        portal,
+        intuicion_answer:    respuesta,
+        // D-67: la pregunta que de verdad se contestó, tal como se mostró.
+        ...(question ? { intuicion_question: question } : {}),
+        // Bloque 7 (12 sep 2026): si pasó por el Intermedio antes de
+        // responder, se anota. No se le cierra la puerta a nadie.
+        ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
+        // Pendiente 4 del registro (11 sep 2026): sin este campo la columna
+        // user_id de resonance_sessions nunca se poblaba desde el sitio.
+        ...(userId ? { user_id: userId } : {}),
+        ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
+      }).then((data) => data?.acknowledgment?.trim() || null), ESPERA_ECO_MS);
+    if (ecoAjustado) acknowledgment = ecoAjustado;
+
+    // D-66: registra el eco que quedó en pantalla y si fue el ajustado o el
+    // crudo. Sin espera: no detiene nada si falla.
+    if (acknowledgment) {
+      fetch(`${OBRA_API_URL}/api/resonance/eco`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id: anonId,
+          miniverso_id: portal,
+          intuicion_answer: respuesta,
+          eco: acknowledgment,
+          ajustado: Boolean(ecoAjustado),
+        }),
+      }).catch(() => {});
+    }
+  }
+
+  lsPatch(portal, {
+    l1: Date.now(),
+    l1_answer: respuesta,
+    // La pregunta tal como se mostró, para que el gato la cite también desde
+    // este navegador (D-67; 28 oct 2026).
+    l1_question: question ?? null,
+    l1_acknowledgment: acknowledgment,
+    dashboard_active_level: 1,
+    l2_calibration_open: false,
+  });
+  return acknowledgment;
+};
+
 const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
@@ -739,74 +825,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const anonId = ensureAnonId();
-    // El eco crudo solo queda si el ajustado no llega a tiempo o no pasa la
-    // verificación del servidor.
-    let acknowledgment = buildL1Acknowledgment(portal, formData.respuesta);
-    if (!isDevAuth) {
-      try {
-        await supabase.from('vitrana_resonances').insert({
-          anon_id:   anonId,
-          portal:    portal ?? null,
-          question:  question ?? null,
-          nombre:    formData.nombre.trim() || 'Anónimo',
-          email:     formData.email,
-          respuesta: formData.respuesta,
-          level:     1,
-        });
-      } catch (_) {}
-
-      // Persiste la línea base en resonance_sessions. La respuesta trae el eco
-      // ajustado; se espera con plazo (ESPERA_ECO_MS). Si el plazo se agota, la
-      // petición sigue su curso y la línea base se guarda igual: el servidor
-      // escribe antes de generar el eco.
-      const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
-      // Pendiente 3, cerrado por Carlos el 20 sep 2026: la firma NO viaja al
-      // instrumento. Lo que se analiza es lo que la persona escribió; la unidad
-      // de identidad es el anon_id, con puente al user_id cuando se autentica.
-      // El nombre, si alguien decidió firmar, se queda en vitrana_resonances.
-      const ecoAjustado = await esperarConPlazo(persistBaseline({
-          anon_id:             anonId,
-          miniverso_id:        portal,
-          intuicion_answer:    formData.respuesta,
-          // D-67: la pregunta que de verdad se contestó, tal como se mostró.
-          ...(question ? { intuicion_question: question } : {}),
-          // Bloque 7 (12 sep 2026): si pasó por el Intermedio antes de
-          // responder, se anota. No se le cierra la puerta a nadie.
-          ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
-          // Pendiente 4 del registro (11 sep 2026): sin este campo la columna
-          // user_id de resonance_sessions nunca se poblaba desde el sitio.
-          ...(user?.id ? { user_id: user.id } : {}),
-          ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
-        }).then((data) => data?.acknowledgment?.trim() || null), ESPERA_ECO_MS);
-      if (ecoAjustado) acknowledgment = ecoAjustado;
-
-      // D-66: registra el eco que quedó en pantalla y si fue el ajustado o el
-      // crudo. Sin espera: no detiene nada si falla.
-      if (acknowledgment) {
-        fetch(`${OBRA_API_URL}/api/resonance/eco`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            anon_id: anonId,
-            miniverso_id: portal,
-            intuicion_answer: formData.respuesta,
-            eco: acknowledgment,
-            ajustado: Boolean(ecoAjustado),
-          }),
-        }).catch(() => {});
-      }
-    }
-
-    lsPatch(portal, {
-      l1: Date.now(),
-      l1_answer: formData.respuesta,
-      // La pregunta tal como se mostró, para que el gato la cite también desde
-      // este navegador (D-67; 28 oct 2026).
-      l1_question: question ?? null,
-      l1_acknowledgment: acknowledgment,
-      dashboard_active_level: 1,
-      l2_calibration_open: false,
+    const acknowledgment = await enviarPrimeraIntuicion({
+      portal,
+      question,
+      nombre: formData.nombre,
+      email: formData.email,
+      respuesta: formData.respuesta,
+      userId: user?.id ?? null,
+      isDevAuth,
     });
     setL1Acknowledgment(acknowledgment);
     fireConfetti();
