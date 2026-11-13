@@ -1680,6 +1680,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         <DorsoPrimeraIntuicion
           question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
           formaTitle={format.title}
+          gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
           onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
           onVolver={cerrarElDorso}
         />

@@ -11,7 +11,7 @@ import { useId, useState } from 'react';
 const CONSENTIMIENTO_COMPLETO =
   'Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan sin tu nombre —salvo que decidas firmarlas— y puedes detenerte cuando quieras. Lo que escribes se procesa fuera de este sitio para poder devolvértelo. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.';
 
-const DorsoPrimeraIntuicion = ({ question, formaTitle, onEnviar, onVolver }) => {
+const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnviar, onVolver }) => {
   const [nombre, setNombre] = useState('');
   const [firmando, setFirmando] = useState(false);
   const [respuesta, setRespuesta] = useState('');
@@ -41,9 +41,14 @@ const DorsoPrimeraIntuicion = ({ question, formaTitle, onEnviar, onVolver }) => 
     <form
       onSubmit={enviar}
       className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/10 p-6 text-left"
+      // El dorso lleva el gradiente de su forma, el mismo del panel del frente
+      // (el verdoso de El riesgo, por ejemplo), con un velo oscuro encima para
+      // que el texto se lea igual en las nueve (Carlos, 14 nov 2026).
       style={{
-        backgroundImage:
-          'radial-gradient(120% 60% at 20% 0%, rgba(110,60,90,0.55), transparent 60%), linear-gradient(160deg, #0d1022 0%, #151a36 50%, #2a1b3c 100%)',
+        backgroundColor: '#0a0c18',
+        backgroundImage: gradiente
+          ? `linear-gradient(180deg, rgba(6,8,20,0.5), rgba(6,8,20,0.28)), ${gradiente}`
+          : 'radial-gradient(120% 60% at 20% 0%, rgba(110,60,90,0.55), transparent 60%), linear-gradient(160deg, #0d1022 0%, #151a36 50%, #2a1b3c 100%)',
       }}
     >
       <div className="space-y-2">
