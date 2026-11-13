@@ -455,7 +455,7 @@ const PortalGraficos = () => {
             <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-                <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:grafico" />
+                <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" />
               </div>
               <CollaboratorsPanel collaborators={[GRAFICOS_COLLABORATOR]} accentClassName="text-fuchsia-200/90" bare />
             </div>
@@ -489,7 +489,7 @@ const PortalGraficos = () => {
             />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:grafico" />
+              <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">

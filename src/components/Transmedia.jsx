@@ -561,13 +561,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setShowBadgeCoins,
     showBadgeLoginOverlay,
     hasLoadedBadgeLoginOverlay,
-    celebratedShowcaseId,
     setCelebratedShowcaseId,
     handleBadgeLogin,
     handleCloseBadgeLogin,
     handleBadgeSubscribe,
     handleExplorerReward,
-    handleShowcaseRevealBoost,
   } = useExplorerBadge({
     allShowcasesUnlocked,
     isSubscriber,
@@ -1940,9 +1938,6 @@ const rendernotaAutoral = () => {
         }}
         effect={effect}
         isTragedia={isTragedia}
-        onFirstReveal={() => handleShowcaseRevealBoost(activeId)}
-        celebration={celebratedShowcaseId === activeId}
-        gatEventKey={`flip:nota-autoral:${activeId}`}
       />
     </div>
   );

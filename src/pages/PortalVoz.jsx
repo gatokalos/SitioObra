@@ -1100,7 +1100,6 @@ const PortalVoz = () => {
                     background: sceneTileColors.background,
                   }}
                   effect="flip"
-                  gatEventKey="flip:nota-autoral:obra"
                 />
               </div>
               <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />

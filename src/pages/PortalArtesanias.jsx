@@ -585,7 +585,7 @@ const PortalArtesanias = () => {
           <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 px-6 py-5 space-y-4">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} effect="flip" gatEventKey="flip:nota-autoral:artesanias" />
+              <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} effect="flip" />
             </div>
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" bare />
           </div>
@@ -598,7 +598,6 @@ const PortalArtesanias = () => {
                 verse={ARTESANIAS_NOTA_AUTORAL.verse}
                 palette={ARTESANIAS_TILE}
                 effect="flip"
-                gatEventKey="flip:nota-autoral:artesanias"
               />
             </div>
           </div>

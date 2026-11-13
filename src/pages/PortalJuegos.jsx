@@ -561,7 +561,7 @@ const PortalJuegos = () => {
               <div className="lg:hidden space-y-4">
                 <div className="flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-                  <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:juegos" />
+                  <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" />
                 </div>
               </div>
             </div>
@@ -648,7 +648,7 @@ const PortalJuegos = () => {
               <div className="pt-4 border-t border-emerald-200/20 lg:hidden space-y-4">
                 <div className="flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-                  <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:juegos" />
+                  <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" />
                 </div>
               </div>
             </div>
@@ -663,7 +663,6 @@ const PortalJuegos = () => {
                 verse={JUEGOS_DEFINITION.notaAutoral}
                 palette={JUEGOS_TILE}
                 effect="flip"
-                gatEventKey="flip:nota-autoral:juegos"
               />
             </div>
           </div>

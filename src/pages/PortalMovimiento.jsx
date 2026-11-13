@@ -691,7 +691,6 @@ const PortalMovimiento = () => {
                 verse={MOVEMENT_NOTA_AUTORAL.verse}
                 palette={MOVEMENT_TILE}
                 effect="flip"
-                gatEventKey="flip:nota-autoral:movimiento"
               />
             </div>
           </div>
@@ -716,7 +715,7 @@ const PortalMovimiento = () => {
           <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} effect="flip" gatEventKey="flip:nota-autoral:movimiento" />
+              <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} effect="flip" />
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
               <div className="flex items-center justify-between gap-3">

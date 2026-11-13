@@ -485,7 +485,7 @@ const PortalCine = () => {
             <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-                <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
+                <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" />
               </div>
               <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" bare />
             </div>
@@ -495,7 +495,7 @@ const PortalCine = () => {
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
+              <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">

@@ -1,110 +1,31 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Hand } from 'lucide-react';
-import {
-  registerTransmediaCreditEvent,
-  createTransmediaIdempotencyKey,
-} from '@/services/transmediaCreditsService';
 
+// El verso fundacional de cada forma, en su portal y en su vitrina. Voltearlo
+// ya no da nada: hasta el 13 nov 2026 registraba 25 GAT, lanzaba monedas y
+// dejaba una moneda girando bajo el verso, y en la vitrina además cobraba la
+// «energía» de esa vitrina. Era economía vieja (desde el 22 sep el GAToken es
+// una estafeta). Carlos descartó también coleccionar los nueve versos, para
+// no convertir las formas en un catálogo que se completa: queda solo el verso.
+// Ver docs/propuesta-coleccion-de-versos-12nov2026.md.
 const MiniVersoCard = ({
   title,
   verse,
   palette,
   effect = 'reveal',
   isTragedia = false,
-  onFirstReveal = null,
-  celebration = false,
-  gatEventKey = null,
 }) => {
   const [isActive, setIsActive] = useState(() => {
     try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
   });
-  const [showGatChip, setShowGatChip] = useState(false);
   const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
-  const gatClaimAttemptedRef = useRef(false);
-  const gatClaimStorageKey = gatEventKey ? `gatoencerrado:miniverso-verso-gat:${gatEventKey}` : null;
-
-  // Cobro de GAT separado del flag de "ya vi el verso": mientras
-  // register_transmedia_credit_event rechazaba flip:% en producción
-  // (resuelto 2026-08-04), voltear la tarjeta marcaba isActive=true de forma
-  // permanente sin haber cobrado nada, y un click sobre una tarjeta ya activa
-  // no vuelve a disparar handleCardToggle. Este efecto reintenta el cobro en
-  // cada mount mientras no haya una confirmación local de éxito — cubre
-  // tanto el flip nuevo como el reclamo retroactivo de quien quedó atascado.
-  const claimGat = useCallback(() => {
-    if (!gatEventKey || !gatClaimStorageKey) return;
-    try {
-      if (window.localStorage.getItem(gatClaimStorageKey) === '1') return;
-    } catch {
-      // sin localStorage no hay forma de recordar el cobro; se intenta igual
-    }
-    registerTransmediaCreditEvent({
-      eventKey: gatEventKey,
-      amount: 25,
-      oncePerIdentity: true,
-      idempotencyKey: createTransmediaIdempotencyKey(gatEventKey),
-    }).then(({ state, duplicate, error }) => {
-      if (error) return; // reintenta en el próximo mount; no se marca como cobrado
-      try { window.localStorage.setItem(gatClaimStorageKey, '1'); } catch {}
-      if (!duplicate && state && typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } }));
-        setShowGatChip(true);
-        setTimeout(() => setShowGatChip(false), 2800);
-      }
-    });
-  }, [gatEventKey, gatClaimStorageKey]);
-
-  useEffect(() => {
-    if (!isActive || gatClaimAttemptedRef.current) return;
-    gatClaimAttemptedRef.current = true;
-    claimGat();
-  }, [isActive, claimGat]);
 
   const handleCardToggle = () => {
-    setIsActive((prev) => {
-      if (prev) return prev;
-      try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
-      if (typeof onFirstReveal === 'function') onFirstReveal();
-      return true;
-    });
+    if (isActive) return;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    setIsActive(true);
   };
-
-  const renderCelebration = () => {
-    if (!celebration && !showGatChip) return null;
-    return (
-      <div className="pointer-events-none absolute inset-0 z-20">
-        {Array.from({ length: 7 }).map((_, index) => {
-          const offsetX = (index - 3) * 22;
-          const offsetY = -50 - index * 10;
-          return (
-            <motion.span
-              key={`mini-coin-${index}`}
-              className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.5)]"
-              initial={{ opacity: 0.95, scale: 0.7, x: 0, y: 0 }}
-              animate={{ opacity: 0, scale: 1.1, x: offsetX, y: offsetY, rotate: 90 + index * 25 }}
-              transition={{ duration: 1.2, ease: 'easeOut', delay: index * 0.04 }}
-            />
-          );
-        })}
-      </div>
-    );
-  };
-
-  const gatChip = isActive && gatEventKey ? (
-    <motion.span
-      key="gat-chip"
-      className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
-      initial={{ opacity: 0, scale: 0.8, y: 4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-    >
-      <img
-        src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-        alt="GAT"
-        className="h-3.5 w-3.5 animate-[spin_8s_linear_0s_infinite_reverse]"
-      />
-    </motion.span>
-  ) : null;
 
   const baseCard = (
     <motion.div
@@ -124,7 +45,6 @@ const MiniVersoCard = ({
       }}
       onClick={handleCardToggle}
     >
-      {renderCelebration()}
       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.35),_transparent_60%)] pointer-events-none" />
       <div className="relative z-10 mb-3 flex justify-center">
         <span
@@ -162,13 +82,19 @@ const MiniVersoCard = ({
   if (effect === 'flip') {
     return (
       <div className="relative [perspective:1200px]" onClick={handleCardToggle}>
-        {renderCelebration()}
         <motion.div
           animate={{ rotateY: isActive ? 180 : 0 }}
           transition={{ duration: 0.7, ease: 'easeInOut' }}
           className="relative min-h-[220px] [transform-style:preserve-3d]"
         >
-          <div
+          {/* Safari dejaba ver en espejo, detrás del verso, el rótulo y la
+              mano de esta cara: no oculta el revés de los hijos que tienen
+              capa propia. Por eso la cara se apaga cuando el giro pasa la
+              mitad (0.35 s de 0.7 s). */}
+          <motion.div
+            initial={false}
+            animate={{ opacity: isActive ? 0 : 1 }}
+            transition={{ duration: 0, delay: isActive ? 0.35 : 0 }}
             className={`absolute inset-0 rounded-2xl border flex flex-col items-center justify-center gap-4 ${textClass} [backface-visibility:hidden]`}
             style={{
               backgroundImage: palette.gradient,
@@ -190,7 +116,7 @@ const MiniVersoCard = ({
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/15 text-white/85 shadow-[0_0_16px_rgba(255,255,255,0.18)]">
               <Hand size={16} className="animate-pulse" />
             </span>
-          </div>
+          </motion.div>
           <div
             className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex flex-col items-center justify-center gap-3 ${textClass}`}
             style={{
@@ -201,7 +127,6 @@ const MiniVersoCard = ({
             }}
           >
             <p className="leading-relaxed whitespace-pre-line text-center font-light">{verse}</p>
-            {gatChip}
           </div>
         </motion.div>
       </div>

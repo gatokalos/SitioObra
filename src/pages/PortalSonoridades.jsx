@@ -491,7 +491,7 @@ const PortalSonoridades = () => {
                 <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
                   <div className="flex flex-col gap-3">
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-                    <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
+                    <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" />
                   </div>
                   <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" bare />
                 </div>
@@ -502,7 +502,7 @@ const PortalSonoridades = () => {
             <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
+              <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">
