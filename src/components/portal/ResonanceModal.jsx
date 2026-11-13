@@ -2036,7 +2036,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         fusionado dentro de la tarjeta activa de cada nivel,
                         no duplicado aquí arriba (Carlos, 2026-08-27). */}
                     <h2 id="resonance-modal-title" className="sr-only">
-                      Resonancia Colectiva — {dashboardLevels.find((lvl) => lvl.num === dashboardActiveLevel)?.title}
+                      {dashboardLevels.find((lvl) => lvl.num === dashboardActiveLevel)?.title}
                     </h2>
 
                     {/* Niveles */}
@@ -2689,9 +2689,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     {/* Desktop: pregunta prominente */}
                     {question ? (
                       <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14 space-y-3">
-                        <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                          Resonancia Colectiva
-                        </div>
                         <p
                           className="font-display leading-snug question-voice"
                           style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.4rem)' }}
@@ -2712,9 +2709,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
                       <div className="w-full space-y-3">
                         <div className="space-y-0.5 lg:hidden">
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                            Resonancia Colectiva
-                          </div>
                           <h3
                             id="resonance-modal-title"
                             className="font-display text-3xl leading-tight tracking-tight question-voice"

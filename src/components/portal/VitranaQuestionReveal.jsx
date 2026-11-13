@@ -29,7 +29,7 @@ const VitranaQuestionReveal = ({
   onAnswer,
   onReveal,
   buttonLabel = 'Improvisa una respuesta',
-  label = 'Resonancia Colectiva',
+  label = '',
   autoReveal = false,
   portal = null,
   l2Done = false,

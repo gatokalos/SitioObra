@@ -503,7 +503,7 @@ const PortalMovimiento = () => {
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="miniversoMovimiento" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">Movimiento</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">#Miniversos</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
@@ -524,8 +524,7 @@ const PortalMovimiento = () => {
 
               <div className={`px-6 sm:px-8 pb-6 sm:pb-8 lg:py-8 lg:pl-3 lg:pr-8 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : ''}`}>
                 <div className="mb-1 lg:mb-3">
-                  <p className="hidden lg:block text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                  <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+                  <h4 className="font-display text-xl question-heading-voice">Lo que deja la duda</h4>
                 </div>
                 <div className="space-y-6 lg:flex lg:flex-col lg:gap-5 lg:space-y-0">
                   <VitranaQuestionReveal
