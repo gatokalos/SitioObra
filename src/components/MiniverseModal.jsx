@@ -1275,6 +1275,28 @@ const MiniverseModal = ({
     onClose?.();
   }, [markMiniverseVisited, onClose, selectedMiniverseId, status, stopModalMediaPlayback]);
 
+  // Habita es escaparate (Carlos, 14 nov 2026): desde aquí las apps muestran su
+  // demo o avisan que viene; no abren el segundo acto. Antes solo la tarjeta
+  // pasaba por esta regla y los demás botones («Habitar la forma →» al
+  // terminar el video, entre otros) abrían la ficha o el portal de verdad: con
+  // sesión iniciada se entraba a las nueve formas sin haber pasado por el
+  // pozo. Queda exenta la forma recomendada, que solo existe tras el pozo.
+  // Devuelve true si ya atendió el toque.
+  const mostrarDemoEnHabita = useCallback(
+    (formatId) => {
+      if (!useDeviceDemo) return false;
+      if (safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY) === formatId) return false;
+      const demoUrl = DEMO_URL_BY_FORMAT_ID[formatId];
+      if (demoUrl) {
+        setDeviceDemoUrl(demoUrl);
+      } else {
+        toast({ description: 'Próximamente podrás ver aquí cómo funciona esta app.' });
+      }
+      return true;
+    },
+    [toast, useDeviceDemo]
+  );
+
   const handleSelectCard = useCallback(
     (card, source = 'grid') => {
       if (card.isUpcoming) {
@@ -1303,7 +1325,7 @@ const MiniverseModal = ({
         if (demoUrl) {
           setDeviceDemoUrl(demoUrl);
         } else {
-          toast({ description: 'Este dispositivo transmedia todavía se está diseñando. Vuelve pronto.' });
+          toast({ description: 'Próximamente podrás ver aquí cómo funciona esta app.' });
         }
         return;
       }
@@ -1388,6 +1410,7 @@ const MiniverseModal = ({
 
   const handleEnterMiniverse = useCallback(() => {
     if (!selectedMiniverse) return;
+    if (mostrarDemoEnHabita(selectedMiniverse.formatId)) return;
     markMiniverseVisited(selectedMiniverse.id);
     trackAppClick(selectedMiniverse, 'detail-enter');
     const portalRoute = resolvePortalRoute({
@@ -1422,11 +1445,13 @@ const MiniverseModal = ({
     stayOpenOnSelect,
     trackAppClick,
     isInlineMode,
+    mostrarDemoEnHabita,
   ]);
 
   const handleEnterShowcase = useCallback(
     (card) => {
       if (!card) return;
+      if (mostrarDemoEnHabita(card.formatId)) return;
       if (!visitedMiniverses[card.id]) {
         playKnockSound();
       }
@@ -1461,6 +1486,7 @@ const MiniverseModal = ({
       navigate,
       isMobileViewport,
       onSelectMiniverse,
+      mostrarDemoEnHabita,
       playKnockSound,
       stayOpenOnSelect,
       trackAppClick,
@@ -1552,8 +1578,9 @@ const MiniverseModal = ({
 
   const handleEnterUpcoming = useCallback(() => {
     if (!selectedUpcoming) return;
+    if (mostrarDemoEnHabita(selectedUpcoming.formatId)) return;
     onSelectMiniverse?.(selectedUpcoming.formatId);
-  }, [onSelectMiniverse, selectedUpcoming]);
+  }, [mostrarDemoEnHabita, onSelectMiniverse, selectedUpcoming]);
 
   const requireShowcaseLogin = useCallback(
     (card) => {
@@ -1741,6 +1768,7 @@ const MiniverseModal = ({
       return;
     }
     handleCloseShowcaseFullscreen();
+    if (mostrarDemoEnHabita(showcaseFullscreenCard.formatId)) return;
     const portalRoute = resolvePortalRoute({ formatId: showcaseFullscreenCard.formatId });
     if (isMobileViewport && portalRoute) {
       navigate(portalRoute, {
@@ -1749,7 +1777,7 @@ const MiniverseModal = ({
       return;
     }
     window.dispatchEvent(new CustomEvent('gatoencerrado:select-miniverse-format', { detail: { formatId: showcaseFullscreenCard.formatId } }));
-  }, [showcaseFullscreenCard, handleCloseShowcaseFullscreen, isMobileViewport, navigate, location]);
+  }, [showcaseFullscreenCard, handleCloseShowcaseFullscreen, isMobileViewport, navigate, location, mostrarDemoEnHabita]);
 
   const handleExploreMobileShowcase = useCallback(() => {
     if (!activeShowcaseCard || !showcaseNarrativeCards.length) return;
