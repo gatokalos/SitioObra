@@ -1955,6 +1955,8 @@ const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionCont
     <div className="hidden lg:block">
       <IAInsightCard
         {...activeDefinition.iaProfile}
+        chips={activeDefinition.chips}
+        chipClassName={activeDefinition.chipClassName}
         title={title}
         compact
         isOpen={accordionControl?.isOpen}
