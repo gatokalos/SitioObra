@@ -5942,7 +5942,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Inicia sesión para responder
+                          Quiero cambiar de verso
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5954,7 +5954,7 @@ const renderDramaFeaturedWork = () => (
                           aria-hidden="true"
                           className="invisible pointer-events-none inline-flex items-center gap-2 rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold"
                         >
-                          Inicia sesión para responder
+                          Quiero cambiar de verso
                           <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
                         </div>
                       )}
@@ -6228,7 +6228,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Inicia sesión para responder
+                          Quiero cambiar de verso
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
