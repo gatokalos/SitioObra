@@ -2520,7 +2520,7 @@ const renderDramaFeaturedWork = () => (
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Alguien cuenta cuántas miradas llegaron hasta aquí…',
+        description: 'De las nueve formas, ¿esta es una de tus favoritas?',
         buttonLabel: '¡Déjanos un pulso!',
         className: 'mt-4',
       };
@@ -3849,7 +3849,7 @@ const renderDramaFeaturedWork = () => (
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Alguien cuenta cuántas miradas llegaron hasta aquí…',
+          description: 'De las nueve formas, ¿esta es una de tus favoritas?',
           buttonLabel: '¡Déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
@@ -4245,7 +4245,7 @@ const renderDramaFeaturedWork = () => (
         {activeShowcase === 'copycats' ? (
           <ShowcaseReactionInline
             showcaseId="copycats"
-            description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+            description="De las nueve formas, ¿esta es una de tus favoritas?"
             title="Opiniones después del corte"
           />
         ) : null}
@@ -4588,7 +4588,7 @@ const renderDramaFeaturedWork = () => (
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
                             showcaseId="miniversos"
-                            description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                            description="De las nueve formas, ¿esta es una de tus favoritas?"
                             buttonLabel="¡Déjanos un pulso!"
                             bounceKey={heartBounceKey}
                           />
@@ -4629,7 +4629,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4669,7 +4669,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4709,7 +4709,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4750,7 +4750,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4790,7 +4790,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4830,7 +4830,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4870,7 +4870,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4910,7 +4910,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
-                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+                          description="De las nueve formas, ¿esta es una de tus favoritas?"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />

@@ -85,7 +85,7 @@ const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.tr
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     title="¡Déjanos un pulso!"
-    description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
+    description="De las nueve formas, ¿esta es una de tus favoritas?"
     successMessage="Gracias por tu pulso en este miniverso."
     status={status}
     onReact={onReact}
