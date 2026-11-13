@@ -1573,6 +1573,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       return;
     }
     if (tarjetaGirandoId || tarjetaGiradaId) return;
+    // Al volver a la recomendada, la otra que estuviera encendida se apaga.
+    setDesktopVitranaRevealId(null);
+    setMobileVitranaRevealId(null);
     setTarjetaGirandoId(formatId);
     window.setTimeout(() => {
       setTarjetaGiradaId(formatId);
@@ -5706,7 +5709,7 @@ const renderDramaFeaturedWork = () => (
               const isRecommendedTile = recommendedShowcaseId === format.id;
               const isVitrinaRevelada =
                 mobileVitranaRevealId === format.id ||
-                (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
+                (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId);
               return (
                 <>
                   {isRecommendedTile ? (
@@ -5884,7 +5887,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra y sigue la forma
+                          Inicia sesión para responder
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5896,7 +5899,7 @@ const renderDramaFeaturedWork = () => (
                           aria-hidden="true"
                           className="invisible pointer-events-none inline-flex items-center gap-2 rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold"
                         >
-                          Entra y sigue la forma
+                          Inicia sesión para responder
                           <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
                         </div>
                       )}
@@ -6005,7 +6008,9 @@ const renderDramaFeaturedWork = () => (
                 const isRecommendedTile = recommendedShowcaseId === format.id;
                 const isVitrinaRevelada =
                   desktopVitranaRevealId === format.id ||
-                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated);
+                  // Las vitrinas no compiten (Carlos, 14 nov 2026): si la persona
+                  // enciende otra, la recomendada se apaga hasta que la suelte.
+                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId);
                 const isFocusCenterTile = index === 1;
                 const isFocusSideTile = isDesktopFocusLockActive && !isFocusCenterTile;
                 const isTransitionTargetTile =
@@ -6166,7 +6171,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra y sigue la forma
+                          Inicia sesión para responder
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
