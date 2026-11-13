@@ -1560,6 +1560,21 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [tarjetaGirandoId, setTarjetaGirandoId] = useState(null);
   const [tarjetaGiradaId, setTarjetaGiradaId] = useState(null);
   const [metodoPendienteId, setMetodoPendienteId] = useState(null);
+  // Desde la tarde del 14 nov 2026 (Carlos): quien llega del primer acto ya
+  // trae la pregunta en su pase, así que la tarjeta no se la repite sobre la
+  // imagen. Llega limpia, gira sola una vez y queda de dorso mientras no se
+  // haya contestado. «Volver» la deja limpia el resto de la visita, con su
+  // botón para girarla otra vez.
+  const DORSO_CERRADO_KEY = 'gatoencerrado:dorso-cerrado-session';
+  const [dorsoCerrado, setDorsoCerrado] = useState(() => {
+    try { return window.sessionStorage.getItem(DORSO_CERRADO_KEY) === '1'; } catch { return false; }
+  });
+  const giroSoloHechoRef = useRef(false);
+  const cerrarElDorso = () => {
+    setTarjetaGiradaId(null);
+    setDorsoCerrado(true);
+    try { window.sessionStorage.setItem(DORSO_CERRADO_KEY, '1'); } catch {}
+  };
   const pideIntuicionEnLaTarjeta = (formatId) =>
     !isAuthenticated &&
     hasBienvenidaPass &&
@@ -1567,11 +1582,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     Boolean(VITRANA_QUESTION_BY_SHOWCASE[formatId]) &&
     Boolean(SHOWCASE_TO_PORTAL[formatId]) &&
     !readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]).l1Done;
-  const entrarPorLaTarjeta = (formatId) => {
-    if (!pideIntuicionEnLaTarjeta(formatId)) {
-      handleFormatClick(formatId);
-      return;
-    }
+  const girarLaTarjeta = (formatId) => {
     if (tarjetaGirandoId || tarjetaGiradaId) return;
     // Al volver a la recomendada, la otra que estuviera encendida se apaga.
     setDesktopVitranaRevealId(null);
@@ -1582,6 +1593,44 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setTarjetaGirandoId(null);
     }, 340);
   };
+  const entrarPorLaTarjeta = (formatId) => {
+    if (!pideIntuicionEnLaTarjeta(formatId)) {
+      handleFormatClick(formatId);
+      return;
+    }
+    girarLaTarjeta(formatId);
+  };
+  // El giro que la tarjeta hace sola al llegar: espera a que la recomendada
+  // esté a la vista, deja verla limpia un instante y la voltea una vez.
+  const pideLaRecomendada = Boolean(recommendedShowcaseId) && pideIntuicionEnLaTarjeta(recommendedShowcaseId);
+  useEffect(() => {
+    if (!pideLaRecomendada || dorsoCerrado || giroSoloHechoRef.current) return undefined;
+    if (tarjetaGiradaId || tarjetaGirandoId || activeShowcase) return undefined;
+    if (desktopVitranaRevealId || mobileVitranaRevealId) return undefined;
+    let espera = null;
+    const vigia = window.setInterval(() => {
+      const aLaVista = [...document.querySelectorAll('[data-tarjeta-recomendada]')].some((el) => {
+        const r = el.getBoundingClientRect();
+        if (!r.height || !r.width) return false;
+        const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+        return visible / r.height >= 0.6;
+      });
+      if (!aLaVista || espera) return;
+      window.clearInterval(vigia);
+      espera = window.setTimeout(() => {
+        giroSoloHechoRef.current = true;
+        girarLaTarjeta(recommendedShowcaseId);
+      }, 900);
+    }, 400);
+    return () => {
+      window.clearInterval(vigia);
+      if (espera) window.clearTimeout(espera);
+    };
+  }, [pideLaRecomendada, dorsoCerrado, tarjetaGiradaId, tarjetaGirandoId, activeShowcase, desktopVitranaRevealId, mobileVitranaRevealId, recommendedShowcaseId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Las vitrinas no compiten: si se enciende otra, el dorso se cierra.
+  useEffect(() => {
+    if ((desktopVitranaRevealId || mobileVitranaRevealId) && tarjetaGiradaId) setTarjetaGiradaId(null);
+  }, [desktopVitranaRevealId, mobileVitranaRevealId, tarjetaGiradaId]);
   const enviarDesdeLaTarjeta = async (formatId, { nombre, respuesta }) => {
     await enviarPrimeraIntuicion({
       portal: SHOWCASE_TO_PORTAL[formatId],
@@ -1614,22 +1663,28 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     ABRIR_METODO_POR_VITRINA[metodoPendienteId]?.(true);
     setMetodoPendienteId(null);
   }, [metodoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
-  const renderDorsoDeLaTarjeta = (format, className) => (
-    <motion.div
-      key={`${format.id}-dorso`}
-      initial={{ rotateY: -90 }}
-      animate={{ rotateY: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      style={{ transformPerspective: 1400 }}
-      className={className}
-    >
-      <DorsoPrimeraIntuicion
-        question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
-        formaTitle={format.title}
-        onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
-        onVolver={() => setTarjetaGiradaId(null)}
-      />
-    </motion.div>
+  // El frente se queda debajo, invisible, solo para dar la medida: así el
+  // dorso mide exactamente lo mismo, en teléfono y en escritorio.
+  const renderDorsoDeLaTarjeta = (format, frente, className = '') => (
+    <div key={`${format.id}-dorso`} className={`relative flex flex-col ${className}`}>
+      <div aria-hidden="true" className="invisible pointer-events-none flex flex-1 flex-col [&>*]:flex-1">
+        {frente}
+      </div>
+      <motion.div
+        initial={{ rotateY: -90 }}
+        animate={{ rotateY: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        style={{ transformPerspective: 1400 }}
+        className="absolute inset-0"
+      >
+        <DorsoPrimeraIntuicion
+          question={VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+          formaTitle={format.title}
+          onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
+          onVolver={cerrarElDorso}
+        />
+      </motion.div>
+    </div>
   );
 
   const focusMetadataImageUrl = sanitizeExternalHttpUrl(focusAppMetadata?.imageUrl ?? null);
@@ -5738,11 +5793,11 @@ const renderDramaFeaturedWork = () => (
                       </motion.svg>
                     </div>
                   ) : null}
-                  {tarjetaGiradaId === format.id ? (
-                    renderDorsoDeLaTarjeta(format, 'min-h-[640px] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]')
-                  ) : (
+                  {(() => {
+                    const tarjeta = (
                   <motion.div
                     key={format.id}
+                    data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
                     animate={
                       isSafari
@@ -5784,7 +5839,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <AnimatePresence>
-                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !pideIntuicionEnLaTarjeta(format.id) ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -5912,7 +5967,11 @@ const renderDramaFeaturedWork = () => (
                       }`}
                     />
                   </motion.div>
-                  )}
+                    );
+                    return tarjetaGiradaId === format.id
+                      ? renderDorsoDeLaTarjeta(format, tarjeta, 'min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]')
+                      : tarjeta;
+                  })()}
                   {/* La fila de navegación (nombres vecinos y puntos) va en todas las vitrinas y
                       debajo de la tarjeta, como los puntos de cualquier galería (Carlos, 1 nov,
                       noche): también en la recomendada, porque el título ya dice «LAS NUEVE
@@ -6018,14 +6077,12 @@ const renderDramaFeaturedWork = () => (
                 const isTransitionDimTile =
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
-                if (tarjetaGiradaId === format.id) {
-                  return renderDorsoDeLaTarjeta(format, 'min-h-[620px]');
-                }
                 const deCanto = tarjetaGirandoId === format.id ? 90 : 0;
-                return (
+                const tarjeta = (
                   <motion.button
                     key={format.id}
                     type="button"
+                    data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={
                       isSafari
@@ -6069,7 +6126,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                       <AnimatePresence>
-                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                        {isVitrinaRevelada && VITRANA_QUESTION_BY_SHOWCASE[format.id] && !pideIntuicionEnLaTarjeta(format.id) ? (
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -6190,6 +6247,7 @@ const renderDramaFeaturedWork = () => (
                     />
                   </motion.button>
                 );
+                return tarjetaGiradaId === format.id ? renderDorsoDeLaTarjeta(format, tarjeta) : tarjeta;
               })}
             </div>
             <div className="flex items-center justify-center gap-3 mt-6">
