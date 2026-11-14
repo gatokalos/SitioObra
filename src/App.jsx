@@ -67,6 +67,10 @@ const PortalEncuentros = lazy(() => import('./pages/PortalEncuentros.jsx'));
 const BitacoraLanding = lazy(() => import('./pages/BitacoraLanding.jsx'));
 const LabHuella = lazy(() => import('@/pages/LabHuella'));
 const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
+// Panel de ensayo (14 nov 2026): solo existe en Vite DEV; en producción ni se
+// descarga. Va aquí y no en la galería porque la galería no se dibuja mientras
+// el visitante no trae su pase.
+const EnsayoDeVisitante = import.meta.env.DEV ? lazy(() => import('@/components/dev/EnsayoDeVisitante')) : null;
 
 const LegacyBienvenidaRedirect = () => {
   const location = useLocation();
@@ -1086,6 +1090,11 @@ function App() {
       </Routes>
       <ArticleDrawer />
       <Toaster />
+      {EnsayoDeVisitante ? (
+        <Suspense fallback={null}>
+          <EnsayoDeVisitante />
+        </Suspense>
+      ) : null}
     </>
   );
 }

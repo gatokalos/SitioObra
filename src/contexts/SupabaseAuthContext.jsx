@@ -8,13 +8,30 @@ import { registrarCuenta } from '@/lib/registroSitio';
 const AuthContext = createContext(undefined);
 const DEV_AUTH_KEY = 'gatoencerrado:dev-auth';
 
-const readDevUser = () => {
+// Dos identidades de ensayo, solo en Vite DEV:
+//   ?devAuth=1     una cuenta simulada («Vista previa DEV»), para ver todo
+//                  abierto;
+//   ?devAuth=pase  un visitante sin sesión que llega del primer acto con su
+//                  pase (Carlos, 14 nov 2026: lo nuevo del segundo acto —la
+//                  tarjeta que gira, el tablero, En el foco— es para ese
+//                  visitante, y con la cuenta simulada no se podía ver ni
+//                  saltar pasos). El método queda en vista previa: nada sale
+//                  de este navegador.
+//   ?devAuth=0     ninguna.
+// El panel de ensayo (components/dev/EnsayoDeVisitante.jsx) cambia de una a
+// otra y salta entre los pasos del recorrido.
+const readDevMode = () => {
   if (!import.meta.env.DEV || typeof window === 'undefined') return null;
 
   const mode = new URL(window.location.href).searchParams.get('devAuth');
-  if (mode === '1') safeSetItem(DEV_AUTH_KEY, '1');
+  if (mode === '1' || mode === 'pase') safeSetItem(DEV_AUTH_KEY, mode);
   if (mode === '0') safeRemoveItem(DEV_AUTH_KEY);
-  if (safeGetItem(DEV_AUTH_KEY) !== '1') return null;
+  const guardado = safeGetItem(DEV_AUTH_KEY);
+  return guardado === '1' || guardado === 'pase' ? guardado : null;
+};
+
+const readDevUser = () => {
+  if (readDevMode() !== '1') return null;
 
   return {
     id: 'dev-preview-user',
@@ -74,7 +91,8 @@ export const AuthProvider = ({ children }) => {
     // Con ?devAuth=1 activo, gana incluso sobre una sesión real guardada en
     // este navegador — si no, probar como DEV se rompe en cuanto hay una
     // cuenta real logueada en localhost.
-    setUser(readDevUser() ?? session?.user ?? null);
+    // El visitante de ensayo no tiene sesión, aunque haya una real guardada.
+    setUser(readDevMode() === 'pase' ? null : (readDevUser() ?? session?.user ?? null));
     setLoading(false);
   }, []);
 
@@ -311,7 +329,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     user,
     session,
-    isDevAuth: user?.app_metadata?.provider === 'dev-preview',
+    isDevAuth: user?.app_metadata?.provider === 'dev-preview' || (!user && readDevMode() === 'pase'),
     loading,
     signUp,
     signIn,

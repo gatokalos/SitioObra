@@ -14,6 +14,9 @@ import {
 const APP_URL = import.meta.env.VITE_LITERATURA_APP_URL ?? 'https://literatura.miniversos.ai';
 // Marca del historial mientras la escena está abierta (ver el efecto de abajo).
 const ESCENA_STATE = 'gatoencerrado:escena:literatura';
+// Los «atrás» que esta ventana provoca al cerrarse, para no confundirlos con
+// los de la persona (ver el efecto del historial).
+const retirosPropios = new WeakSet();
 
 // Los avisos de «Al entrar en escena…» son la única fuente del copy que el
 // dispositivo dice en su transición (punto 6, Carlos, 11 oct 2026): el sitio se
@@ -70,7 +73,12 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin, enVentana = false
       } catch { /* sin historial manipulable: no hay trampa, pero la escena sigue */ }
     };
     marcar();
-    const onPop = () => {
+    const onPop = (event) => {
+      // El retiro de una apertura anterior llega tarde, cuando esta ya está
+      // escuchando. En desarrollo pasa siempre —React monta, desmonta y vuelve
+      // a montar— y la pregunta «¿Salir de la escena?» salía sola al abrir
+      // (14 nov 2026). Ese «atrás» no es de la persona: no se pregunta nada.
+      if (retirosPropios.has(event)) return;
       marcar();
       setConfirmarSalida(true);
     };
@@ -87,7 +95,10 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin, enVentana = false
       // siguiente «atrás» de la persona haga lo de siempre.
       if (trampaRef.current && window.history.state?.[ESCENA_STATE]) {
         trampaRef.current = false;
-        try { window.history.back(); } catch { /* ignore */ }
+        try {
+          window.addEventListener('popstate', (event) => retirosPropios.add(event), { once: true });
+          window.history.back();
+        } catch { /* ignore */ }
       } else {
         trampaRef.current = false;
       }
@@ -240,6 +251,11 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin, enVentana = false
         className="absolute inset-0 h-full w-full border-0"
         allow="microphone; camera"
         loading="lazy"
+        // El servidor de desarrollo aísla la página (COEP credentialless, en
+        // vite.config.js) y el navegador se niega a enmarcar el Marcador: en
+        // local la escena salía en negro. Solo en desarrollo, el marco se
+        // declara sin credenciales para que cargue (14 nov 2026).
+        {...(import.meta.env.DEV ? { credentialless: '' } : {})}
       />
       <button
         type="button"
