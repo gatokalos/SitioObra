@@ -612,14 +612,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (b.num === dashboardActiveLevel) return 1;
     return a.num - b.num;
   });
-  // Al entrar en la respuesta diferida, En el foco es la última escena que
-  // acaba de cerrarse. Conserva por eso el primer lugar de la pila, seguido de
-  // las dos fichas anteriores, tal como estaban debajo de ella en el dashboard.
-  const bitacoraMemoryLevels = [...dashboardLevels].sort((a, b) => {
-    if (a.num === 3) return -1;
-    if (b.num === 3) return 1;
-    return a.num - b.num;
-  });
   const [calibrationQuestionOpen, setCalibrationQuestionOpen] = useState(() => {
     const s = lsRead(portal);
     return !!s.l2_calibration_open && !s.l2_narrative_opened;
@@ -1517,6 +1509,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // vuelven las preguntas de los tres días hace que el encendido signifique
   // algo — anuncia el relevo.
   // Y también cuando el gato hace su última pregunta desde la Memoria (22 oct 2026).
+  // Desde el 14 nov 2026 (Carlos): en escritorio el regreso no cambia el lado
+  // izquierdo —«ya no tiene caso mostrar el dashboard. Deberíamos de conservar
+  // en ese espacio la constelación. Tal cual»— y contestarle al gato ocurre a
+  // la derecha, con él: la pregunta en su globo y la respuesta abajo, sobre el
+  // mueble de la cabina. (El 21 sep la izquierda era «quien responde»; con el
+  // libreto en ese lugar, pregunta y respuesta quedan juntas en la cabina.)
+  // Ya no hay «Es tu turno»: el día que la pregunta vuelve, el gato la hace.
+  const regresoEnEscritorio = bitacoraOpen && !enPantallaChica;
+  useEffect(() => {
+    if (!open || enPantallaChica) return;
+    if (bitacoraAvailable && !bitacoraCompleted && !bitacoraOpen && !ultimaPreguntaOpen) {
+      setBitacoraStep('p1');
+      setBitacoraOpen(true);
+    }
+  }, [open, enPantallaChica, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
   const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen;
 
   /* Nivel 3 — fetch recomendación */
@@ -1989,6 +1996,95 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     </div>
   );
 
+  // El instrumento de la respuesta diferida en escritorio: el rótulo del paso,
+  // el campo y los botones. Vive al pie de la cabina, bajo el gato.
+  const instrumentoDeRespuesta = (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={`bitacora-escritorio-${bitacoraStep}`}
+        className="bitacora-escritorio-instrumento w-full"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.24, ease: 'easeOut' }}
+      >
+        <div className="bitacora-escritorio-instrumento__cabecera">
+          <span>Tu respuesta</span>
+          <span aria-hidden="true" className="bitacora-escritorio-instrumento__marca" />
+        </div>
+    
+      {/* PENDIENTE DE DISEÑO (Carlos, 22 sep 2026): los
+          botones tipo zócalo ya no terminan de funcionar
+          en esta columna izquierda. Explorar controles
+          con más vida —quizá esféricos— que anticipen y
+          dialoguen con los satélites de la pantalla
+          siguiente, la Memoria holográfica. No alterar
+          todavía su comportamiento ni el flujo. */}
+      {bitacoraStep === 'p1' && (
+        <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
+          <div className="bitacora-escritorio-escritura__zocalo">
+            <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
+              {etiquetaDeSalida}
+            </button>
+            <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+              {etiquetaDeAvance}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
+    
+      {/* P2 y P3 — la escritura y sus acciones forman una sola pieza. */}
+      {(bitacoraStep === 'p2' || bitacoraStep === 'p3') && (
+        <div className="bitacora-escritorio-escritura">
+          <textarea
+            autoFocus
+            value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
+            onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
+            rows={4}
+            className="bitacora-escritorio-escritura__campo"
+            placeholder="Escribe aquí…"
+          />
+          <div className="bitacora-escritorio-escritura__zocalo">
+            <button
+              type="button"
+              disabled={bitacoraSubmitting}
+              onClick={() => avanzarDesdePregunta({ saltando: true })}
+              className="bitacora-escritorio-escritura__salida"
+            >
+              {etiquetaDeSalida}
+            </button>
+            <button
+              type="button"
+              disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
+              onClick={() => avanzarDesdePregunta()}
+              className="cabina-escritura-accion"
+            >
+              {bitacoraSubmitting ? 'Guardando…' : bitacoraStep === 'p2' ? 'Continuar' : 'Terminar'}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
+    
+      {/* El permiso final usa el mismo tablero de decisiones. */}
+      {bitacoraStep === 'compartir' && (
+        <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
+          <div className="bitacora-escritorio-escritura__zocalo">
+            <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
+              {etiquetaDeSalida}
+            </button>
+            <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+              {etiquetaDeAvance}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
+      </motion.div>
+    </AnimatePresence>
+  );
+
   const modal = (
     <AnimatePresence>
       {open && (
@@ -2236,7 +2332,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
-                ) : holograficoOpen ? (
+                ) : (holograficoOpen || regresoEnEscritorio) ? (
                   /* ── Memoria holográfica: lo que queda después de En escena ── */
                   <motion.div
                     key="holografico"
@@ -2251,7 +2347,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onDownloadSouvenir={l3Rec?.step3 ? handleDownloadSouvenir : null}
                       souvenirGenerando={isSouvenirGenerating}
                       isMobileViewport={isMobileViewport}
-                      readOnly={bitacoraCompleted || !bitacoraAvailable}
+                      readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
@@ -2278,180 +2374,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     />
                   </motion.div>
                 ) : bitacoraOpen ? (
-                  /* ── Bitácora individual: preguntas diferidas ── */
-                  <motion.div
-                    key="bitacora-questions"
-                    className="h-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {/* En móvil esta vista se dibuja aparte, en su propia capa
-                        anclada al viewport (ver el final del componente). Aquí
-                        queda la versión de escritorio. */}
-                    {/* La pregunta ya no vive aquí: la hace el gato, en su globo,
-                        del otro lado (Carlos, 21 sep 2026). Las dos columnas de
-                        escritorio ya tenían un significado —a la derecha quien
-                        pregunta, a la izquierda quien responde— y repetirla de
-                        este lado lo borraba. A diferencia del móvil, donde el
-                        globo se convierte en el campo y la pregunta desaparece
-                        al escribir, aquí se queda a la vista. Este lado conserva
-                        el rótulo del paso, el campo y los botones. */}
-                    <div className="hidden min-h-full lg:flex lg:items-center">
-                      {/* Respuesta y escenas forman un solo bloque en flujo. Así
-                          se centran como conjunto y nunca se abre un vacío entre
-                          el instrumento y las fichas. */}
-                      <div className="w-full px-8 py-14">
-                        <div className="mx-auto w-full max-w-[38rem]">
-                          <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                            En escena
-                          </p>
-                          <div aria-hidden="true" className="mb-6 h-px question-divider-voice" />
-
-                          <AnimatePresence mode="wait">
-                            <motion.div
-                              key={`bitacora-escritorio-${bitacoraStep}`}
-                              className="bitacora-escritorio-instrumento w-full"
-                              initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -6 }}
-                              transition={{ duration: 0.24, ease: 'easeOut' }}
-                            >
-                              <div className="bitacora-escritorio-instrumento__cabecera">
-                                <span>Tu respuesta</span>
-                                <span aria-hidden="true" className="bitacora-escritorio-instrumento__marca" />
-                              </div>
-
-                            {/* PENDIENTE DE DISEÑO (Carlos, 22 sep 2026): los
-                                botones tipo zócalo ya no terminan de funcionar
-                                en esta columna izquierda. Explorar controles
-                                con más vida —quizá esféricos— que anticipen y
-                                dialoguen con los satélites de la pantalla
-                                siguiente, la Memoria holográfica. No alterar
-                                todavía su comportamiento ni el flujo. */}
-                            {bitacoraStep === 'p1' && (
-                              <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
-                                <div className="bitacora-escritorio-escritura__zocalo">
-                                  <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
-                                    {etiquetaDeSalida}
-                                  </button>
-                                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
-                                    {etiquetaDeAvance}
-                                    <span aria-hidden="true">→</span>
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* P2 y P3 — la escritura y sus acciones forman una sola pieza. */}
-                            {(bitacoraStep === 'p2' || bitacoraStep === 'p3') && (
-                              <div className="bitacora-escritorio-escritura">
-                                <textarea
-                                  autoFocus
-                                  value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
-                                  onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
-                                  rows={5}
-                                  className="bitacora-escritorio-escritura__campo"
-                                  placeholder="Escribe aquí…"
-                                />
-                                <div className="bitacora-escritorio-escritura__zocalo">
-                                  <button
-                                    type="button"
-                                    disabled={bitacoraSubmitting}
-                                    onClick={() => avanzarDesdePregunta({ saltando: true })}
-                                    className="bitacora-escritorio-escritura__salida"
-                                  >
-                                    {etiquetaDeSalida}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
-                                    onClick={() => avanzarDesdePregunta()}
-                                    className="cabina-escritura-accion"
-                                  >
-                                    {bitacoraSubmitting ? 'Guardando…' : bitacoraStep === 'p2' ? 'Continuar' : 'Terminar'}
-                                    <span aria-hidden="true">→</span>
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* El permiso final usa el mismo tablero de decisiones. */}
-                            {bitacoraStep === 'compartir' && (
-                              <div className="bitacora-escritorio-escritura bitacora-escritorio-escritura--sin-campo">
-                                <div className="bitacora-escritorio-escritura__zocalo">
-                                  <button type="button" disabled={bitacoraSubmitting} onClick={declinarPaso} className="bitacora-escritorio-escritura__salida">
-                                    {etiquetaDeSalida}
-                                  </button>
-                                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
-                                    {etiquetaDeAvance}
-                                    <span aria-hidden="true">→</span>
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                            </motion.div>
-                          </AnimatePresence>
-                        </div>
-
-                        {/* No es una variante nueva: son las mismas fichas del
-                            dashboard, con las mismas dimensiones, tipografía,
-                            borde e icono, sólo colapsadas y sin interacción. */}
-                        <motion.ol
-                          className="mx-auto mt-8 flex w-full max-w-[38rem] flex-col gap-0"
-                          aria-label="Escenas cerradas"
-                          initial="oculta"
-                          animate="visible"
-                          variants={{
-                            oculta: {},
-                            visible: { transition: { staggerChildren: 0.07, delayChildren: 0.12 } },
-                          }}
-                        >
-                          {bitacoraMemoryLevels.map((level) => {
-                            const MemoryIcon = level.icon;
-                            const isFirstScene = level.num === 1;
-                            return (
-                              <motion.li
-                                key={`memoria-${level.num}`}
-                                className="flex items-start py-2"
-                                variants={{
-                                  oculta: { opacity: 0, y: -18 },
-                                  visible: {
-                                    opacity: 1,
-                                    y: 0,
-                                    transition: { duration: 0.32, ease: 'easeOut' },
-                                  },
-                                }}
-                              >
-                                <div className="relative grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)_auto] gap-x-4 gap-y-2 rounded-2xl border border-white/20 bg-black/55 px-4 py-4 pb-7 shadow-[0_0_20px_rgba(168,85,247,0.06)]">
-                                  <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`}>
-                                    <MemoryIcon className="h-8 w-8 text-white" aria-hidden="true" />
-                                  </div>
-
-                                  <div className="flex min-h-[4.5rem] min-w-0 flex-1 items-center self-center">
-                                    <div className="min-w-0 space-y-1">
-                                      <p className="text-[0.56rem] uppercase tracking-[0.18em] text-slate-400/70">
-                                        {level.eyebrow}
-                                      </p>
-                                      <p className="font-display text-base leading-tight text-white">
-                                        {level.title}
-                                      </p>
-                                      {isFirstScene && (
-                                        <p className="text-xs leading-relaxed text-slate-300/75">
-                                          {level.desc.replace(/^✓\s*/, '')}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </motion.li>
-                            );
-                          })}
-                        </motion.ol>
-                      </div>
-                    </div>
-                  </motion.div>
+                  /* ── El regreso en teléfono: la cabina se dibuja en su propia
+                     capa, anclada a la pantalla (ver el final del componente).
+                     En escritorio este lado conserva la constelación y la
+                     respuesta vive a la derecha, con el gato. ── */
+                  <motion.div key="bitacora-questions" className="h-full" />
                 ) : l1Done ? (
                   /* ── Dashboard de viaje ── */
                   <motion.div
@@ -2882,7 +2809,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 quien no lo tomara ahí se quedaba sin él para siempre. Aquí, al
                 pie de la cabina y con el mismo zócalo del stack, está siempre
                 que la Memoria esté abierta. */}
-            {holograficoOpen && l3Rec?.step3 ? (
+            {regresoEnEscritorio ? (
+              <div className="absolute inset-x-5 bottom-[6.75rem] z-20" data-respuesta-en-la-cabina>
+                {instrumentoDeRespuesta}
+              </div>
+            ) : null}
+            {(holograficoOpen || regresoEnEscritorio) && l3Rec?.step3 ? (
               <div className="absolute inset-x-5 bottom-5 z-20 space-y-2">
                 <button
                   type="button"
