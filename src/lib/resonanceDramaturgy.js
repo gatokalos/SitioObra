@@ -2,7 +2,10 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // D-42 (11 sep 2026): el clímax de la forma no está aquí, está en la
   // respuesta a los tres días. En el foco es el detonante: el autor entra a
   // cuadro y ya no hay vuelta atrás.
-  phase3Eyebrow: 'El detonante',
+  // «El detonante» era vocabulario de dirección (D-42) y, como «Retención», no
+  // es palabra para el visitante (Carlos, 14 nov 2026). La ceja sigue la serie
+  // de las otras dos: «Antes de entrar», «Preparación de escena».
+  phase3Eyebrow: 'Al salir de escena',
   phase3Title: 'En el foco',
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
   phase3Description: 'Este recorrido ha concluido. Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.',
