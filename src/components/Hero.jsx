@@ -93,8 +93,8 @@ const HERO_ROTATING_SUBTITLES = [
 
 const HERO_GHOST_SUBTITLES = [
   'Sí: aquí hay gato encerrado',                     // el premio final del que se quedó; título del artículo
-  'Una narrativa, nueve vidas, un universo',                        // el gato escondido en el número
-  'No hay una sola respuesta: hay muchas formas de rodearla',                // el premio del que se quedó; el gozne sin nombre (11 nov)
+  'Una narrativa, muchas voces, un universo',                        // el gato escondido en el número
+  'Nueve formas. Una manera de encontrarnos',                // el premio del que se quedó; el gozne sin nombre (11 nov)
 ];
 
 const HeroInactiveSignal = ({

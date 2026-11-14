@@ -5894,7 +5894,7 @@ const renderDramaFeaturedWork = () => (
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     Este universo cabe en nueve versos.<br />
-    De cada uno, nace un <em>miniverso</em>. <br /><strong>Forma parte de uno.</strong>
+    De cada uno, nace un <em>miniverso</em>. <br /><strong>Forma parte del tuyo.</strong>
            </p>
             </motion.div>
           ) : null}

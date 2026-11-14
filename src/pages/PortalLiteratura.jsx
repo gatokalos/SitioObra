@@ -308,7 +308,7 @@ const PortalLiteratura = () => {
                 </div>
                 <div className="space-y-3 leading-relaxed font-light">
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
-                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
+                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>La imagen</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
                 </div>
               </div>
 
