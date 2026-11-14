@@ -24,6 +24,22 @@ const DORSO_MOVIL_KEY = 'gatoencerrado:dev-dorso-movil';
 // tarjeta (ARTEFACTO_EN_VENTANA en Transmedia.jsx).
 const RECORRIDO_EN_TARJETA = new Set(['miniversoNovela']);
 
+// Respuestas de relleno para la primera intuición. En ensayo no hay servidor
+// que ajuste el eco (el que cambia «de mí» por «de ti»): se ve el eco crudo,
+// que pega la respuesta tal cual en la frase de cada forma. Por eso el relleno
+// va sin primera persona, para que el eco se lea bien (Carlos, 14 nov 2026).
+const RESPUESTA_DE_ENSAYO = {
+  obra: 'dejar de fingir',
+  literatura: 'un recuerdo que estaba dormido',
+  artesanias: 'guarda una historia',
+  grafico: 'una mirada conocida',
+  cine: 'la torpeza de siempre',
+  sonoridades: 'un eco lejano',
+  movimiento: 'algo aprieta en el pecho',
+  juegos: 'dudar',
+  oraculo: 'no contestarla de inmediato',
+};
+
 const leer = (k) => { try { return window.localStorage.getItem(k); } catch { return null; } };
 const poner = (k, v) => { try { window.localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } };
 const quitar = (k) => { try { window.localStorage.removeItem(k); } catch { /* sin almacenamiento */ } };
@@ -53,7 +69,7 @@ const registroDelPaso = (paso, forma) => {
   const opcion = LEVEL2_QUESTIONS[forma.key]?.options?.[0] ?? null;
   const r = {};
   if (paso === 'pregunta') return null;
-  Object.assign(r, { l1: ahora, l1_answer: 'algo que no sabía de mí' });
+  Object.assign(r, { l1: ahora, l1_answer: RESPUESTA_DE_ENSAYO[forma.key] ?? 'algo que estaba dormido' });
   if (paso === 'preparacion') return r;
   Object.assign(r, { l2_option: opcion, l2_ts: ahora });
   if (paso === 'habitar') return r;
