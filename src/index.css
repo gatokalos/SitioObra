@@ -6418,11 +6418,12 @@ body {
 
 /* Escritorio (Carlos, 12 nov 2026): el subtítulo rotativo sube entre la orbe
    y GATOENCERRADO. Se reordena dentro del mismo bloque del título, que
-   conserva su altura: la orbe no se mueve y solo baja el título. El texto se
+   conserva su altura. Desde el 14 nov el título vuelve a la mitad de la
+   pantalla y la orbe y el subtítulo suben con él (regla al final de la hoja). El texto se
    apoya en el borde inferior de su caja para quedar cerca del título y no de
    la orbe (que es el botón). Las cursivas son un juego de Carlos: las fantasma
-   en cursiva, las demás rectas. En teléfonos tiene su propia regla, al final
-   de esta hoja; en tabletas sigue abajo. Lleva la clase hero-subtitle-row en
+   en cursiva, las demás rectas. En teléfonos y tabletas el orden es el
+   mismo, con su propia regla al final de esta hoja. Lleva la clase hero-subtitle-row en
    Hero.jsx. */
 @media (min-width: 1024px) {
   #hero .hero-title-viewport {
@@ -6445,26 +6446,45 @@ body {
   }
 }
 
-/* Teléfono (Carlos, 14 nov 2026): el mismo orden que en escritorio —orbe,
-   subtítulo rotativo, GATOENCERRADO—, «solo el orden, no el estilo». El
-   subtítulo sube entre la orbe y el título, apoyado en el borde inferior de
-   su caja y con lugar para sus dos renglones; la orbe sube un poco menos que
-   él («bájalo un escalón») y el conjunto entero baja 2.3rem, título incluido
-   («también me refería a que bajaras el título»; eligió la versión A de dos,
-   con su recuadro fucsia de referencia). Así la orbe ya no tapa la cabeza del
-   gato y el subtítulo queda sobre sus ojos sin cubrirlos. Todo se hace con
-   desplazamientos: la antesala y el [#] de activación no cambian de lugar.
-   Entre 769 y 1023 px (iPad vertical) el subtítulo sigue abajo. */
-@media (max-width: 768px) {
+/* El hero, ordenado alrededor del título (Carlos, 14 nov 2026).
+   1. GATOENCERRADO va al centro y a la mitad de la pantalla en todo momento
+      («no podemos descuidar la simetría de la grilla invisible»). El reparto
+      del hero lo dejaba entre 17 y 79 px más abajo, según la pantalla:
+      hooks/useHeroTituloAlCentro.js mide dónde queda (--hero-titulo-y0) y aquí
+      se le lleva a la mitad (50svh). Todo se hace con desplazamientos: la
+      antesala y el [#] de activación no cambian de lugar.
+   2. El mismo orden en todas las pantallas: orbe, subtítulo rotativo, título
+      («solo el orden, no el estilo»). El subtítulo y la orbe se mueven con el
+      título. En teléfonos y tabletas el subtítulo se apoya en el borde
+      inferior de su caja y la orbe se le acerca un poco («bájalo un escalón»).
+   3. En tabletas (640 a 1023 px) el subtítulo va en un solo renglón, porque
+      ahí sí cabe («no tiene caso que el subtítulo sea de 2 renglones si hay
+      espacio suficiente en los iPads y demás tabletas»): su caja deja de medir
+      lo que mide el texto de reserva y toma el ancho disponible. En teléfonos
+      conserva lugar para dos. */
+#hero {
+  --hero-titulo-al-centro: 0px;
+}
+
+#hero[data-titulo-medido] {
+  --hero-titulo-al-centro: calc(50vh - var(--hero-titulo-y0));
+}
+
+@supports (height: 100svh) {
+  #hero[data-titulo-medido] {
+    --hero-titulo-al-centro: calc(50svh - var(--hero-titulo-y0));
+  }
+}
+
+@media (max-width: 1023px) {
   #hero {
     --hero-subtitulo-arriba: calc(2.8rem + 0.9rem);
-    --hero-grupo-baja: 2.3rem;
   }
 
   #hero .hero-title-viewport {
     display: flex;
     flex-direction: column;
-    transform: translate(-50%, calc(var(--hero-grupo-baja) - var(--hero-subtitulo-arriba)));
+    transform: translate(-50%, var(--hero-titulo-al-centro));
   }
 
   #hero .hero-subtitle-row {
@@ -6478,6 +6498,26 @@ body {
   }
 
   #hero .hero-logo--portal {
-    top: calc(var(--hero-grupo-baja) - 0.8 * var(--hero-subtitulo-arriba));
+    top: calc(var(--hero-titulo-al-centro) + 0.2 * var(--hero-subtitulo-arriba));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  #hero {
+    --hero-subtitulo-arriba: calc(1.8rem + 0.9rem);
+  }
+
+  #hero .hero-subtitle-track {
+    width: min(82vw, 42rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  #hero .hero-title-viewport {
+    transform: translate(-50%, var(--hero-titulo-al-centro));
+  }
+
+  #hero .hero-logo--portal {
+    top: var(--hero-titulo-al-centro);
   }
 }

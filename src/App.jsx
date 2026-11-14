@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useHeroTituloAlCentro } from '@/hooks/useHeroTituloAlCentro';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import ArticleDrawer from '@/components/ArticleDrawer';
@@ -627,6 +628,8 @@ function App() {
     return () => window.removeEventListener('gatoencerrado:reveal-before-leaving', handleReveal);
   }, []);
   const isPortalRoute = location.pathname.startsWith('/portal-');
+  // El título del hero, a la mitad de la pantalla (se vuelve a medir al cambiar de ruta).
+  useHeroTituloAlCentro(location.pathname);
   const hasForcedHomeTopOnBootRef = useRef(false);
   const appliedPortalRestoreTokenRef = useRef('');
 
