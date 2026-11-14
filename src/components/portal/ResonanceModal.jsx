@@ -216,8 +216,21 @@ export const LEVEL2_QUESTIONS = {
 
 /* ─── Acknowledgment por portal (tras responder Nivel 1) ─────────────── */
 
+// Las intuiciones largas no llevan espejo (Carlos, 13 nov 2026). La plantilla
+// es una sola oración y la regla del 25 sep 2026 pide la respuesta completa,
+// sin resumir: una respuesta de varias oraciones no cabe, y pegada entera se
+// leía mal. Elegir una de sus oraciones sería interpretar; eso se deja para la
+// Réplica. Aquí el eco solo dice que quedó registrada. «Larga» es más de una
+// oración (un cierre seguido de más texto) o más de 200 caracteres.
+export const ECO_SIN_ESPEJO = 'Tu primera intuición quedó registrada.';
+export const esIntuicionLarga = (answer) => {
+  const a = (answer ?? '').trim().replace(/[.!?…]+$/, '');
+  return a.length > 200 || /[.!?…;\n]\s*\S/.test(a);
+};
+
 export const buildL1Acknowledgment = (portal, answer) => {
   if (!answer) return null;
+  if (esIntuicionLarga(answer)) return ECO_SIN_ESPEJO;
   const a = answer.trim().replace(/[.!?]+$/, '');
   const objectAnswer = a
     .replace(/^lo extraño$/i, 'lo extrañas')
@@ -436,7 +449,8 @@ export const enviarPrimeraIntuicion = async ({
         ...(userId ? { user_id: userId } : {}),
         ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
       }).then((data) => data?.acknowledgment?.trim() || null), ESPERA_ECO_MS);
-    if (ecoAjustado) acknowledgment = ecoAjustado;
+    // Una intuición larga no lleva espejo aunque el servidor devuelva uno.
+    if (ecoAjustado && !esIntuicionLarga(respuesta)) acknowledgment = ecoAjustado;
 
     // D-66: registra el eco que quedó en pantalla y si fue el ajustado o el
     // crudo. Sin espera: no detiene nada si falla.
@@ -449,7 +463,7 @@ export const enviarPrimeraIntuicion = async ({
           miniverso_id: portal,
           intuicion_answer: respuesta,
           eco: acknowledgment,
-          ajustado: Boolean(ecoAjustado),
+          ajustado: Boolean(ecoAjustado) && acknowledgment === ecoAjustado,
         }),
       }).catch(() => {});
     }
