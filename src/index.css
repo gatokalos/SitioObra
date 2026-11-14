@@ -6421,8 +6421,9 @@ body {
    conserva su altura: la orbe no se mueve y solo baja el título. El texto se
    apoya en el borde inferior de su caja para quedar cerca del título y no de
    la orbe (que es el botón). Las cursivas son un juego de Carlos: las fantasma
-   en cursiva, las demás rectas. En tablets y teléfonos sigue abajo. Lleva la
-   clase hero-subtitle-row en Hero.jsx. */
+   en cursiva, las demás rectas. En teléfonos tiene su propia regla, al final
+   de esta hoja; en tabletas sigue abajo. Lleva la clase hero-subtitle-row en
+   Hero.jsx. */
 @media (min-width: 1024px) {
   #hero .hero-title-viewport {
     display: flex;
@@ -6444,3 +6445,39 @@ body {
   }
 }
 
+/* Teléfono (Carlos, 14 nov 2026): el mismo orden que en escritorio —orbe,
+   subtítulo rotativo, GATOENCERRADO—, «solo el orden, no el estilo». El
+   subtítulo sube entre la orbe y el título, apoyado en el borde inferior de
+   su caja y con lugar para sus dos renglones; la orbe sube un poco menos que
+   él («bájalo un escalón») y el conjunto entero baja 2.3rem, título incluido
+   («también me refería a que bajaras el título»; eligió la versión A de dos,
+   con su recuadro fucsia de referencia). Así la orbe ya no tapa la cabeza del
+   gato y el subtítulo queda sobre sus ojos sin cubrirlos. Todo se hace con
+   desplazamientos: la antesala y el [#] de activación no cambian de lugar.
+   Entre 769 y 1023 px (iPad vertical) el subtítulo sigue abajo. */
+@media (max-width: 768px) {
+  #hero {
+    --hero-subtitulo-arriba: calc(2.8rem + 0.9rem);
+    --hero-grupo-baja: 2.3rem;
+  }
+
+  #hero .hero-title-viewport {
+    display: flex;
+    flex-direction: column;
+    transform: translate(-50%, calc(var(--hero-grupo-baja) - var(--hero-subtitulo-arriba)));
+  }
+
+  #hero .hero-subtitle-row {
+    order: -1;
+    margin-top: 0;
+    margin-bottom: 0.9rem;
+  }
+
+  #hero .hero-subtitle-copy {
+    align-items: flex-end;
+  }
+
+  #hero .hero-logo--portal {
+    top: calc(var(--hero-grupo-baja) - 0.8 * var(--hero-subtitulo-arriba));
+  }
+}
