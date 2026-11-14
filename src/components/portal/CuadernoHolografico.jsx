@@ -258,108 +258,104 @@ const STARS = Array.from({ length: 28 }, (_, i) => ({
 
 /* ─── Constelación ──────────────────────────────────────────────────────── */
 
+// La figura del render de Carlos (14 nov 2026): «ya no es un centro y sus
+// satélites. De hecho así sí parece una verdadera constelación que al clicar
+// una forma, esta se pasa al primer plano (la esquina inferior derecha)».
+// Nueve lugares sobre dos brazos que se enroscan; la forma elegida va al
+// primer plano y las demás conservan el orden del catálogo y se recorren por
+// la figura. Es un concepto a prueba (Carlos: «lo vamos a probar»): los
+// brazos están dibujados aquí, no son su render.
+// Cada lugar: centro (x, y) en % de la caja 4:3 y diámetro en % de su ancho.
+const LUGARES = [
+  { x: 85, y: 79, d: 21 },    // primer plano
+  { x: 60.3, y: 78, d: 10.5 },
+  { x: 44.7, y: 73.5, d: 11 },
+  { x: 31.7, y: 62.5, d: 11 },
+  { x: 25.7, y: 43.5, d: 11.5 },
+  { x: 64.7, y: 50, d: 10.5 },
+  { x: 69, y: 21.5, d: 11.5 },
+  { x: 48.5, y: 15.5, d: 10.5 },
+  { x: 16.5, y: 15, d: 13 },
+];
+const BRAZOS = [
+  // brazo de arriba: del fondo al primer plano
+  'M66,45 C108,62 150,30 194,46 S252,40 276,64 C312,96 300,132 259,150 C214,172 246,206 296,200 C328,196 352,214 340,238',
+  // brazo de abajo
+  'M103,130 C88,160 104,180 127,187 S160,214 179,220 S220,237 241,234 S300,252 340,238',
+  // hebra exterior
+  'M66,45 C14,84 26,146 103,130',
+  // el rizo junto al primer plano
+  'M340,238 C318,236 306,218 316,206 C324,197 338,202 336,212 C335,218 328,219 326,214',
+];
+
 function Constellation({ centerKey, onSelect }) {
-  const center = CATALOG.find(p => p.key === centerKey);
-  const centerIconUrl = PORTAL_APP_ICON_URL[centerKey];
-  const satellites = CATALOG.filter(p => p.key !== centerKey);
-  const N = satellites.length;
+  const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
+  const N = CATALOG.length;
 
   return (
     <div className="relative w-full h-full">
-      {/* Líneas SVG */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+      <svg viewBox="0 0 400 300" preserveAspectRatio="none" className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
         <defs>
-          <radialGradient id="chLineGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-          </radialGradient>
+          <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
+            <feDisplacementMap in="SourceGraphic" in2="ruido" scale="16" xChannelSelector="R" yChannelSelector="G" />
+            <feGaussianBlur stdDeviation="5" />
+          </filter>
+          <filter id="chHebra" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="ruido" />
+            <feDisplacementMap in="SourceGraphic" in2="ruido" scale="9" xChannelSelector="G" yChannelSelector="R" />
+            <feGaussianBlur stdDeviation="1.6" />
+          </filter>
+          <filter id="chBrillo" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.1" />
+          </filter>
         </defs>
-        {satellites.map((_, i) => {
-          const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
-          const r = 38;
-          return (
-            <line
-              key={i}
-              x1="50%" y1="50%"
-              x2={`${50 + r * Math.cos(angle)}%`}
-              y2={`${50 + r * Math.sin(angle)}%`}
-              stroke="url(#chLineGrad)"
-              strokeWidth="1"
-              strokeDasharray="3 6"
-            />
-          );
-        })}
+        {BRAZOS.map((d, i) => (
+          <g key={i} fill="none" strokeLinecap="round" opacity={i === 2 ? 0.45 : 1}>
+            <path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" />
+            <path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" />
+            <path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" />
+            <path d={d} stroke="rgba(255,230,180,0.55)" strokeWidth="0.6" />
+          </g>
+        ))}
       </svg>
 
-      {/* Centro — anima gradiente al cambiar */}
-      <div
-        className="absolute flex items-center justify-center"
-        style={{ inset: 0, zIndex: 2, pointerEvents: 'none' }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={centerKey}
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.88 }}
-            transition={{ duration: 0.25 }}
-            className="relative overflow-hidden rounded-full bg-black ring-2 ring-white/25 shadow-[0_0_60px_rgba(0,0,0,0.55)]"
-            style={{ width: '32%', aspectRatio: '1' }}
-            aria-label={center.form ?? center.name}
-          >
-            {centerIconUrl ? (
-              <img
-                src={centerIconUrl}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full scale-[1.03] object-cover"
-              />
-            ) : null}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]"
-              style={{ background: 'radial-gradient(circle at 30% 22%, rgba(255,255,255,0.20), transparent 30%)' }}
-            />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Satélites — transition CSS en posición para redistribución suave */}
-      {satellites.map((sat, i) => {
-        const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
-        const r = 38;
-        const x = 50 + r * Math.cos(angle);
-        const y = 50 + r * Math.sin(angle);
-        const satProgress = readResonanceProgress(sat.key);
-        const hasL1 = satProgress.l1Done;
-        const hasL2 = satProgress.l2Done;
-        const satelliteIconUrl = PORTAL_APP_ICON_URL[sat.key];
-
+      {CATALOG.map((forma, i) => {
+        const lugar = LUGARES[(i - i0 + N) % N];
+        const alFrente = forma.key === centerKey;
+        const avance = readResonanceProgress(forma.key);
+        const icono = PORTAL_APP_ICON_URL[forma.key];
         return (
           <button
-            key={sat.key}
+            key={forma.key}
             type="button"
-            onClick={() => onSelect(sat.key)}
+            onClick={alFrente ? undefined : () => onSelect(forma.key)}
+            aria-current={alFrente ? 'true' : undefined}
             style={{
               position: 'absolute',
-              left: `${x}%`,
-              top: `${y}%`,
+              left: `${lugar.x}%`,
+              top: `${lugar.y}%`,
               transform: 'translate(-50%, -50%)',
-              width: '20%',
+              width: `${lugar.d}%`,
+              // En teléfono las esferas chicas no bajan del tamaño de un dedo.
+              minWidth: alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
-              zIndex: 3,
-              transition: 'left 0.35s ease, top 0.35s ease',
+              zIndex: alFrente ? 4 : 3,
+              cursor: alFrente ? 'default' : 'pointer',
+              transition: 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1)',
             }}
-            className="group overflow-hidden rounded-full border border-white/25 bg-black shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition duration-200 hover:scale-[1.04] hover:border-white/45"
-            aria-label={`Abrir ${sat.form ?? sat.name}`}
-            title={sat.form ?? sat.name}
+            className={`group overflow-hidden rounded-full bg-black ${alFrente
+              ? 'ring-2 ring-white/30 shadow-[0_0_60px_rgba(240,190,110,0.28)]'
+              : 'border border-white/25 shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:border-white/45'}`}
+            aria-label={alFrente ? (forma.form ?? forma.name) : `Abrir ${forma.form ?? forma.name}`}
+            title={forma.form ?? forma.name}
           >
-            {satelliteIconUrl ? (
+            {icono ? (
               <img
-                src={satelliteIconUrl}
+                src={icono}
                 alt=""
                 aria-hidden="true"
-                className="absolute inset-0 h-full w-full scale-[1.04] object-cover transition duration-300 group-hover:scale-[1.09]"
+                className={`absolute inset-0 h-full w-full scale-[1.04] object-cover transition duration-300 ${alFrente ? '' : 'group-hover:scale-[1.09]'}`}
               />
             ) : null}
             <span
@@ -367,8 +363,8 @@ function Constellation({ centerKey, onSelect }) {
               className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-10px_-12px_20px_rgba(0,0,0,0.48),inset_7px_7px_13px_rgba(255,255,255,0.12)]"
               style={{ background: 'radial-gradient(circle at 30% 22%, rgba(255,255,255,0.18), transparent 32%)' }}
             />
-            {hasL2 && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
-            {hasL1 && !hasL2 && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />}
+            {!alFrente && avance.l2Done && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
+            {!alFrente && avance.l1Done && !avance.l2Done && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />}
           </button>
         );
       })}
@@ -617,18 +613,24 @@ const CuadernoHolografico = ({
 
   const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
-  // La constelación ocupa lo que el bloque deja libre, siempre en un cuadrado
-  // (el lado menor del marco), para que las nueve esferas no se aplasten cuando
-  // el bloque se abre y le quita altura (Carlos, 28 oct 2026: «se aplasta la
-  // constelación»).
+  // La constelación ocupa lo que el bloque deja libre, en una caja de
+  // proporción acotada, para que las nueve esferas no se aplasten cuando el
+  // bloque se abre y le quita altura (Carlos, 28 oct 2026: «se aplasta la
+  // constelación»). Hasta el 14 nov 2026 la caja era un cuadrado.
   const marcoRef = useRef(null);
   const [lado, setLado] = useState(0);
+  const [alto, setAlto] = useState(0);
   useEffect(() => {
     const el = marcoRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver((entries) => {
       const caja = entries[0]?.contentRect;
-      if (caja) setLado(Math.max(0, Math.floor(Math.min(caja.width, caja.height))));
+      if (!caja) return;
+      // La figura es 4:3 y se deja achatar hasta 2:1 cuando el bloque se abre
+      // y le quita altura: así las esferas no se encogen (14 nov 2026).
+      const ancho = Math.max(0, Math.floor(Math.min(caja.width, caja.height * 2)));
+      setLado(ancho);
+      setAlto(Math.max(0, Math.floor(Math.min(caja.height, ancho * 3 / 4))));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -682,7 +684,7 @@ const CuadernoHolografico = ({
       >
         <div
           className="relative"
-          style={{ width: lado || '100%', height: lado || '100%', transition: 'width 0.3s ease, height 0.3s ease' }}
+          style={{ width: lado || '100%', height: alto || '100%', transition: 'width 0.3s ease, height 0.3s ease' }}
         >
           <Constellation
             centerKey={centerKey}
