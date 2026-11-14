@@ -29,7 +29,7 @@ const FREE_NOVELA_QUESTIONS = 3;
 // /literatura/match, /selection y /voice-event con la MISMA sesión que
 // guardó /baseline (ResonanceModal). Antes esta iframe no llevaba ningún
 // contexto ni puente postMessage; ambos son necesarios para el flujo nuevo.
-const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
+const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin, enVentana = false }) => {
   const sessionContextRef = useRef(null); // { fragment_id, plano, initiator } — capturado desde ThreadOverlay
   // D-69 (9 oct 2026): el sello lo da el gesto, no la ventana. Cuando la app
   // anuncia que el gesto terminó (enunciado o declinado), aquí se sella en el
@@ -214,8 +214,24 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
   };
   cerrarRef.current = handleClose;
 
+  // Desde la tarjeta de la galería, en escritorio, la escena se abre como una
+  // ficha independiente, del tamaño de la ficha de la forma y sin su
+  // información (Carlos, 13–14 nov 2026: «quiero que el artefacto se abra como
+  // una ficha independiente, puede ser la misma que estamos usando o una del
+  // mismo tamaño»). En teléfono, y desde cualquier otra entrada, sigue ocupando
+  // la ventana entera.
   return createPortal(
-    <div className="fixed inset-0 z-[200] bg-[#080806]">
+    <div
+      data-escena-literatura={enVentana ? 'ventana' : 'entera'}
+      className={enVentana
+        ? 'fixed inset-0 z-[200] bg-[#080806] lg:flex lg:items-center lg:justify-center lg:bg-black/80 lg:backdrop-blur-xl'
+        : 'fixed inset-0 z-[200] bg-[#080806]'}
+    >
+      <div
+        className={enVentana
+          ? 'absolute inset-0 lg:relative lg:inset-auto lg:h-[calc(100vh-110px)] lg:max-h-[88vh] lg:w-[calc(100vw-2.5rem)] lg:max-w-6xl lg:overflow-hidden lg:rounded-[28px] lg:border lg:border-white/15 lg:bg-[#080806] lg:shadow-[0_35px_120px_rgba(0,0,0,0.65)]'
+          : 'absolute inset-0'}
+      >
       {/* La escena ocupa la ventana entera, sin marco, en cualquier pantalla
           (Carlos, 12 oct 2026: el marco no le gustó). La salida flota encima. */}
       <iframe
@@ -265,6 +281,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
           </div>
         </div>
       )}
+      </div>
     </div>,
     document.body,
   );

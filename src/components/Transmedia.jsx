@@ -65,7 +65,7 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
-import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
 import DorsoPrimeraIntuicion from '@/components/transmedia/DorsoPrimeraIntuicion';
 import TableroEnLaTarjeta from '@/components/transmedia/TableroEnLaTarjeta';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
@@ -1569,8 +1569,22 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [tarjetaGirandoId, setTarjetaGirandoId] = useState(null);
   const [tarjetaGiradaId, setTarjetaGiradaId] = useState(null);
   const [artefactoPendienteId, setArtefactoPendienteId] = useState(null);
+  // La forma cuyo artefacto se abrió desde la tarjeta, en su propia ventana.
+  const [artefactoDesdeLaTarjetaId, setArtefactoDesdeLaTarjetaId] = useState(null);
+  // De vuelta del artefacto: la tarjeta relee el registro y queda de dorso.
+  const volverALaTarjeta = (formatId) => {
+    setArtefactoDesdeLaTarjetaId(null);
+    setRegistroDeLaTarjetaTick((n) => n + 1);
+    setTarjetaGiradaId(formatId);
+  };
+  // «Mientras tanto»: la ficha de la forma, por primera vez.
+  const revelarLaFicha = (formatId) => {
+    marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
+    setTarjetaGiradaId(null);
+    handleFormatClick(formatId);
+  };
   // Vuelve a leer el registro del método cuando la tarjeta acaba de escribirlo.
-  const [, setRegistroDeLaTarjetaTick] = useState(0);
+  const [registroDeLaTarjetaTick, setRegistroDeLaTarjetaTick] = useState(0);
   // Desde la tarde del 13 nov 2026 (Carlos): quien llega del primer acto ya
   // trae la pregunta en su pase, así que la tarjeta no se la repite sobre la
   // imagen. Llega limpia, gira sola una vez y queda de dorso mientras no se
@@ -1600,13 +1614,23 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const pideIntuicionEnLaTarjeta = (formatId) =>
     esLaRecomendadaConPase(formatId) &&
     !readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]).l1Done;
-  // Ya contestó y todavía no abre el artefacto: la tarjeta lleva el tablero.
-  // En cuanto lo abre, el recorrido vive en la ficha.
+  // Ya contestó y la ficha todavía no se le revela: la tarjeta lleva el
+  // tablero. Desde el 14 nov 2026 (Carlos) el recorrido no se va a la ficha al
+  // abrir el artefacto: el artefacto se abre en su propia ventana, al salir se
+  // vuelve a la tarjeta —En el foco, con el video del autor— y «Mientras
+  // tanto» revela la ficha por primera vez. De ahí en adelante la tarjeta abre
+  // la ficha. Por ahora solo La escritura hace el recorrido así; las demás
+  // formas abren la ficha al entrar al artefacto, como antes.
+  const ARTEFACTO_EN_VENTANA = new Set(['miniversoNovela']);
   const tableroEnLaTarjeta = (formatId) => {
     if (!esLaRecomendadaConPase(formatId)) return false;
     const progreso = readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]);
+    if (!progreso.l1Done || progreso.record.ficha_revelada || progreso.bitacoraDone) return false;
+    // Si la pregunta ya volvió, el regreso se vive en la ficha, como siempre.
+    const regreso = progreso.record.bitacora_available_at;
+    if (regreso && new Date(regreso).getTime() <= Date.now()) return false;
+    if (progreso.record.recorrido_en_tarjeta) return true;
     return (
-      progreso.l1Done &&
       !progreso.record.l2_narrative_opened &&
       !progreso.record.l2_conv_done &&
       !progreso.experienceDone &&
@@ -1689,10 +1713,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     // En escritorio la tarjeta se queda de dorso: ahora lleva el tablero.
     setRegistroDeLaTarjetaTick((n) => n + 1);
   };
-  // «Habitar la forma» desde la tarjeta: aquí sí se cambia de nivel. Se abre
-  // la ficha y, cuando termina de abrirse, el artefacto de la forma.
+  // «Habitar la forma» desde la tarjeta: aquí sí se cambia de nivel.
   const habitarDesdeLaTarjeta = (formatId) => {
     marcarEscenaAbierta(SHOWCASE_TO_PORTAL[formatId]);
+    // El artefacto en su propia ventana, sin la ficha: la tarjeta se queda de
+    // dorso debajo y ahí se vuelve al salir.
+    if (ARTEFACTO_EN_VENTANA.has(formatId)) {
+      marcarRecorridoEnLaTarjeta(SHOWCASE_TO_PORTAL[formatId]);
+      setArtefactoDesdeLaTarjetaId(formatId);
+      ABRIR_ARTEFACTO_POR_VITRINA[formatId]?.();
+      return;
+    }
+    // Las demás formas: se abre la ficha y, ya abierta, el artefacto.
+    marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
     setTarjetaGiradaId(null);
     // El cuerpo no tiene ficha que abrir: su escena es la Salida.
     if (formatId === 'miniversoMovimiento') {
@@ -1740,12 +1773,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               transition={{ duration: 0.3 }}
             >
               <TableroEnLaTarjeta
+                key={registroDeLaTarjetaTick}
                 portal={SHOWCASE_TO_PORTAL[format.id]}
                 formaTitle={format.title}
                 gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
                 isDevAuth={isDevAuth}
                 onHabitar={() => habitarDesdeLaTarjeta(format.id)}
                 onVolver={cerrarElDorso}
+                onMientrasTanto={() => revelarLaFicha(format.id)}
+                onRequireLogin={() => setShowMobilePortalLogin(true)}
               />
             </motion.div>
           ) : (
@@ -6457,6 +6493,7 @@ const renderDramaFeaturedWork = () => (
         <Suspense fallback={null}>
           <LiteraturaAppOverlay
             open={showLiteraturaApp}
+            enVentana={artefactoDesdeLaTarjetaId === 'miniversoNovela'}
             onRequireLogin={() => setShowMobilePortalLogin(true)}
             onClose={(sessionContext) => {
               setShowLiteraturaApp(false);
@@ -6496,6 +6533,11 @@ const renderDramaFeaturedWork = () => (
                 } catch { /* ignore */ }
               }
               refreshActivePortalL1();
+              // Quien entró desde la tarjeta vuelve a la tarjeta (14 nov 2026).
+              if (artefactoDesdeLaTarjetaId === 'miniversoNovela') {
+                volverALaTarjeta('miniversoNovela');
+                return;
+              }
               setIsLiteraturaResonanceOpen(true);
             }}
           />

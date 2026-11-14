@@ -39,6 +39,10 @@ const IAInsightCard = ({
   // Variante compacta para la Memoria: conserva exactamente la protección de
   // autenticación/GAT del modo viajar, pero elimina el acordeón informativo.
   travelCtaOnly = false,
+  // Dentro del bloque de una forma en el libreto holográfico: sin caja propia
+  // —el bloque ya es la tarjeta—, como una fila que se despliega con las notas
+  // y el botón de viaje (Carlos, 14 nov 2026).
+  enBloque = false,
   travelEyebrow = 'Continuar el recorrido',
   // Algunas páginas (p. ej. /bitacora) no montan Header.jsx, así que el
   // evento global 'open-login-modal' no tiene quién lo escuche ahí. Si el
@@ -93,6 +97,42 @@ const IAInsightCard = ({
       ),
     });
   };
+
+  if (enBloque) {
+    if (!hasNotes && !isTravelMode) return null;
+    return (
+      <>
+        <button type="button" onClick={toggleOpen} aria-expanded={isOpen} className="huella-puerta" data-al-entrar>
+          <span className="huella-puerta__texto">
+            <span className="huella-puerta__eyebrow">{travelEyebrow}</span>
+            <span className="huella-puerta__titulo">Al entrar en escena…</span>
+          </span>
+          <ChevronDown size={17} className="huella-puerta__flecha" style={isOpen ? { transform: 'rotate(180deg)' } : undefined} aria-hidden="true" />
+        </button>
+        {isOpen ? (
+          <div className="bloque-forma__abierto">
+            {hasNotes ? (
+              <ul className="memoria-descripcion space-y-1.5 text-sm leading-relaxed text-slate-300/80">
+                {notes.map((note, index) => (
+                  <li key={index}>{note}</li>
+                ))}
+              </ul>
+            ) : null}
+            {isTravelMode ? (
+              <>
+                <button type="button" onClick={handleTravelClick} className="ultima-pregunta__salida" data-cruzar>
+                  {travelLabel}
+                </button>
+                {!user ? (
+                  <p className="text-xs text-slate-400">Necesitas iniciar sesión para continuar.</p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+        ) : null}
+      </>
+    );
+  }
 
   if (travelCtaOnly && isTravelMode) {
     return (

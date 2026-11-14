@@ -501,7 +501,10 @@ function HolograficoPanel({
                 <FraseDeMemoria portal={homeKey} enEscena={false} />
               </div>
               <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
-              <VitranaQuestionReveal
+              {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo
+                  dice el gato en su globo (Carlos, 14 nov 2026). La pregunta y
+                  «Es tu turno» aparecen cuando la pregunta ya volvió. */}
+              {readOnly ? null : <VitranaQuestionReveal
                 question={HOLISTIC_QUESTION}
                 portal={homeKey}
                 autoReveal
@@ -512,7 +515,7 @@ function HolograficoPanel({
                 buttonLabel="Es tu turno"
                 onAnswer={onStartBitacora}
                 showAction={!readOnly}
-              />
+              />}
             </div>
           )
         ) : hasBitacora ? (
@@ -529,7 +532,11 @@ function HolograficoPanel({
             onGoToSite={onGoToSite}
           />
         ) : (
-          /* Satélite: la línea y un bloque con su nombre y la fila de viaje */
+          /* Otra forma: la línea y un solo bloque con su nombre y la fila «Al
+             entrar en escena…», que se despliega con las notas de la forma y
+             el botón de viaje (Carlos, 14 nov 2026: «adaptar el bloque morado
+             con acordeón para mostrar la información de "Al entrar en
+             escena..."»; «no me gustó tener una tarjeta dentro de otra»). */
           <div className="flex flex-col gap-4">
             <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
             <BloqueDeForma entry={entry}>
@@ -542,7 +549,7 @@ function HolograficoPanel({
                   travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                   travelFormLabel={entry.form ?? entry.name}
                   onTravel={() => onOpenVideo(entry.showcase)}
-                  travelCtaOnly={!hasBitacora}
+                  enBloque
                 />
               ) : null}
             </BloqueDeForma>

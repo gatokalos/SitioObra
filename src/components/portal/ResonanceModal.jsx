@@ -527,11 +527,22 @@ export const enviarExpectativa = async ({ portal, option, isDevAuth = false, onE
     .catch(() => {});
 };
 
+// El recorrido en la tarjeta de la galería (Carlos, 13–14 nov 2026). Quien
+// entra al artefacto desde la tarjeta vuelve a la tarjeta: ahí ve En el foco
+// y, con «Mientras tanto», se le revela la ficha por primera vez. Dos marcas
+// en el registro: que el recorrido va en la tarjeta y que la ficha ya se abrió.
+export const marcarRecorridoEnLaTarjeta = (portal) => {
+  lsPatch(portal, { recorrido_en_tarjeta: true });
+};
+export const marcarFichaRevelada = (portal) => {
+  lsPatch(portal, { ficha_revelada: true });
+};
+
 export const marcarEscenaAbierta = (portal) => {
   lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -668,7 +679,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Después de responder En escena, la Memoria sustituye al Dashboard. Si la
   // ventana de 72 h ya venció, cualquier entrada abre directamente En escena,
   // incluso cuando la persona volvió por su cuenta.
-  const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || !!lsRead(portal).bitacora_completed);
+  // Quien hizo el recorrido en la tarjeta ya vio En el foco allá: al abrir el
+  // método desde la ficha no vuelve al tablero, llega al libreto, que lo deja
+  // listo para su regreso (Carlos, 14 nov 2026). Solo en escritorio por ahora.
+  const esPantallaChica = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches;
+  const abreEnElLibreto = () => {
+    const s = lsRead(portal);
+    return !!s.bitacora_completed || (!soloEnElFoco && !!s.ficha_revelada && !!s.recorrido_en_tarjeta && !esPantallaChica());
+  };
+  const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || abreEnElLibreto());
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
   // La huella (D-34): se abre al terminar En escena, y desde la Memoria
   // cuando la persona quiera volver a verla, corregirla o retirarla (D-38).
@@ -1013,7 +1032,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (s.l2_narrative_opened) setL2NarrativeOpened(true);
     if (s.l2_conv_done) { setL2ConvDone(true); setConvQuestion(null); }
     if ([1, 2, 3].includes(s.dashboard_active_level)) setDashboardActiveLevel(s.dashboard_active_level);
-  }, [open, portal]);
+    // Lo que pudo ocurrir en la tarjeta de la galería mientras esta ventana
+    // estaba montada y cerrada: En el foco se vive allá (14 nov 2026).
+    if (s.l3_recommendation?.step3) setL3Rec(s.l3_recommendation);
+    if (s.farewell_video_seen) setFarewellVideoSeen(true);
+    if (s.bitacora_consented) setBitacoraConsented(true);
+    if (s.bitacora_available_at) setBitacoraAvailableAt(s.bitacora_available_at);
+    if (abreEnElLibreto() && !bitacoraOpen) { setHolograficoPoster(portal); setHolograficoOpen(true); }
+  }, [open, portal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-arranca la conversación cuando el modal abre después de completar la experiencia.
   // Si el artefacto dejó fragment_id/plano/initiator (Marcador Inteligente, Literatura),
@@ -1610,6 +1636,356 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
   };
 
+  // En el foco, fuera del tablero desde el 14 nov 2026: lo dibujan el tablero
+  // de la ficha y la tarjeta de la galería (`soloEnElFoco`), que es adonde
+  // vuelve quien entró al artefacto desde la tarjeta. Es la misma pieza, con
+  // el mismo estado: el video del autor, la retención y sus tres filas.
+  const nivelTres = dashboardLevels.find((nivel) => nivel.num === 3);
+  const l3RecVista = Boolean(l3Rec?.step3) && !l3Rec?.error;
+  const enElFoco = (
+    <div className="space-y-3">
+
+      {/* Cargando */}
+      {l3Loading && (
+        <div className="flex items-center gap-2 text-xs text-slate-400/80">
+          <Sparkles size={11} className="animate-pulse text-purple-400/70" />
+          <span>Leyendo tu recorrido…</span>
+        </div>
+      )}
+
+      {/* Cierre — el video del autor absorbe la narración que antes
+          daban los pasos 1/2 del gato (Carlos, 2026-08-27: simplificar,
+          sin pasos intermedios). */}
+      {l3RecVista && !l3Rec.all_complete && (
+        <>
+          {/* Clímax: el autor entra a cuadro. El recuerdo vive pegado a
+              la despedida, no después del cierre académico — son un
+              mismo momento (Carlos, 2026-08-27, congruencia). */}
+          {RESONANCE_FAREWELL_VIDEO_ENABLED && (
+            <FarewellVideoPanel
+              portal={portal}
+              onSeen={handleFarewellVideoSeen}
+              mediaAspectClassName="aspect-square"
+              caption="El autor toma la palabra"
+              unavailableLabel="El autor toma la palabra"
+              intro={dramaturgy.appearanceCue}
+              showUnavailablePlaceholder={import.meta.env.DEV}
+            />
+          )}
+
+          {/* Cascada del clímax (Carlos, bloque 6 + mockup del 18 sep): mientras el
+              video corre, nada compite con él. Al terminar —o al saltarlo— entra la
+              cabecera de la retención y debajo el stack, escalonados, y el scroll los
+              lleva a donde están los ojos. Con la bandera del video apagada
+              (producción, hasta que existan las nueve piezas) se muestra todo de una
+              vez, como siempre. */}
+          {revelarStack && (
+            <motion.div
+              ref={stackClimaxRef}
+              className="space-y-3"
+              initial={huboCascada ? "oculto" : false}
+              animate="visible"
+            >
+              {/* La retención encabeza lo que sigue, no lo contiene: es la marca de
+                  cierre del detonante y el anuncio de la espera. D-42 se sostiene —la
+                  espera no ofrece nada— porque lo que hay debajo cierra En el foco, no
+                  ocupa los tres días. */}
+              <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
+                <div className="px-2 pb-1 pt-4 text-center">
+                  <div className="flex items-center gap-3" aria-hidden="true">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
+                    <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
+                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
+                  </div>
+                  {/* Sin copy descriptivo: el título dialoga con las tres filas y
+                      cada fila dice lo suyo (Carlos, 22 oct 2026). */}
+                  <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
+                    Retención
+                  </p>
+                  <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
+                    Entre bambalinas
+                  </p>
+                </div>
+              </motion.div>
+
+              <div className="cabina-antesala-stack">
+              {/* El aviso es la primera fila del stack, con la misma caja que las otras
+                  dos. El atril es provisional, hasta que exista el icono definitivo. */}
+              {!bitacoraCompleted && (
+                <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="cabina-antesala-stack__fila space-y-2">
+                  {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
+                      cambia de estado (Carlos, 18 sep 2026). */}
+                  {bitacoraConsented ? (
+                    <div className="cabina-antesala-opcion cabina-antesala-opcion--completa">
+                      <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
+                        <Check size={18} aria-hidden="true" />
+                      </span>
+                      <span className="cabina-antesala-opcion__texto">
+                        <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
+                          {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.closingLine.replace(/\.$/, '')}
+                        </span>
+                        <span className="cabina-antesala-opcion__detalle">
+                          {bitacoraAvailable ? dramaturgy.returnBackNowHint : avisoDoneHint}
+                        </span>
+                      </span>
+                    </div>
+                  ) : avisoPaso === null ? (
+                    <button
+                      type="button"
+                      onClick={() => setAvisoPaso('elegir')}
+                      className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
+                    >
+                      {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
+                      <span className="cabina-antesala-opcion__mirilla">
+                        <Bell size={18} aria-hidden="true" />
+                      </span>
+                      <span className="cabina-antesala-opcion__texto">
+                        <span className="cabina-antesala-opcion__titulo">
+                          {dramaturgy.closingLine.replace(/\.$/, '')}
+                        </span>
+                        <span className="cabina-antesala-opcion__detalle">
+                          {dramaturgy.returnCta}
+                        </span>
+                      </span>
+                    </button>
+                  ) : avisoPaso === 'elegir' ? (
+                    <div className="cabina-antesala-form space-y-2">
+                      {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
+                          sesión, la del correo es un solo toque y nombra la cuenta.
+                          WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
+                      <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
+                        <span className="cabina-antesala-eleccion__titulo">
+                          {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
+                        </span>
+                        <span className="cabina-antesala-eleccion__detalle">
+                          {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
+                        </span>
+                      </button>
+                      {AVISO_WHATSAPP_DISPONIBLE && (
+                        <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
+                          <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
+                          <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="cabina-antesala-form space-y-2">
+                      <p className="cabina-antesala-form__pregunta">
+                        ¿A qué número te enviamos el aviso?
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="tel"
+                          value={phoneInput}
+                          onChange={(e) => setPhoneInput(e.target.value)}
+                          placeholder="+52 55 0000 0000"
+                          className="cabina-antesala-form__input min-w-0 flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
+                          disabled={phoneInput.trim().length < 8}
+                          className="cabina-antesala-form__confirmar shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Confirmar →
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
+            <button
+              type="button"
+              onClick={handleDownloadSouvenir}
+              disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+              className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
+            >
+              {souvenirDeliveredAt ? (
+                <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
+                  <Check size={18} aria-hidden="true" />
+                </span>
+              ) : (
+                <span className="cabina-antesala-opcion__mirilla">
+                  <Download size={18} aria-hidden="true" />
+                </span>
+              )}
+              <span className="cabina-antesala-opcion__texto">
+                <span className={`cabina-antesala-opcion__titulo${souvenirDeliveredAt ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>
+                  {isSouvenirGenerating
+                    ? 'Preparando el recuerdo…'
+                    : souvenirDeliveredAt
+                      ? 'Recuerdo entregado'
+                      : dramaturgy.souvenirCta}
+                </span>
+                <span className="cabina-antesala-opcion__detalle">
+                  {souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint}
+                </span>
+              </span>
+            </button>
+              </motion.div>
+
+              <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
+            {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
+                ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
+            <button
+              type="button"
+              onClick={() => handleClose()}
+              className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
+            >
+              <span className="cabina-antesala-opcion__mirilla">
+                <Compass size={18} aria-hidden="true" />
+              </span>
+              <span className="cabina-antesala-opcion__texto">
+                <span className="cabina-antesala-opcion__titulo">
+                  {dramaturgy.meanwhileTitle}
+                </span>
+                <span className="cabina-antesala-opcion__detalle">
+                  {dramaturgy.meanwhileHint}
+                </span>
+              </span>
+            </button>
+              </motion.div>
+              </div>
+
+              {!bitacoraCompleted && (
+                <div className="space-y-2 px-1">
+              {import.meta.env.DEV && !bitacoraConsented && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null });
+                    writeGlobalConsent();
+                    setBitacoraConsented(true);
+                    setBitacoraAvailableAt(null);
+                  }}
+                  className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                >
+                  [dev] bypass envío de número
+                </button>
+              )}
+
+              {import.meta.env.DEV && bitacoraConsented && !bitacoraAvailable && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date().toISOString();
+                    lsPatch(portal, { bitacora_available_at: now });
+                    setBitacoraAvailableAt(now);
+                    setBitacoraAvailabilityTick(Date.now());
+                  }}
+                  className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                >
+                  [dev] simular regreso después de 72 h
+                </button>
+              )}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </>
+      )}
+
+      {/* Seguimiento longitudinal — solo después de la ventana diferida */}
+      {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
+        <button
+          type="button"
+          onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
+          className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
+        >
+          En escena →
+        </button>
+      )}
+
+      {/* Aquí hubo "Ir al camerino →" durante la espera (Carlos,
+          2026-08-27). Retirado por D-42 (11 sep 2026): la retención
+          está vacía. */}
+
+      {/* Bitácora — completada */}
+      {bitacoraCompleted && (
+        <div className="flex flex-col items-center pt-1 text-center">
+          <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
+            <Check size={12} className="shrink-0 text-emerald-400/70" />
+            <span className="italic">Registro completo</span>
+          </div>
+
+          <motion.button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setHolograficoPoster(portal);
+              setHolograficoOpen(true);
+            }}
+            className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
+            whileHover={{ scale: 1.015 }}
+          >
+            <img
+              src="/assets/header-logo.png"
+              alt="Emblema de #GatoEncerrado"
+              className={`h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28${ultimaPreguntaVista ? '' : ' emblema-late'}`}
+            />
+            <span className="text-sm font-semibold tracking-wide text-purple-200">
+              Abrir mi memoria
+            </span>
+          </motion.button>
+        </div>
+      )}
+
+      {/* Dev reset — siempre visible cuando hay rec */}
+      {import.meta.env.DEV && l3Rec && !l3Rec.error && !l3Rec.all_complete && (
+        <button
+          type="button"
+          onClick={() => {
+            lsPatch(portal, {
+              l3_recommendation: undefined,
+              bitacora_consented: undefined,
+              bitacora_available_at: undefined,
+              bitacora_completed: undefined,
+              farewell_video_seen: undefined,
+              farewell_video_seen_at: undefined,
+              souvenir_delivered_at: undefined,
+            });
+            clearGlobalConsent();
+            setL3Rec(null);
+            setBitacoraConsented(false);
+            setBitacoraAvailableAt(null);
+            setBitacoraAvailabilityTick(Date.now());
+            setBitacoraCompleted(false);
+            setFarewellVideoSeen(false);
+            setAvisoPaso(null);
+            setPhoneInput('');
+            setSouvenirDeliveredAt(null);
+          }}
+          className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+        >
+          [dev] reset recomendación
+        </button>
+      )}
+
+      {/* Completó todo */}
+      {!l3Loading && l3Rec?.all_complete && (
+        <p className="text-xs leading-relaxed text-slate-300/70 italic">
+          Has recorrido todas las formas. El universo está completo.
+        </p>
+      )}
+
+      {/* Error */}
+      {!l3Loading && l3Rec?.error && (
+        <p className="text-xs leading-relaxed text-slate-400/60 italic">
+          No pudimos leer tu recorrido ahora. Vuelve pronto.
+        </p>
+      )}
+
+      {/* Sin rec aún */}
+      {!l3Loading && !l3Rec && (
+        <p className="text-xs leading-relaxed text-slate-400/60 italic">
+          {nivelTres?.pendingDesc}
+        </p>
+      )}
+    </div>
+  );
+
   const modal = (
     <AnimatePresence>
       {open && (
@@ -1872,7 +2248,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onDownloadSouvenir={l3Rec?.step3 ? handleDownloadSouvenir : null}
                       souvenirGenerando={isSouvenirGenerating}
                       isMobileViewport={isMobileViewport}
-                      readOnly={bitacoraCompleted}
+                      readOnly={bitacoraCompleted || !bitacoraAvailable}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
@@ -2336,349 +2712,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </motion.div>
                                       )}
 
-                                      {isL3 && (
-                                        <div className="space-y-3">
-
-                                          {/* Cargando */}
-                                          {l3Loading && (
-                                            <div className="flex items-center gap-2 text-xs text-slate-400/80">
-                                              <Sparkles size={11} className="animate-pulse text-purple-400/70" />
-                                              <span>Leyendo tu recorrido…</span>
-                                            </div>
-                                          )}
-
-                                          {/* Cierre — el video del autor absorbe la narración que antes
-                                              daban los pasos 1/2 del gato (Carlos, 2026-08-27: simplificar,
-                                              sin pasos intermedios). */}
-                                          {l3RecSeen && !l3Rec.all_complete && (
-                                            <>
-                                              {/* Clímax: el autor entra a cuadro. El recuerdo vive pegado a
-                                                  la despedida, no después del cierre académico — son un
-                                                  mismo momento (Carlos, 2026-08-27, congruencia). */}
-                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && (
-                                                <FarewellVideoPanel
-                                                  portal={portal}
-                                                  onSeen={handleFarewellVideoSeen}
-                                                  mediaAspectClassName="aspect-square"
-                                                  caption="El autor toma la palabra"
-                                                  unavailableLabel="El autor toma la palabra"
-                                                  intro={dramaturgy.appearanceCue}
-                                                  showUnavailablePlaceholder={import.meta.env.DEV}
-                                                />
-                                              )}
-
-                                              {/* Cascada del clímax (Carlos, bloque 6 + mockup del 18 sep): mientras el
-                                                  video corre, nada compite con él. Al terminar —o al saltarlo— entra la
-                                                  cabecera de la retención y debajo el stack, escalonados, y el scroll los
-                                                  lleva a donde están los ojos. Con la bandera del video apagada
-                                                  (producción, hasta que existan las nueve piezas) se muestra todo de una
-                                                  vez, como siempre. */}
-                                              {revelarStack && (
-                                                <motion.div
-                                                  ref={stackClimaxRef}
-                                                  className="space-y-3"
-                                                  initial={huboCascada ? "oculto" : false}
-                                                  animate="visible"
-                                                >
-                                                  {/* La retención encabeza lo que sigue, no lo contiene: es la marca de
-                                                      cierre del detonante y el anuncio de la espera. D-42 se sostiene —la
-                                                      espera no ofrece nada— porque lo que hay debajo cierra En el foco, no
-                                                      ocupa los tres días. */}
-                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
-                                                    <div className="px-2 pb-1 pt-4 text-center">
-                                                      <div className="flex items-center gap-3" aria-hidden="true">
-                                                        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
-                                                        <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
-                                                        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
-                                                      </div>
-                                                      {/* Sin copy descriptivo: el título dialoga con las tres filas y
-                                                          cada fila dice lo suyo (Carlos, 22 oct 2026). */}
-                                                      <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                                                        Retención
-                                                      </p>
-                                                      <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                                                        Entre bambalinas
-                                                      </p>
-                                                    </div>
-                                                  </motion.div>
-
-                                                  <div className="cabina-antesala-stack">
-                                                  {/* El aviso es la primera fila del stack, con la misma caja que las otras
-                                                      dos. El atril es provisional, hasta que exista el icono definitivo. */}
-                                                  {!bitacoraCompleted && (
-                                                    <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="cabina-antesala-stack__fila space-y-2">
-                                                      {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
-                                                          cambia de estado (Carlos, 18 sep 2026). */}
-                                                      {bitacoraConsented ? (
-                                                        <div className="cabina-antesala-opcion cabina-antesala-opcion--completa">
-                                                          <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
-                                                            <Check size={18} aria-hidden="true" />
-                                                          </span>
-                                                          <span className="cabina-antesala-opcion__texto">
-                                                            <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
-                                                              {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.closingLine.replace(/\.$/, '')}
-                                                            </span>
-                                                            <span className="cabina-antesala-opcion__detalle">
-                                                              {bitacoraAvailable ? dramaturgy.returnBackNowHint : avisoDoneHint}
-                                                            </span>
-                                                          </span>
-                                                        </div>
-                                                      ) : avisoPaso === null ? (
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => setAvisoPaso('elegir')}
-                                                          className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
-                                                        >
-                                                          {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
-                                                          <span className="cabina-antesala-opcion__mirilla">
-                                                            <Bell size={18} aria-hidden="true" />
-                                                          </span>
-                                                          <span className="cabina-antesala-opcion__texto">
-                                                            <span className="cabina-antesala-opcion__titulo">
-                                                              {dramaturgy.closingLine.replace(/\.$/, '')}
-                                                            </span>
-                                                            <span className="cabina-antesala-opcion__detalle">
-                                                              {dramaturgy.returnCta}
-                                                            </span>
-                                                          </span>
-                                                        </button>
-                                                      ) : avisoPaso === 'elegir' ? (
-                                                        <div className="cabina-antesala-form space-y-2">
-                                                          {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
-                                                              sesión, la del correo es un solo toque y nombra la cuenta.
-                                                              WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
-                                                          <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
-                                                            <span className="cabina-antesala-eleccion__titulo">
-                                                              {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
-                                                            </span>
-                                                            <span className="cabina-antesala-eleccion__detalle">
-                                                              {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
-                                                            </span>
-                                                          </button>
-                                                          {AVISO_WHATSAPP_DISPONIBLE && (
-                                                            <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
-                                                              <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
-                                                              <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
-                                                            </button>
-                                                          )}
-                                                        </div>
-                                                      ) : (
-                                                        <div className="cabina-antesala-form space-y-2">
-                                                          <p className="cabina-antesala-form__pregunta">
-                                                            ¿A qué número te enviamos el aviso?
-                                                          </p>
-                                                          <div className="flex gap-2">
-                                                            <input
-                                                              type="tel"
-                                                              value={phoneInput}
-                                                              onChange={(e) => setPhoneInput(e.target.value)}
-                                                              placeholder="+52 55 0000 0000"
-                                                              className="cabina-antesala-form__input min-w-0 flex-1"
-                                                            />
-                                                            <button
-                                                              type="button"
-                                                              onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
-                                                              disabled={phoneInput.trim().length < 8}
-                                                              className="cabina-antesala-form__confirmar shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
-                                                            >
-                                                              Confirmar →
-                                                            </button>
-                                                          </div>
-                                                        </div>
-                                                      )}
-                                                    </motion.div>
-                                                  )}
-
-                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
-                                                <button
-                                                  type="button"
-                                                  onClick={handleDownloadSouvenir}
-                                                  disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-                                                  className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
-                                                >
-                                                  {souvenirDeliveredAt ? (
-                                                    <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
-                                                      <Check size={18} aria-hidden="true" />
-                                                    </span>
-                                                  ) : (
-                                                    <span className="cabina-antesala-opcion__mirilla">
-                                                      <Download size={18} aria-hidden="true" />
-                                                    </span>
-                                                  )}
-                                                  <span className="cabina-antesala-opcion__texto">
-                                                    <span className={`cabina-antesala-opcion__titulo${souvenirDeliveredAt ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>
-                                                      {isSouvenirGenerating
-                                                        ? 'Preparando el recuerdo…'
-                                                        : souvenirDeliveredAt
-                                                          ? 'Recuerdo entregado'
-                                                          : dramaturgy.souvenirCta}
-                                                    </span>
-                                                    <span className="cabina-antesala-opcion__detalle">
-                                                      {souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint}
-                                                    </span>
-                                                  </span>
-                                                </button>
-                                                  </motion.div>
-
-                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
-                                                {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
-                                                    ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
-                                                <button
-                                                  type="button"
-                                                  onClick={() => handleClose()}
-                                                  className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
-                                                >
-                                                  <span className="cabina-antesala-opcion__mirilla">
-                                                    <Compass size={18} aria-hidden="true" />
-                                                  </span>
-                                                  <span className="cabina-antesala-opcion__texto">
-                                                    <span className="cabina-antesala-opcion__titulo">
-                                                      {dramaturgy.meanwhileTitle}
-                                                    </span>
-                                                    <span className="cabina-antesala-opcion__detalle">
-                                                      {dramaturgy.meanwhileHint}
-                                                    </span>
-                                                  </span>
-                                                </button>
-                                                  </motion.div>
-                                                  </div>
-
-                                                  {!bitacoraCompleted && (
-                                                    <div className="space-y-2 px-1">
-                                                  {import.meta.env.DEV && !bitacoraConsented && (
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => {
-                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null });
-                                                        writeGlobalConsent();
-                                                        setBitacoraConsented(true);
-                                                        setBitacoraAvailableAt(null);
-                                                      }}
-                                                      className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
-                                                    >
-                                                      [dev] bypass envío de número
-                                                    </button>
-                                                  )}
-
-                                                  {import.meta.env.DEV && bitacoraConsented && !bitacoraAvailable && (
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => {
-                                                        const now = new Date().toISOString();
-                                                        lsPatch(portal, { bitacora_available_at: now });
-                                                        setBitacoraAvailableAt(now);
-                                                        setBitacoraAvailabilityTick(Date.now());
-                                                      }}
-                                                      className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
-                                                    >
-                                                      [dev] simular regreso después de 72 h
-                                                    </button>
-                                                  )}
-                                                    </div>
-                                                  )}
-                                                </motion.div>
-                                              )}
-                                            </>
-                                          )}
-
-                                          {/* Seguimiento longitudinal — solo después de la ventana diferida */}
-                                          {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
-                                            <button
-                                              type="button"
-                                              onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
-                                              className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
-                                            >
-                                              En escena →
-                                            </button>
-                                          )}
-
-                                          {/* Aquí hubo "Ir al camerino →" durante la espera (Carlos,
-                                              2026-08-27). Retirado por D-42 (11 sep 2026): la retención
-                                              está vacía. */}
-
-                                          {/* Bitácora — completada */}
-                                          {bitacoraCompleted && (
-                                            <div className="flex flex-col items-center pt-1 text-center">
-                                              <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
-                                                <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                                <span className="italic">Registro completo</span>
-                                              </div>
-
-                                              <motion.button
-                                                type="button"
-                                                onClick={(event) => {
-                                                  event.stopPropagation();
-                                                  setHolograficoPoster(portal);
-                                                  setHolograficoOpen(true);
-                                                }}
-                                                className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
-                                                whileHover={{ scale: 1.015 }}
-                                              >
-                                                <img
-                                                  src="/assets/header-logo.png"
-                                                  alt="Emblema de #GatoEncerrado"
-                                                  className={`h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28${ultimaPreguntaVista ? '' : ' emblema-late'}`}
-                                                />
-                                                <span className="text-sm font-semibold tracking-wide text-purple-200">
-                                                  Abrir mi memoria
-                                                </span>
-                                              </motion.button>
-                                            </div>
-                                          )}
-
-                                          {/* Dev reset — siempre visible cuando hay rec */}
-                                          {import.meta.env.DEV && l3Rec && !l3Rec.error && !l3Rec.all_complete && (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                lsPatch(portal, {
-                                                  l3_recommendation: undefined,
-                                                  bitacora_consented: undefined,
-                                                  bitacora_available_at: undefined,
-                                                  bitacora_completed: undefined,
-                                                  farewell_video_seen: undefined,
-                                                  farewell_video_seen_at: undefined,
-                                                  souvenir_delivered_at: undefined,
-                                                });
-                                                clearGlobalConsent();
-                                                setL3Rec(null);
-                                                setBitacoraConsented(false);
-                                                setBitacoraAvailableAt(null);
-                                                setBitacoraAvailabilityTick(Date.now());
-                                                setBitacoraCompleted(false);
-                                                setFarewellVideoSeen(false);
-                                                setAvisoPaso(null);
-                                                setPhoneInput('');
-                                                setSouvenirDeliveredAt(null);
-                                              }}
-                                              className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
-                                            >
-                                              [dev] reset recomendación
-                                            </button>
-                                          )}
-
-                                          {/* Completó todo */}
-                                          {!l3Loading && l3Rec?.all_complete && (
-                                            <p className="text-xs leading-relaxed text-slate-300/70 italic">
-                                              Has recorrido todas las formas. El universo está completo.
-                                            </p>
-                                          )}
-
-                                          {/* Error */}
-                                          {!l3Loading && l3Rec?.error && (
-                                            <p className="text-xs leading-relaxed text-slate-400/60 italic">
-                                              No pudimos leer tu recorrido ahora. Vuelve pronto.
-                                            </p>
-                                          )}
-
-                                          {/* Sin rec aún */}
-                                          {!l3Loading && !l3Rec && (
-                                            <p className="text-xs leading-relaxed text-slate-400/60 italic">
-                                              {level.pendingDesc}
-                                            </p>
-                                          )}
-                                        </div>
-                                      )}
+                                      {isL3 && enElFoco}
                                       {isL2 && l2ConvDone && !escenaTerminada && (
                                         <div className="flex flex-col gap-4">
                                           <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
@@ -2846,7 +2880,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 pie de la cabina y con el mismo zócalo del stack, está siempre
                 que la Memoria esté abierta. */}
             {holograficoOpen && l3Rec?.step3 ? (
-              <div className="absolute inset-x-5 bottom-5 z-20">
+              <div className="absolute inset-x-5 bottom-5 z-20 space-y-2">
                 <button
                   type="button"
                   onClick={() => void handleDownloadSouvenir()}
@@ -2920,6 +2954,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
               </div>
             )}
+            {/* Antes del regreso, el gato dice qué pasa y ofrece el aviso en su
+                globo (Carlos, 14 nov 2026: «le falta un mensaje en el globo del
+                gato para que le diga al visitante qué pasa»; el aviso «puede ir
+                en el globo de texto del gato»). Habla desde la penumbra: el
+                encendido sigue reservado para cuando vuelve la pregunta. Con
+                otra forma al centro de la constelación, calla. */}
+            {holograficoOpen && !bitacoraOpen && !ultimaPreguntaOpen && !bitacoraCompleted && !bitacoraAvailable && holograficoPoster === portal && (
+              <div className="cabina-bubble cabina-bubble--escritorio" data-globo="espera">
+                <p className="cabina-bubble__preludio">Entre bambalinas</p>
+                <p className="cabina-bubble__texto">{dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.</p>
+                {bitacoraConsented ? (
+                  <p className="cabina-bubble__instruccion">{avisoDoneHint}</p>
+                ) : (
+                  <div className="mt-4 flex justify-center">
+                    <button type="button" onClick={handleAvisoPorCorreo} className="cabina-escritura-accion">
+                      Avísame por correo
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             {bitacoraOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
                 <p className="cabina-bubble__preludio">La cabina te escucha</p>
@@ -2934,6 +2990,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       )}
     </AnimatePresence>
   );
+
+  // En la tarjeta de la galería solo va En el foco, sin ventana ni tablero.
+  if (soloEnElFoco) {
+    return <div data-en-el-foco-en-la-tarjeta>{enElFoco}</div>;
+  }
 
   return (
     <>
