@@ -1699,8 +1699,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   </div>
                   {/* Sin copy descriptivo: el título dialoga con las tres filas y
                       cada fila dice lo suyo (Carlos, 22 oct 2026). */}
+                  {/* «Retención» era vocabulario de dirección y en pantalla sonaba mal
+                      (Carlos, 14 nov 2026). La ceja dice lo que dura la espera, igual
+                      que la línea de la forma en el libreto. */}
                   <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                    Retención
+                    Tres días
                   </p>
                   <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
                     Entre bambalinas
