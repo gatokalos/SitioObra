@@ -18,7 +18,7 @@ const FORMA_KEY = 'gatoencerrado:dev-ensayo-forma';
 // Marca de un salto recién hecho: al recargar, la página baja sola hasta la
 // tarjeta recomendada, que es donde ocurre lo que se quiere ver.
 const IR_A_LA_TARJETA_KEY = 'gatoencerrado:dev-ensayo-ir';
-// En teléfono el recorrido en la tarjeta sigue en prueba (Transmedia.jsx lo lee).
+// En teléfono el recorrido en la tarjeta se puede apagar para comparar (Transmedia.jsx lo lee).
 const DORSO_MOVIL_KEY = 'gatoencerrado:dev-dorso-movil';
 // Las formas cuyo artefacto ya se abre en su propia ventana y vuelve a la
 // tarjeta (ARTEFACTO_EN_VENTANA en Transmedia.jsx).
@@ -186,14 +186,14 @@ const EnsayoDeVisitante = () => {
             <input
               type="checkbox"
               data-ensayo-telefono
-              checked={leer(DORSO_MOVIL_KEY) === '1'}
+              checked={leer(DORSO_MOVIL_KEY) !== '0'}
               onChange={(e) => {
-                if (e.target.checked) poner(DORSO_MOVIL_KEY, '1'); else quitar(DORSO_MOVIL_KEY);
+                if (e.target.checked) quitar(DORSO_MOVIL_KEY); else poner(DORSO_MOVIL_KEY, '0');
                 recargar(window.location.hash || '');
               }}
               className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-amber-400"
             />
-            <span>En teléfono, el recorrido en la tarjeta (en prueba; apagado, el teléfono abre el portal como hoy).</span>
+            <span>En teléfono, el recorrido en la tarjeta (apagado, el teléfono abre el portal como antes).</span>
           </label>
 
           <div className="space-y-1.5">

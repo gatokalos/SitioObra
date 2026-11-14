@@ -1600,21 +1600,22 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setDorsoCerrado(true);
     try { window.sessionStorage.setItem(DORSO_CERRADO_KEY, '1'); } catch {}
   };
-  // Por ahora solo en escritorio (Carlos, 13 nov 2026, noche): en el teléfono
-  // falta ver en el simulador cómo queda el dorso con el teclado abierto. Ahí
-  // la tarjeta sigue como antes: muestra la pregunta y «Entra en escena».
-  // VITE_DORSO_MOVIL=1 lo enciende en una compilación de prueba (el simulador).
+  // Del 13 al 14 nov 2026 esto fue solo de escritorio, a la espera de ver en
+  // el simulador cómo queda el dorso con el teclado abierto.
   // Desde el 14 nov 2026 (Carlos) la promesa del giro también vale para quien
   // tiene sesión: «tenemos que proteger la experiencia y que hacer clic en la
   // vitrina no abra la ficha, sino que cumpla la promesa del flip». Sin sesión
   // sigue siendo una sola forma, la recomendada con pase; con sesión, las
   // nueve: cualquier tarjeta cuya pregunta no se ha contestado gira antes de
   // enseñar la ficha.
-  // En teléfono el recorrido en la tarjeta sigue en prueba: se enciende con
-  // VITE_DORSO_MOVIL=1 al compilar o, en desarrollo, desde el panel de ensayo.
+  // En teléfono el recorrido en la tarjeta está encendido desde el 14 nov 2026
+  // (Carlos: «en móviles seguimos con la arquitectura vieja, donde hacer clic
+  // en la vitrina abre la ficha»). Se apaga con VITE_DORSO_MOVIL=0 al compilar
+  // o, en desarrollo, desde el panel de ensayo; apagado, el teléfono abre el
+  // portal como antes. Falta verlo con el teclado abierto en un teléfono real.
   const dorsoEnTelefono =
-    import.meta.env.VITE_DORSO_MOVIL === '1' ||
-    (import.meta.env.DEV && safeGetItem('gatoencerrado:dev-dorso-movil') === '1');
+    import.meta.env.VITE_DORSO_MOVIL !== '0' &&
+    !(import.meta.env.DEV && safeGetItem('gatoencerrado:dev-dorso-movil') === '0');
   const laTarjetaLlevaElRecorrido = (formatId) => {
     if (isVitrinaCarouselViewport && !dorsoEnTelefono) return false;
     if (!VITRANA_QUESTION_BY_SHOWCASE[formatId] || !SHOWCASE_TO_PORTAL[formatId]) return false;

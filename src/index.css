@@ -6502,6 +6502,16 @@ body {
   }
 }
 
+/* En teléfono la caja del subtítulo también toma el ancho disponible (Carlos,
+   14 nov 2026): medía lo que mide el texto de reserva y por eso cinco de los
+   siete subtítulos se partían en dos renglones aunque cupieran en uno. Queda
+   partido solo el más largo; la caja conserva el alto de dos renglones. */
+@media (max-width: 639px) {
+  #hero .hero-subtitle-track {
+    width: calc(100vw - 4rem);
+  }
+}
+
 @media (min-width: 640px) and (max-width: 1023px) {
   #hero {
     --hero-subtitulo-arriba: calc(1.8rem + 0.9rem);
