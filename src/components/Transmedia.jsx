@@ -1604,15 +1604,25 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // falta ver en el simulador cómo queda el dorso con el teclado abierto. Ahí
   // la tarjeta sigue como antes: muestra la pregunta y «Entra en escena».
   // VITE_DORSO_MOVIL=1 lo enciende en una compilación de prueba (el simulador).
-  const esLaRecomendadaConPase = (formatId) =>
-    (!isVitrinaCarouselViewport || import.meta.env.VITE_DORSO_MOVIL === '1') &&
-    !isAuthenticated &&
-    hasBienvenidaPass &&
-    formatId === recommendedShowcaseId &&
-    Boolean(VITRANA_QUESTION_BY_SHOWCASE[formatId]) &&
-    Boolean(SHOWCASE_TO_PORTAL[formatId]);
+  // Desde el 14 nov 2026 (Carlos) la promesa del giro también vale para quien
+  // tiene sesión: «tenemos que proteger la experiencia y que hacer clic en la
+  // vitrina no abra la ficha, sino que cumpla la promesa del flip». Sin sesión
+  // sigue siendo una sola forma, la recomendada con pase; con sesión, las
+  // nueve: cualquier tarjeta cuya pregunta no se ha contestado gira antes de
+  // enseñar la ficha.
+  // En teléfono el recorrido en la tarjeta sigue en prueba: se enciende con
+  // VITE_DORSO_MOVIL=1 al compilar o, en desarrollo, desde el panel de ensayo.
+  const dorsoEnTelefono =
+    import.meta.env.VITE_DORSO_MOVIL === '1' ||
+    (import.meta.env.DEV && safeGetItem('gatoencerrado:dev-dorso-movil') === '1');
+  const laTarjetaLlevaElRecorrido = (formatId) => {
+    if (isVitrinaCarouselViewport && !dorsoEnTelefono) return false;
+    if (!VITRANA_QUESTION_BY_SHOWCASE[formatId] || !SHOWCASE_TO_PORTAL[formatId]) return false;
+    if (isAuthenticated) return true;
+    return hasBienvenidaPass && formatId === recommendedShowcaseId;
+  };
   const pideIntuicionEnLaTarjeta = (formatId) =>
-    esLaRecomendadaConPase(formatId) &&
+    laTarjetaLlevaElRecorrido(formatId) &&
     !readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]).l1Done;
   // Ya contestó y la ficha todavía no se le revela: la tarjeta lleva el
   // tablero. Desde el 14 nov 2026 (Carlos) el recorrido no se va a la ficha al
@@ -1623,7 +1633,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // formas abren la ficha al entrar al artefacto, como antes.
   const ARTEFACTO_EN_VENTANA = new Set(['miniversoNovela']);
   const tableroEnLaTarjeta = (formatId) => {
-    if (!esLaRecomendadaConPase(formatId)) return false;
+    if (!laTarjetaLlevaElRecorrido(formatId)) return false;
+    // En teléfono, las formas que todavía abren la ficha al entrar al artefacto
+    // siguen su método en el portal, como antes: su tarjeta solo pide la pregunta.
+    if (isVitrinaCarouselViewport && !ARTEFACTO_EN_VENTANA.has(formatId)) return false;
     const progreso = readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]);
     if (!progreso.l1Done || progreso.record.ficha_revelada || progreso.bitacoraDone) return false;
     // Si la pregunta ya volvió, el regreso se vive en la ficha, como siempre.
@@ -1656,6 +1669,40 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     }
     girarLaTarjeta(formatId);
   };
+  // Ir a otra forma desde el libreto, o desde la recomendación del método, ya
+  // no abre su ficha: lleva a su tarjeta en la galería y la gira, para empezar
+  // de nuevo por la pregunta (Carlos, 14 nov 2026: «saltar hasta el segundo
+  // acto y activar la animación del flip y empezar de nuevo»). Si esa forma ya
+  // tiene la ficha revelada, se abre la ficha como siempre.
+  const [saltoALaTarjetaId, setSaltoALaTarjetaId] = useState(null);
+  const saltarALaTarjeta = (formatId) => {
+    if (!laTarjetaTieneDorso(formatId)) {
+      handleFormatClick(formatId);
+      return;
+    }
+    handleCloseShowcase();
+    setTarjetaGiradaId(null);
+    const lugar = formats.findIndex((f) => f.id === formatId);
+    if (lugar >= 0) setShowcaseCarouselIndex((lugar - 1 + formats.length) % formats.length);
+    setSaltoALaTarjetaId(formatId);
+  };
+  useEffect(() => {
+    if (!saltoALaTarjetaId || activeShowcase) return undefined;
+    let giro = null;
+    const llegada = window.setTimeout(() => {
+      const tarjeta = [...document.querySelectorAll(`[data-tarjeta-forma="${saltoALaTarjetaId}"]`)]
+        .find((el) => el.getBoundingClientRect().height > 0);
+      tarjeta?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      giro = window.setTimeout(() => {
+        girarLaTarjeta(saltoALaTarjetaId);
+        setSaltoALaTarjetaId(null);
+      }, 750);
+    }, 400);
+    return () => {
+      window.clearTimeout(llegada);
+      if (giro) window.clearTimeout(giro);
+    };
+  }, [saltoALaTarjetaId, activeShowcase]); // eslint-disable-line react-hooks/exhaustive-deps
   // El giro que la tarjeta hace sola al llegar: espera a que la recomendada
   // esté a la vista, deja verla limpia un instante y la voltea una vez.
   const pideLaRecomendada = Boolean(recommendedShowcaseId) && laTarjetaTieneDorso(recommendedShowcaseId);
@@ -1703,14 +1750,17 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       mobileOnly: true,
       isMobileViewport: isVitrinaCarouselViewport,
     });
-    if (isVitrinaCarouselViewport && portalRoute) {
+    // (Las formas cuyo artefacto ya se abre en su propia ventana se quedan en la
+    // tarjeta también en teléfono: tablero, artefacto, En el foco y, con
+    // «Mientras tanto», el portal.)
+    if (isVitrinaCarouselViewport && portalRoute && !ARTEFACTO_EN_VENTANA.has(formatId)) {
       setTarjetaGiradaId(null);
       navigate(portalRoute, {
         state: createPortalLaunchState(location, 'primera-intuicion', { showcaseId: formatId }),
       });
       return;
     }
-    // En escritorio la tarjeta se queda de dorso: ahora lleva el tablero.
+    // La tarjeta se queda de dorso: ahora lleva el tablero.
     setRegistroDeLaTarjetaTick((n) => n + 1);
   };
   // «Habitar la forma» desde la tarjeta: aquí sí se cambia de nivel.
@@ -4870,7 +4920,7 @@ const renderDramaFeaturedWork = () => (
                           portal="obra"
                           onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
                           narrativeCTALabel="✦ Entrar al drama"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -4909,7 +4959,7 @@ const renderDramaFeaturedWork = () => (
                           portal="literatura"
                           onOpenNarrative={() => setShowLiteraturaApp(true)}
                           narrativeCTALabel="📖 Activar artefacto"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -4948,7 +4998,7 @@ const renderDramaFeaturedWork = () => (
                           portal="artesanias"
                           onOpenNarrative={handleActivateAR}
                           narrativeCTALabel="✦ Activa tu taza"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -4987,7 +5037,7 @@ const renderDramaFeaturedWork = () => (
                           portal="grafico"
                           onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
                           narrativeCTALabel="✦ Ver el swipe"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           onL2QuestionReady={handlePdfAftercareClose}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
@@ -5027,7 +5077,7 @@ const renderDramaFeaturedWork = () => (
                           portal="cine"
                           onOpenNarrative={handleToggleQuironPrompt}
                           narrativeCTALabel="▶ Ver Quirón"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -5066,7 +5116,7 @@ const renderDramaFeaturedWork = () => (
                           portal="sonoridades"
                           onOpenNarrative={handleSonoroEnter}
                           narrativeCTALabel="✦ Escuchar ahora"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -5105,7 +5155,7 @@ const renderDramaFeaturedWork = () => (
                           portal="movimiento"
                           onOpenNarrative={() => handleIrALaSalida()}
                           narrativeCTALabel="✦ Ver los talleres"
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -5144,7 +5194,7 @@ const renderDramaFeaturedWork = () => (
                           portal="juegos"
                           onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -5183,7 +5233,7 @@ const renderDramaFeaturedWork = () => (
                           portal="oraculo"
                           onOpenNarrative={handleOpenOraculo}
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
-                          onNavigateToRecommendation={handleFormatClick}
+                          onNavigateToRecommendation={saltarALaTarjeta}
                           isMobileViewport={isMobileViewport}
                           onRequireLogin={() => setShowMobilePortalLogin(true)}
                           onBeforeNavigate={handleCloseShowcase}
@@ -5918,6 +5968,7 @@ const renderDramaFeaturedWork = () => (
                   <motion.div
                     key={format.id}
                     data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
+                    data-tarjeta-forma={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
                     animate={
                       isSafari
@@ -6203,6 +6254,7 @@ const renderDramaFeaturedWork = () => (
                     key={format.id}
                     type="button"
                     data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
+                    data-tarjeta-forma={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={
                       isSafari

@@ -18,6 +18,8 @@ const FORMA_KEY = 'gatoencerrado:dev-ensayo-forma';
 // Marca de un salto recién hecho: al recargar, la página baja sola hasta la
 // tarjeta recomendada, que es donde ocurre lo que se quiere ver.
 const IR_A_LA_TARJETA_KEY = 'gatoencerrado:dev-ensayo-ir';
+// En teléfono el recorrido en la tarjeta sigue en prueba (Transmedia.jsx lo lee).
+const DORSO_MOVIL_KEY = 'gatoencerrado:dev-dorso-movil';
 // Las formas cuyo artefacto ya se abre en su propia ventana y vuelve a la
 // tarjeta (ARTEFACTO_EN_VENTANA en Transmedia.jsx).
 const RECORRIDO_EN_TARJETA = new Set(['miniversoNovela']);
@@ -91,7 +93,10 @@ const EnsayoDeVisitante = () => {
     let intentos = 0;
     const vigia = window.setInterval(() => {
       intentos += 1;
-      const tarjeta = [...document.querySelectorAll('[data-tarjeta-recomendada]')].find((el) => el.getBoundingClientRect().height > 0);
+      const forma = leer(FORMA_KEY);
+      const visible = (el) => el.getBoundingClientRect().height > 0;
+      const tarjeta = [...document.querySelectorAll(`[data-tarjeta-forma="${forma}"]`)].find(visible)
+        ?? [...document.querySelectorAll('[data-tarjeta-recomendada]')].find(visible);
       if (tarjeta || intentos > 60) {
         window.clearInterval(vigia);
         try { window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY); } catch { /* sin almacenamiento */ }
@@ -107,7 +112,10 @@ const EnsayoDeVisitante = () => {
   };
 
   const saltar = (paso) => {
-    poner(DEV_AUTH_KEY, 'pase');
+    // El salto conserva la identidad elegida: cuenta de prueba o visitante con
+    // pase (la de siempre si no hay ninguna). Con cuenta, las nueve tarjetas
+    // giran; sin cuenta, solo la recomendada.
+    poner(DEV_AUTH_KEY, modo === '1' ? '1' : 'pase');
     poner(FORMA_KEY, forma.showcase);
     // Lo que deja el primer acto: el pase, la galería abierta y la forma recomendada.
     poner('gatoencerrado:bienvenida-completed', '1');
@@ -127,9 +135,9 @@ const EnsayoDeVisitante = () => {
   const chip = 'rounded-full border px-3 py-1 text-[0.68rem] transition';
 
   return (
-    <div data-ensayo className="fixed bottom-4 left-4 z-[190] max-w-[19rem] text-left font-sans">
+    <div data-ensayo className="fixed bottom-4 left-4 z-[190] max-w-[19rem] text-left font-sans max-lg:bottom-12 max-lg:left-2 max-lg:max-w-[15.5rem]">
       {abierto ? (
-        <div className="mb-2 space-y-3 rounded-2xl border border-amber-300/30 bg-[#0d0a14]/95 p-4 text-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur">
+        <div className="mb-2 max-h-[78vh] space-y-3 overflow-y-auto rounded-2xl border border-amber-300/30 bg-[#0d0a14]/95 p-4 text-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur">
           <div className="space-y-1.5">
             <p className="text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">Entrar como</p>
             <div className="flex flex-wrap gap-1.5">
@@ -140,7 +148,7 @@ const EnsayoDeVisitante = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="ensayo-forma" className="block text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">Forma recomendada</label>
+            <label htmlFor="ensayo-forma" className="block text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">{modo === '1' ? 'Forma' : 'Forma recomendada'}</label>
             <select
               id="ensayo-forma"
               value={forma.showcase}
@@ -157,6 +165,20 @@ const EnsayoDeVisitante = () => {
               </p>
             ) : null}
           </div>
+
+          <label className="flex items-start gap-2 text-[0.7rem] leading-snug text-slate-300">
+            <input
+              type="checkbox"
+              data-ensayo-telefono
+              checked={leer(DORSO_MOVIL_KEY) === '1'}
+              onChange={(e) => {
+                if (e.target.checked) poner(DORSO_MOVIL_KEY, '1'); else quitar(DORSO_MOVIL_KEY);
+                recargar(window.location.hash || '');
+              }}
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-amber-400"
+            />
+            <span>En teléfono, el recorrido en la tarjeta (en prueba; apagado, el teléfono abre el portal como hoy).</span>
+          </label>
 
           <div className="space-y-1.5">
             <p className="text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">Saltar a</p>
@@ -188,7 +210,7 @@ const EnsayoDeVisitante = () => {
         type="button"
         data-ensayo-abrir
         onClick={() => setAbierto((v) => !v)}
-        className="rounded-full border border-amber-300/40 bg-[#0d0a14]/90 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-amber-500/20"
+        className="rounded-full border border-amber-300/40 bg-[#0d0a14]/90 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-amber-500/20 max-lg:px-2 max-lg:text-[0.55rem] max-lg:tracking-[0.18em] max-lg:opacity-70"
       >
         Ensayo · {etiqueta}
       </button>
