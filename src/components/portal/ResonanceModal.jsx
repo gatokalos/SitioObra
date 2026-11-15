@@ -2936,8 +2936,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               </div>
             ) : null}
             {hayCaida ? (
-              <div className="caida-al-pozo" aria-hidden="true" data-caida={caidaHecha ? 'hecha' : 'cayendo'}>
+              <div className="caida-al-pozo" data-caida={caidaHecha ? 'hecha' : 'cayendo'}>
                 <motion.div
+                  aria-hidden="true"
                   className="caida-al-pozo__torre"
                   initial={{ y: '0%' }}
                   animate={{ y: '-75%' }}
@@ -2949,6 +2950,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
                   <img src={GATO_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
                 </motion.div>
+                {/* Una sola línea a media caída, en el túnel, que se va antes
+                    de llegar: el anuncio del final sin volver a los globos
+                    (Carlos, 14 nov 2026). */}
+                <p className="caida-al-pozo__linea">La pregunta te trajo hasta aquí.</p>
               </div>
             ) : null}
             <div

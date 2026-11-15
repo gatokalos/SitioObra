@@ -6868,7 +6868,10 @@ body {
 .otras-del-pozo__puerta[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
-.tarjeta-del-pozo__salida.cabina-bubble__cta {
+/* La salida de la tarjeta: el azul del pozo del primer acto (el de su botón
+   de entrada), en vez del dorado (Carlos, 14 nov 2026: «ya me está chillando
+   el botón amarillo»). */
+.tarjeta-del-pozo__salida {
   display: flex;
   width: 100%;
   align-items: center;
@@ -6876,10 +6879,53 @@ body {
   gap: 0.5rem;
   margin-top: 0.15rem;
   padding: 0.85rem 1.4rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #9ce6ff, #6ab0ff);
+  box-shadow: 0 18px 40px rgba(73, 136, 201, 0.28);
   font-family: "Vox Round", "Inter", sans-serif;
   font-size: 1rem;
+  font-weight: 600;
   letter-spacing: 0.01em;
+  color: #071018;
+  transition: filter 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   animation: pozo-llega 0.5s ease-out 1.2s both;
+}
+.tarjeta-del-pozo__salida:hover:not(:disabled),
+.tarjeta-del-pozo__salida:focus-visible {
+  outline: none;
+  filter: brightness(1.06);
+  box-shadow: 0 22px 48px rgba(106, 176, 255, 0.4);
+}
+.tarjeta-del-pozo__salida:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* La línea de la caída: aparece en el túnel y se va antes de tocar fondo. La
+   caída dura 7 s; el túnel pasa, más o menos, entre el segundo 2 y el 5. */
+.caida-al-pozo__linea {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 2.2rem;
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-wrap: balance;
+  color: #fff;
+  text-shadow: 0 0 22px rgba(94, 234, 212, 0.55), 0 2px 18px rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  pointer-events: none;
+  animation: caida-linea 7s linear both;
+}
+@keyframes caida-linea {
+  0%, 26% { opacity: 0; transform: translateY(10px); }
+  36%, 60% { opacity: 1; transform: translateY(0); }
+  70%, 100% { opacity: 0; transform: translateY(-10px); }
 }
 @keyframes pozo-llega {
   from { opacity: 0; transform: translateY(8px); }
@@ -6889,5 +6935,5 @@ body {
   .tarjeta-del-pozo,
   .opcion-del-pozo,
   .otras-del-pozo,
-  .tarjeta-del-pozo__salida.cabina-bubble__cta { animation: none; }
+  .tarjeta-del-pozo__salida { animation: none; }
 }

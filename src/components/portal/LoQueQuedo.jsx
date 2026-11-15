@@ -432,7 +432,14 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
               <span className="tarjeta-del-pozo__titulos">
                 <span className="huella-puerta__eyebrow">Memoria</span>
                 <h3 className="tarjeta-del-pozo__titulo">
-                  {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Falta una palabra para decirlo.' : 'No encontramos lo que escribiste en este navegador'}
+                  {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? (
+                    /* El copy lo eligió Carlos (14 nov 2026, juego 2): lo que
+                       había «no se siente como un gran final». */
+                    <>
+                      <span className="block">De todo lo que dijiste, algo quedó.</span>
+                      <span className="block">Ponle nombre.</span>
+                    </>
+                  ) : 'No encontramos lo que escribiste en este navegador'}
                 </h3>
               </span>
             </header>
@@ -443,7 +450,9 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                 ) : terminos.length > 0 ? (
                   <>
                     <div className="eleccion-del-pozo" role="radiogroup" aria-label="La palabra que falta" data-palabras-del-pozo>
-                      <p className="palabras-del-pozo__rotulo">Por lo que dijiste, quizá sea</p>
+                      <p className="palabras-del-pozo__rotulo">
+                        {terminos.length === 1 ? 'El gato oyó una palabra. ¿Es la tuya?' : 'El gato oyó dos palabras. Elige la tuya.'}
+                      </p>
                       {terminos.map((p) => opcionDelPozo(p))}
                     </div>
                     <div className="otras-del-pozo">
@@ -453,7 +462,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                         aria-expanded={otrasAbiertas}
                         onClick={() => setOtrasAbiertas((v) => !v)}
                       >
-                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : 'Otra palabra'}
+                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : terminos.length === 1 ? 'No es esa' : 'Ninguna de las dos'}
                         <ChevronDown size={14} aria-hidden="true" />
                       </button>
                       {otrasAbiertas ? (
@@ -468,7 +477,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   </div>
                 )}
                 {!cargando && propuesta ? (
-                  <button type="button" onClick={pasarAlActoFinal} disabled={!palabra} className="cabina-bubble__cta tarjeta-del-pozo__salida">
+                  <button type="button" onClick={pasarAlActoFinal} disabled={!palabra} className="tarjeta-del-pozo__salida">
                     Contestarle a la obra
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
