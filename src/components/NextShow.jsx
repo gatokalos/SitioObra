@@ -4,7 +4,7 @@ import { Calendar, DoorOpen, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useScrambleText from '@/hooks/useScrambleText';
 
-const CLOSING_LINE = 'decirnos adiós';
+const CLOSING_LINE = 'volver al origen';
 
 const SHOW_HISTORY = [
   {
@@ -76,16 +76,18 @@ const NextShow = () => {
             className="curtain-fall-card glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
           >
             <div className="curtain-fall-content relative z-10">
-              <h3 aria-label={`Caída del telón: ${CLOSING_LINE}`} className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                <span aria-hidden="true" className="titulo-perlado">Caída del telón:</span><br />
+              <h3
+                aria-label={`Caída del telón. ${CLOSING_LINE}.`}
+                className="font-display text-3xl font-medium text-slate-100 mb-6 text-center flex flex-col items-center gap-3"
+              >
+                <span aria-hidden="true" className="titulo-perlado">Caída del telón</span>
                 <span ref={closingLineRef} className="relative inline-block" aria-hidden="true">
                   <span className="invisible">{CLOSING_LINE}</span>
                   <span className="titulo-perlado absolute inset-0 whitespace-nowrap">{closingLineDisplay}</span>
                 </span>
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
-                <p><em>Hay historias que dejan de representarse para empezar a recordarse.</em></p>
-                <p>Este espacio conserva fragmentos de nuestra <strong>obra fundacional</strong>: escenas, fotografías, videos y memorias de encuentro único entre quienes la crearon y quienes la presenciaron.</p>
+                <p>Este espacio conserva fragmentos de la puesta en escena que <strong>dio origen</strong> a este universo. Durante mucho tiempo pensé que el escenario era el destino. Después entendí que también podía ser el punto de partida.</p>
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 mb-8">

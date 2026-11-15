@@ -1431,7 +1431,7 @@ export const formats = [
     title: 'La imagen',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    vitrinaCopy: 'Se parece a La escritura.\nRefleja algo en la superficie.\nPues adentro, no hay nadie.',
+    vitrinaCopy: 'Se parece a La escritura.\nRefleja algo en la superficie.\nPero adentro, no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',

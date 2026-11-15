@@ -86,14 +86,14 @@ const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 const HERO_ROTATING_SUBTITLES = [
   'La obra que ocurre en ti',                        // el slogan canónico (antes «en tu mente»; cuerpo, no cabeza — artículo 24 oct, D-70)
   'Basada en emociones sin nombre',       // el origen — intacta
-  'Arte, tecnología y una causa: investigar creando',  // la función de la obra, y su economía
-  'Una duda que vuelve días después',            // el mecanismo — el cuarto movimiento
+  'Una narrativa, muchas voces, un universo',                        // el gato escondido en el número
+  'La pregunta que vuelve días después',            // el mecanismo — el cuarto movimiento
   'Tú sabes hasta dónde indagar',                    // la invitación — le pasa el turno a quien visita
 ];
 
 const HERO_GHOST_SUBTITLES = [
   'Sí: aquí hay gato encerrado',                     // el premio final del que se quedó; título del artículo
-  'Una narrativa, muchas voces, un universo',                        // el gato escondido en el número
+  'Arte, tecnología y una causa: investigar creando',  // la función de la obra, y su economía
   'Nueve formas. Una manera de encontrarnos',                // el premio del que se quedó; el gozne sin nombre (11 nov)
 ];
 

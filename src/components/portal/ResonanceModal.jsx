@@ -826,7 +826,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       : bitacoraStep === 'p3'
         ? 'También puede ser que nada haya cambiado.'
         : bitacoraStep === 'compartir'
-          ? 'Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.'
+          ? 'Si algún día retiras lo que dejaste, se borra.'
           : null;
 
   // Un solo estilo en toda la cabina del regreso (Carlos, 28 oct 2026: «dos
