@@ -63,6 +63,7 @@ import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
@@ -2382,6 +2383,9 @@ const rendernotaAutoral = () => {
 
 const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionControl = null) => {
   if (!activeDefinition?.iaProfile) return null;
+  // Con el gesto ya registrado, la ficha cuenta en pasado lo que se hizo
+  // (Carlos, 15 nov 2026). Por ahora solo La escritura.
+  const enPasado = fichaEnPasado(SHOWCASE_TO_PORTAL[activeShowcase]);
 
   return (
     <div className="hidden lg:block">
@@ -2389,7 +2393,8 @@ const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionCont
         {...activeDefinition.iaProfile}
         chips={activeDefinition.chips}
         chipClassName={activeDefinition.chipClassName}
-        title={title}
+        title={enPasado?.title ?? title}
+        {...(enPasado ? { notes: enPasado.notes } : {})}
         compact
         isOpen={accordionControl?.isOpen}
         onToggle={accordionControl?.onToggle}
@@ -5364,7 +5369,13 @@ const renderDramaFeaturedWork = () => (
               <div>{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (
                 <div className="lg:hidden mt-4">
-                  <IAInsightCard {...activeDefinition.iaProfile} chips={activeDefinition.chips} chipClassName={activeDefinition.chipClassName} compact />
+                  <IAInsightCard
+                    {...activeDefinition.iaProfile}
+                    {...(() => { const p = fichaEnPasado(SHOWCASE_TO_PORTAL[activeShowcase]); return p ? { title: p.title, notes: p.notes } : {}; })()}
+                    chips={activeDefinition.chips}
+                    chipClassName={activeDefinition.chipClassName}
+                    compact
+                  />
                 </div>
               ) : null}
               {/* Botones de control — solo desktop, al fondo del contenido scrollable */}

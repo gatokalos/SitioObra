@@ -12,6 +12,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
+import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -134,6 +135,8 @@ const PortalLiteratura = () => {
     setIsResonanceOpen(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const readingTooltipRef = useRef(null);
+  // Con el gesto ya registrado, la ficha cuenta en pasado lo que se hizo.
+  const enPasado = fichaEnPasado('literatura');
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -320,8 +323,23 @@ const PortalLiteratura = () => {
                   chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
                   chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
+                  {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
                   compact
                 />
+                {/* El gesto viene de la obra destacada: un renglón y un botón
+                    que baja hasta ella (Carlos, 15 nov 2026). */}
+                {enPasado ? (
+                  <div className="ficha-en-pasado__obra" data-gesto-de-la-obra>
+                    <p>{enPasado.obra.texto}</p>
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('obra-destacada')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    >
+                      {enPasado.obra.boton}
+                      <span aria-hidden="true">↓</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               <div className={`px-6 sm:px-8 pb-6 sm:pb-8 lg:py-8 lg:pl-3 lg:pr-8 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : ''}`}>
@@ -369,7 +387,7 @@ const PortalLiteratura = () => {
           </div>
 
 
-          <div className="lg:order-2 space-y-6">
+          <div id="obra-destacada" className="lg:order-2 space-y-6 scroll-mt-20">
             <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
               <div className="relative min-h-[30rem] overflow-hidden">
                 {/\.mp4($|\?)/i.test(LITERATURA_ENTRY.image) ? (
@@ -426,6 +444,7 @@ const PortalLiteratura = () => {
               chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
               chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
+              {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
               compact
             />
           </div>

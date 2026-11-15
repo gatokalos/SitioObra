@@ -78,6 +78,8 @@ const registroDelPaso = (paso, forma) => {
   if (paso === 'sin-gesto') return r;
   Object.assign(r, {
     experience_ts: ahora,
+    gesto_resultado: 'enunciado',
+    gesto_ts: ahora,
     l2_conv_done: true,
     l2_escena_terminada: true,
     dashboard_active_level: 3,

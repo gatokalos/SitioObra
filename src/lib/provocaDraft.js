@@ -43,7 +43,9 @@ export function palabraEnPrimeraPersona(texto) {
 // poder leer aparte esas réplicas, que contestan otra pregunta. Se distingue de
 // «una emoción que no entiendes del todo», que sí es palabra de la obra: aquella
 // dice «siento algo y no sé nombrarlo»; esta, «lo mío no está en esta lista».
-export const FUERA_DE_LA_LISTA = 'otra';
+// En pantalla y en el registro dice «otro», en masculino, porque el rótulo de
+// la tarjeta habla de «nombres» (copy de Carlos, 15 nov 2026).
+export const FUERA_DE_LA_LISTA = 'otro';
 export const PREGUNTA_FUERA_DE_LA_LISTA = '¿Qué te provocó esta obra?';
 
 export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null }) {

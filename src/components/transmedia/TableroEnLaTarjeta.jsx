@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Flame, Lock, Sparkles } from 'lucide-react';
+import { Check, Eye, Flame, Lock, Sparkles } from 'lucide-react';
 import ResonanceModal, {
   LEVEL2_QUESTIONS,
   PORTAL_GRADIENT,
@@ -71,6 +71,14 @@ const TableroEnLaTarjeta = ({
   const alFrente = 'max-lg:rounded-none max-lg:border-0 max-lg:bg-transparent max-lg:px-0 max-lg:shadow-none';
   const eco = 'rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90';
 
+  // La palomita sobre la esfera de cada escena ya vivida (Carlos, 15 nov 2026:
+  // «faltaría un check mark o algún indicador que refuerce el recorrido»; el
+  // tablero viejo la traía como «✓» al inicio de la descripción).
+  const palomita = (
+    <span className="palomita-de-escena" data-palomita aria-hidden="true">
+      <Check size={10} strokeWidth={3.2} />
+    </span>
+  );
   // Una escena ya vivida, plegada: su esfera encendida y su nombre.
   const plegada = ({ icono: Icono, ceja, titulo, retraso }) => (
     <motion.section
@@ -79,8 +87,9 @@ const TableroEnLaTarjeta = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: retraso }}
     >
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradienteDeLaForma}`}>
+      <span className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradienteDeLaForma}`}>
         <Icono className="h-5 w-5 text-white" />
+        {palomita}
       </span>
       <div className="min-w-0 space-y-0.5">
         <p className="text-[0.56rem] uppercase tracking-[0.18em] text-slate-400/70">{ceja}</p>
@@ -157,8 +166,9 @@ const TableroEnLaTarjeta = ({
             transition={{ duration: 0.35, delay: 0.1 }}
           >
             <div className="flex items-center gap-3">
-              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradienteDeLaForma}`}>
+              <span className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradienteDeLaForma}`}>
                 <Eye className="h-5 w-5 text-white" />
+                {palomita}
               </span>
               <div className="min-w-0 space-y-0.5">
                 <p className="text-[0.56rem] uppercase tracking-[0.18em] text-slate-400/70">Antes de entrar</p>
@@ -184,13 +194,14 @@ const TableroEnLaTarjeta = ({
           >
             <div className="flex items-center gap-3">
               <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
+                className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
                   expectativa
                     ? `bg-gradient-to-br ${gradienteDeLaForma}`
                     : 'animate-pulse border border-sky-300/50 bg-sky-500/10 shadow-[0_0_18px_rgba(56,189,248,0.35)]'
                 }`}
               >
                 <Flame className="h-5 w-5 text-white" />
+                {expectativa ? palomita : null}
               </span>
               <div className="min-w-0 space-y-0.5">
                 <p className="text-[0.56rem] uppercase tracking-[0.18em] text-slate-400/70">{dramaturgia.phase2Eyebrow}</p>

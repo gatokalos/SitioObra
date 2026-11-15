@@ -455,7 +455,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   <>
                     <div className="eleccion-del-pozo" role="radiogroup" aria-label="La palabra que falta" data-palabras-del-pozo>
                       <p className="palabras-del-pozo__rotulo">
-                        {terminos.length === 1 ? 'El gato la rodeó con una palabra. ¿Se acerca?' : 'El gato lo rodeó con dos nombres probables. Elige el que más se acerca.'}
+                        {terminos.length === 1 ? 'El gato lo rodeó con un nombre probable. ¿Se acerca?' : 'El gato lo rodeó con dos nombres probables. Elige el que más se acerca.'}
                       </p>
                       {terminos.map((p) => opcionDelPozo(p))}
                     </div>
@@ -466,7 +466,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                         aria-expanded={otrasAbiertas}
                         onClick={() => setOtrasAbiertas((v) => !v)}
                       >
-                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : terminos.length === 1 ? 'No se acerca' : 'Ninguna se acerca'}
+                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : terminos.length === 1 ? 'No se acerca' : 'Ninguno se acerca'}
                         <ChevronDown size={14} aria-hidden="true" />
                       </button>
                       {otrasAbiertas ? (
