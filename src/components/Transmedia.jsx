@@ -376,6 +376,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     apps:              'juegos',
     oraculo:           'oraculo',
   };
+  // Desde las filas de «Entre bambalinas», en la tarjeta (15 nov 2026): a qué
+  // lado de la ficha se llega. Por el revés, la Memoria; por el frente, la obra
+  // destacada. En teléfono la ficha es la página del portal y la seña viaja con
+  // la navegación.
+  const abrirMetodoAlLlegarRef = useRef(null);
+  const irALaObraDestacadaRef = useRef(null);
   // La pregunta ya volvió (pasaron los días) y el regreso sigue sin contestar.
   const elRegresoYaVolvio = (formatId) => {
     const portal = SHOWCASE_TO_PORTAL[formatId];
@@ -763,7 +769,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // pasar por «Sigue donde quedaste» (Carlos, 15 nov 2026: «ahorrarnos el
       // paso»). Es la misma seña con la que el portal abre el método a quien
       // viene de contestar en la tarjeta.
-      const fuente = elRegresoYaVolvio(formatId) ? 'primera-intuicion' : 'transmedia-mobile-portal';
+      const alMetodo = abrirMetodoAlLlegarRef.current === formatId || elRegresoYaVolvio(formatId);
+      const aLaObra = irALaObraDestacadaRef.current === formatId;
+      abrirMetodoAlLlegarRef.current = null;
+      irALaObraDestacadaRef.current = null;
+      const fuente = alMetodo ? 'primera-intuicion' : aLaObra ? 'obra-destacada' : 'transmedia-mobile-portal';
       navigate(portalRoute, {
         state: createPortalLaunchState(location, fuente, {
           showcaseId: formatId,
@@ -1600,6 +1610,20 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const revelarLaFicha = (formatId) => {
     marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
     setTarjetaGiradaId(null);
+    irALaObraDestacadaRef.current = formatId;
+    handleFormatClick(formatId);
+  };
+  // «La obra sigue en ti» y «Llevarme el recuerdo» ya no despliegan nada en la
+  // tarjeta: revelan la ficha y la abren por el revés, en la Memoria, donde se
+  // pide el aviso y se baja el recuerdo (Carlos, 15 nov 2026: «en lugar de que
+  // se despliegue ahí la acción, que el botón vaya a la pantalla donde se hace
+  // eso […] dos de esos botones llevarían a la memoria. Uno de ellos llevaría
+  // a la ficha»).
+  const irALaMemoriaDesdeLaTarjeta = (formatId) => {
+    marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
+    setTarjetaGiradaId(null);
+    abrirMetodoAlLlegarRef.current = formatId;
+    setRegresoPendienteId(formatId);
     handleFormatClick(formatId);
   };
   // Vuelve a leer el registro del método cuando la tarjeta acaba de escribirlo.
@@ -1920,6 +1944,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 onHabitar={() => habitarDesdeLaTarjeta(format.id)}
                 onVolver={cerrarElDorso}
                 onMientrasTanto={() => revelarLaFicha(format.id)}
+                onIrALaMemoria={() => irALaMemoriaDesdeLaTarjeta(format.id)}
                 onRequireLogin={() => setShowMobilePortalLogin(true)}
               />
             </motion.div>

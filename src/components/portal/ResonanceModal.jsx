@@ -548,7 +548,7 @@ export const marcarEscenaAbierta = (portal) => {
   lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -701,6 +701,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [momento, setMomento]                         = useState(0);
   const [ultimaPreguntaVista, setUltimaPreguntaVista] = useState(() => Boolean(lsRead(portal).ultima_pregunta_abierta));
   const ultimaPreguntaOpen = Boolean(ultimaPregunta);
+  // En el foco dentro de la tarjeta de la galería, con quien la lleva a la Memoria.
+  const enLaTarjeta = soloEnElFoco && typeof onIrALaMemoria === 'function';
   // Quien llega al portal con el método ya abierto (viene de contestar en su
   // tarjeta, o vuelve el día del regreso) lo encuentra puesto, sin fundido: con
   // el fundido la ficha se alcanzaba a ver debajo (Carlos, 15 nov 2026).
@@ -1814,7 +1816,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 </div>
               </motion.div>
 
-              <div className="cabina-antesala-stack">
+              {/* En la tarjeta de la galería (15 nov 2026, Carlos): las filas van de
+                  borde a borde del contenedor («que no se vea como un abdomen») y no
+                  despliegan nada ahí: el aviso y el recuerdo llevan a la Memoria —el
+                  revés de la ficha—, y «Mientras tanto» a la ficha, por su frente. */}
+              <div className={`cabina-antesala-stack${enLaTarjeta ? ' cabina-antesala-stack--a-sangre' : ''}`}>
               {/* El aviso es la primera fila del stack, con la misma caja que las otras
                   dos. El atril es provisional, hasta que exista el icono definitivo. */}
               {!bitacoraCompleted && (
@@ -1838,7 +1844,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   ) : avisoPaso === null ? (
                     <button
                       type="button"
-                      onClick={() => setAvisoPaso('elegir')}
+                      onClick={() => (enLaTarjeta ? onIrALaMemoria('aviso') : setAvisoPaso('elegir'))}
+                      data-fila-de-bambalinas="aviso"
                       className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
                     >
                       {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
@@ -1904,8 +1911,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
             <button
               type="button"
-              onClick={handleDownloadSouvenir}
-              disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+              onClick={enLaTarjeta ? () => onIrALaMemoria('recuerdo') : handleDownloadSouvenir}
+              disabled={!enLaTarjeta && (isSouvenirGenerating || Boolean(souvenirDeliveredAt))}
+              data-fila-de-bambalinas="recuerdo"
               className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
             >
               {souvenirDeliveredAt ? (
@@ -1938,6 +1946,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             <button
               type="button"
               onClick={() => handleClose()}
+              data-fila-de-bambalinas="mientras-tanto"
               className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
             >
               <span className="cabina-antesala-opcion__mirilla">
@@ -1948,7 +1957,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   {dramaturgy.meanwhileTitle}
                 </span>
                 <span className="cabina-antesala-opcion__detalle">
-                  {dramaturgy.meanwhileHint}
+                  {enLaTarjeta ? dramaturgy.meanwhileHintObra : dramaturgy.meanwhileHint}
                 </span>
               </span>
             </button>
@@ -2452,6 +2461,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         texto: `${dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.`,
                         hecho: bitacoraConsented ? avisoDoneHint : null,
                         onAviso: handleAvisoPorCorreo,
+                        titulo: dramaturgy.closingLine.replace(/\.$/, ''),
+                        recuerdo: l3Rec?.step3 ? {
+                          titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : souvenirDeliveredAt ? 'Recuerdo entregado' : dramaturgy.souvenirCta,
+                          detalle: souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint,
+                          entregado: Boolean(souvenirDeliveredAt),
+                          ocupado: isSouvenirGenerating,
+                          onRecuerdo: handleDownloadSouvenir,
+                        } : null,
                       } : null}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}

@@ -134,6 +134,15 @@ const PortalLiteratura = () => {
     if (location.state?.portalLaunchSource !== 'primera-intuicion') return;
     setIsResonanceOpen(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Quien viene de «Mientras tanto», en su tarjeta, llega a la obra destacada
+  // (Carlos, 15 nov 2026).
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'obra-destacada') return undefined;
+    const t = window.setTimeout(() => {
+      document.getElementById('obra-destacada')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const readingTooltipRef = useRef(null);
   // Con el gesto ya registrado, un renglón liga el gesto con la obra destacada.
   const enPasado = fichaEnPasado('literatura');

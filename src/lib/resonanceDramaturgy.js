@@ -46,6 +46,11 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // no se sugiere.
   meanwhileTitle: 'Mientras tanto',
   meanwhileHint: 'Explora la obra a tu ritmo: otras formas, la taquilla, el acto final',
+  // En la tarjeta de la galería la tercera fila sí lleva a un lugar: la ficha,
+  // por su frente, donde está la obra destacada (Carlos, 15 nov 2026: «ya no
+  // promete lo que dice ahí, de explorar el sitio»). Texto de Claude, a la
+  // espera de cotejarlo con el guion del video del autor de cada forma.
+  meanwhileHintObra: 'Conoce la obra de la que nació esta escena',
   entranceCoda: 'Ya forma parte de tu obra.',
   // Línea de la retención. "Pausa" detenía; la retención sostiene.
   // Placeholder aprobado por Carlos (11 sep 2026), no copy final.

@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  MessageCircle,
-  Sparkles,
-  BookOpen,
-  Download,
-} from 'lucide-react';
+import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
@@ -542,13 +537,47 @@ function HolograficoPanel({
                 <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera>
                   <p className="huella-puerta__eyebrow">Entre bambalinas</p>
                   <p className="bloque-forma__aviso">{avisoDeEspera.texto}</p>
-                  {avisoDeEspera.hecho ? (
-                    <p className="bloque-forma__aviso-hecho">{avisoDeEspera.hecho}</p>
-                  ) : (
-                    <button type="button" onClick={avisoDeEspera.onAviso} className="ultima-pregunta__salida">
-                      Avísame por correo
-                    </button>
-                  )}
+                  {/* El aviso y el recuerdo, con las filas de «Entre bambalinas»:
+                      su mirilla y su icono (Carlos, 15 nov 2026: «lo que me gusta
+                      de tras bambalinas es el estilo, los iconos»). */}
+                  <div className="cabina-antesala-stack cabina-antesala-stack--en-la-memoria">
+                    <div className="cabina-antesala-stack__fila">
+                      <button
+                        type="button"
+                        onClick={avisoDeEspera.hecho ? undefined : avisoDeEspera.onAviso}
+                        disabled={Boolean(avisoDeEspera.hecho)}
+                        data-fila-de-la-memoria="aviso"
+                        className={`cabina-antesala-opcion ${avisoDeEspera.hecho ? 'cabina-antesala-opcion--completa' : 'cabina-antesala-opcion--regreso'}`}
+                      >
+                        <span className={`cabina-antesala-opcion__mirilla${avisoDeEspera.hecho ? ' cabina-antesala-opcion__mirilla--completa' : ''}`}>
+                          {avisoDeEspera.hecho ? <Check size={18} aria-hidden="true" /> : <Bell size={18} aria-hidden="true" />}
+                        </span>
+                        <span className="cabina-antesala-opcion__texto">
+                          <span className={`cabina-antesala-opcion__titulo${avisoDeEspera.hecho ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>{avisoDeEspera.hecho ? avisoDeEspera.titulo : 'Avísame por correo'}</span>
+                          <span className="cabina-antesala-opcion__detalle">{avisoDeEspera.hecho ?? 'Cuando vuelva la pregunta'}</span>
+                        </span>
+                      </button>
+                    </div>
+                    {avisoDeEspera.recuerdo ? (
+                      <div className="cabina-antesala-stack__fila">
+                        <button
+                          type="button"
+                          onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
+                          disabled={avisoDeEspera.recuerdo.ocupado || avisoDeEspera.recuerdo.entregado}
+                          data-fila-de-la-memoria="recuerdo"
+                          className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
+                        >
+                          <span className={`cabina-antesala-opcion__mirilla${avisoDeEspera.recuerdo.entregado ? ' cabina-antesala-opcion__mirilla--completa' : ''}`}>
+                            {avisoDeEspera.recuerdo.entregado ? <Check size={18} aria-hidden="true" /> : <Download size={18} aria-hidden="true" />}
+                          </span>
+                          <span className="cabina-antesala-opcion__texto">
+                            <span className={`cabina-antesala-opcion__titulo${avisoDeEspera.recuerdo.entregado ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>{avisoDeEspera.recuerdo.titulo}</span>
+                            <span className="cabina-antesala-opcion__detalle">{avisoDeEspera.recuerdo.detalle}</span>
+                          </span>
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </section>
               ) : null}
             </div>

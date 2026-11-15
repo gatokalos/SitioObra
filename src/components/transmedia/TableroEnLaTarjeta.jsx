@@ -33,6 +33,7 @@ const TableroEnLaTarjeta = ({
   onHabitar,
   onVolver,
   onMientrasTanto,
+  onIrALaMemoria,
   onRequireLogin,
 }) => {
   const dramaturgia = getResonanceDramaturgy(portal);
@@ -150,6 +151,7 @@ const TableroEnLaTarjeta = ({
               open
               portal={portal}
               onClose={() => onMientrasTanto?.()}
+              onIrALaMemoria={onIrALaMemoria ?? null}
               onRequireLogin={onRequireLogin}
             />
           </motion.section>
