@@ -6588,11 +6588,9 @@ body {
   color: rgba(204, 236, 232, 0.72);
 }
 
-/* El fondo del pozo en el panel derecho. Una capa oscura tapa la cabina y,
-   encima, la imagen. El gato ocupa la mitad baja de la imagen; el método mide
-   hasta dónde baja el bloque (--bloque-del-pozo) y la imagen se encoge desde
-   el suelo lo necesario para que no le tape la cabeza. Su borde de arriba se
-   pierde en lo oscuro. */
+/* El fondo del pozo en el panel derecho: una capa oscura tapa la cabina y,
+   encima, el gato Neo a todo el alto del panel. No se encoge ni se mueve
+   cuando llega la tarjeta (Carlos, 14 nov 2026). */
 .fondo-del-pozo {
   position: absolute;
   inset: 0;
@@ -6601,16 +6599,35 @@ body {
 }
 .fondo-del-pozo__imagen {
   position: absolute;
-  left: 0;
-  bottom: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+/* La caída: la torre del primer acto en el panel. Cuatro tramos del alto del
+   panel (la cabina, el túnel dos veces y el pozo); el método la sube tres. */
+.caida-al-pozo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #03070b;
+}
+.caida-al-pozo__torre {
+  display: flex;
+  flex-direction: column;
+  height: 400%;
+  will-change: transform;
+}
+.caida-al-pozo__tramo {
+  flex: 0 0 25%;
   width: 100%;
   max-width: none;
-  height: clamp(60%, calc((100% - var(--bloque-del-pozo, 0px) - 0.9rem) * 2.1), 100%);
-  transition: height 0.6s ease;
+  min-height: 0;
   object-fit: cover;
-  object-position: center bottom;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 5rem);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 5rem);
+}
+.caida-al-pozo__tramo--cabina {
+  object-position: top;
 }
 /* «Llevarme el recuerdo» al pie del pozo: sobre la cabina descansaba en el
    mueble oscuro; aquí cae sobre la arena iluminada y necesita su vidrio. */
@@ -6671,4 +6688,63 @@ body {
   background: rgba(45, 212, 191, 0.2);
   color: #fff;
   box-shadow: 0 0 16px rgba(45, 212, 191, 0.28);
+}
+
+/* La tarjeta del pozo sin acordeón (Carlos, 14 nov 2026): cabecera fija, las
+   palabras a la vista y el botón dorado del primer acto. Entra por partes:
+   la tarjeta, las dos palabras que sugiere el gato, las demás y el botón. */
+.tarjeta-del-pozo {
+  gap: 0.85rem;
+  padding: 1.15rem 1.25rem 1.25rem;
+  animation: pozo-llega 0.7s ease-out both;
+}
+.tarjeta-del-pozo__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(94, 234, 212, 0.16);
+}
+.tarjeta-del-pozo__cabecera .huella-puerta__titulo {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+.tarjeta-del-pozo__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.tarjeta-del-pozo .huella-puerta {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+.tarjeta-del-pozo .palabras-del-pozo__fila--sugeridas .palabra-del-pozo {
+  animation: pozo-llega 0.5s ease-out both;
+}
+.tarjeta-del-pozo .palabras-del-pozo__fila--sugeridas .palabra-del-pozo:nth-child(1) { animation-delay: 0.35s; }
+.tarjeta-del-pozo .palabras-del-pozo__fila--sugeridas .palabra-del-pozo:nth-child(2) { animation-delay: 0.6s; }
+.tarjeta-del-pozo .palabras-del-pozo__rotulo--otras,
+.tarjeta-del-pozo .palabras-del-pozo__fila--otras {
+  animation: pozo-llega 0.5s ease-out 0.95s both;
+}
+.tarjeta-del-pozo__salida.cabina-bubble__cta {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  padding: 0.8rem 1.4rem;
+  font-family: "Vox Round", "Inter", sans-serif;
+  letter-spacing: 0.01em;
+  animation: pozo-llega 0.5s ease-out 1.3s both;
+}
+@keyframes pozo-llega {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-del-pozo,
+  .tarjeta-del-pozo .palabra-del-pozo,
+  .tarjeta-del-pozo .palabras-del-pozo__rotulo--otras,
+  .tarjeta-del-pozo .palabras-del-pozo__fila--otras,
+  .tarjeta-del-pozo__salida.cabina-bubble__cta { animation: none; }
 }

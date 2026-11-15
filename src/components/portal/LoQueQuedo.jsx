@@ -72,6 +72,17 @@ const sesionLocal = (portal) => {
     .some((v) => typeof v === 'string' && v.trim());
   return conPalabras ? sesion : null;
 };
+// La propuesta del gato se guarda en este navegador: en el pozo la tarjeta
+// llega abierta, y sin esto cada visita le pediría otra vez la propuesta al
+// modelo y dejaría otro borrador en el servidor.
+const guardarPropuestaLocal = (portal, propuesta) => {
+  try {
+    const llave = `gatoencerrado:resonance:${portal}`;
+    const r = JSON.parse(localStorage.getItem(llave)) ?? {};
+    if (propuesta) r.ultima_propuesta = propuesta; else delete r.ultima_propuesta;
+    localStorage.setItem(llave, JSON.stringify(r));
+  } catch { /* sin almacenamiento */ }
+};
 // Las preguntas que el servidor no guarda, desde este navegador si las tiene.
 const conPreguntasLocales = (sesiones, portal) => {
   const r = registroLocal(portal);
@@ -197,8 +208,9 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra', { recien = false }
 };
 
 // `enElPozo` (Carlos, 14 nov 2026): en escritorio el bloque deja la columna de
-// la constelación y va al panel derecho, sobre el gato del fondo del pozo, con
-// otra piel. Dice y hace lo mismo; solo cambia de lugar y de material.
+// la constelación y va al panel derecho, sobre el gato del fondo del pozo, como
+// una tarjeta de vidrio: las siete palabras de la obra a la vista y el botón
+// dorado. De ahí se pasa directo al acto final, sin los globos del gato.
 const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, onUltimaPregunta, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
@@ -248,6 +260,13 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
   const cargarPropuesta = async () => {
     if (propuesta || cargando) return;
     if (isDevAuth) { setPropuesta(PROPUESTA_DE_EJEMPLO); setTermino(PROPUESTA_DE_EJEMPLO.terminos[0]); return; }
+    const guardada = registroLocal(portal).ultima_propuesta;
+    if (Array.isArray(guardada?.terminos)) {
+      const validos = guardada.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t));
+      setPropuesta({ terminos: validos, respuestas: guardada.respuestas ?? {}, borradorId: guardada.borradorId ?? null });
+      setTermino(validos[0] ?? null);
+      return;
+    }
     setCargando(true);
     try {
       const res = await fetch(`${OBRA_API_URL}/api/huella/ultima-pregunta`, {
@@ -258,7 +277,9 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error();
       const terminos = Array.isArray(data.terminos) ? data.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t)) : [];
-      setPropuesta({ terminos, respuestas: data.respuestas ?? {}, borradorId: data.borrador_id ?? null });
+      const nueva = { terminos, respuestas: data.respuestas ?? {}, borradorId: data.borrador_id ?? null };
+      setPropuesta(nueva);
+      guardarPropuestaLocal(portal, nueva);
       setTermino(terminos[0] ?? null);
     } catch {
       setPropuesta({ terminos: [], respuestas: {}, borradorId: null });
@@ -283,6 +304,15 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     setAbierto(true);
     void cargarPropuesta();
   }, [regresoRecien, sesion, replicaPublicada]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // En el pozo no hay fila que abrir: la tarjeta llega con las palabras a la
+  // vista (Carlos, 14 nov 2026: el acordeón «tiene la mecánica barata del
+  // bloque morado y necesitamos algo más rico de este lado»).
+  useEffect(() => {
+    if (!enElPozo || !sesion || replicaPublicada) return;
+    setAbierto(true);
+    void cargarPropuesta();
+  }, [enElPozo, sesion, replicaPublicada]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pasarAlActoFinal = () => {
     if (!sesion || !palabra) return;
@@ -310,6 +340,9 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error();
       setReplicas([]);
+      // El borrador de la propuesta pudo haberse usado: que el gato proponga de nuevo.
+      guardarPropuestaLocal(portal, null);
+      setPropuesta(null);
     } catch {
       await fetchReplicas();
     }
@@ -341,11 +374,68 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     </button>
   );
 
+  // La tarjeta del pozo (escritorio): sin el nombre de la forma, que se queda a
+  // la izquierda, y sin acordeón. Lo que falta, las palabras y una sola salida,
+  // el botón dorado de «Ver mi boleto» del primer acto.
+  if (enElPozo) {
+    return (
+      <section className="bloque-forma bloque-forma--pozo tarjeta-del-pozo" data-bloque-en-el-pozo={portal}>
+        {replicaPublicada ? (
+          <>
+            <button type="button" className="huella-puerta" onClick={() => onGoToSite?.('#provoca')}>
+              <span className="huella-puerta__texto">
+                <span className="huella-puerta__eyebrow">Tu réplica</span>
+                <span className="huella-puerta__titulo">Ya está en el acto final</span>
+              </span>
+              <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
+            </button>
+            <div className="flex justify-end pb-3">
+              <button type="button" onClick={() => void retirarReplica()} className="lo-que-quedo__enlace">Retirar mi réplica</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <header className="tarjeta-del-pozo__cabecera">
+              <p className="huella-puerta__eyebrow">Lo que falta</p>
+              <h3 className="huella-puerta__titulo">
+                {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Contestarle a la obra' : 'No encontramos lo que escribiste en este navegador'}
+              </h3>
+            </header>
+            {sesion ? (
+              <div className="tarjeta-del-pozo__cuerpo">
+                <div className="palabras-del-pozo" data-palabras-del-pozo>
+                  <p className="memoria-descripcion text-sm leading-relaxed">Falta una palabra para decirlo.</p>
+                  {cargando || !propuesta ? (
+                    <p className="palabras-del-pozo__rotulo">El gato está leyendo lo que dejaste…</p>
+                  ) : terminos.length > 0 ? (
+                    <>
+                      <p className="palabras-del-pozo__rotulo">Por lo que dijiste, quizá sea</p>
+                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--sugeridas">{terminos.map((p) => chipDePalabra(p, true))}</div>
+                      <p className="palabras-del-pozo__rotulo palabras-del-pozo__rotulo--otras">o alguna de las otras</p>
+                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--otras">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="palabras-del-pozo__rotulo">Quizá sea alguna de estas</p>
+                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--otras">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                    </>
+                  )}
+                </div>
+                {!cargando && propuesta ? (
+                  <button type="button" onClick={pasarAlActoFinal} disabled={!palabra} className="cabina-bubble__cta tarjeta-del-pozo__salida">
+                    Pasar al acto final
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
+    );
+  }
+
   return (
-    <section
-      className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}${enElPozo ? ' bloque-forma--pozo' : ''}`}
-      {...(enElPozo ? { 'data-bloque-en-el-pozo': portal } : {})}
-    >
+    <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
       <div className="bloque-forma__cabecera">
         <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry?.color ?? ''}`}>{entry?.form ?? entry?.name}</h2>
         {chip}
@@ -387,26 +477,6 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
             <div id="memoria-paso-previo" className="bloque-forma__abierto">
               {/* «Falta una palabra para decirlo. / Por lo que dijiste, quizá sea …, / o ….»
                   (Carlos, 27 oct: opción B). Las dos palabras se tocan en la frase. */}
-              {enElPozo ? (
-                <div className="palabras-del-pozo" data-palabras-del-pozo>
-                  <p className="memoria-descripcion text-sm leading-relaxed">Falta una palabra para decirlo.</p>
-                  {cargando ? (
-                    <p className="palabras-del-pozo__rotulo">El gato está leyendo lo que dejaste…</p>
-                  ) : terminos.length > 0 ? (
-                    <>
-                      <p className="palabras-del-pozo__rotulo">Por lo que dijiste, quizá sea</p>
-                      <div className="palabras-del-pozo__fila">{terminos.map((p) => chipDePalabra(p, true))}</div>
-                      <p className="palabras-del-pozo__rotulo">o alguna de las otras</p>
-                      <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="palabras-del-pozo__rotulo">Quizá sea alguna de estas</p>
-                      <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
-                    </>
-                  )}
-                </div>
-              ) : (
               <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">
                 <span className="block">Falta una palabra para decirlo.</span>
                 {cargando ? (
@@ -422,7 +492,6 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   <span className="block">La pones tú en el acto final.</span>
                 )}
               </p>
-              )}
               {!cargando ? (
                 <button type="button" onClick={pasarAlActoFinal} disabled={!sesion || !palabra} className="ultima-pregunta__salida">
                   Pasar al acto final

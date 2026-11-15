@@ -177,7 +177,7 @@ const useFechasDeLaForma = (portal, activo) => {
 const diasEntre = (a, b) => Math.max(1, Math.round((new Date(b) - new Date(a)) / 86400000));
 const enPalabras = (n) => (['', 'un día', 'dos días', 'tres días', 'cuatro días', 'cinco días', 'seis días', 'siete días'][n] ?? `${n} días`);
 
-const FraseDeMemoria = ({ portal, enEscena }) => {
+const FraseDeMemoria = ({ portal, enEscena, sinCierre = false }) => {
   const fechas = useFechasDeLaForma(portal, true);
   const entrada = fechaCorta(fechas?.entrada);
   let lineas;
@@ -188,6 +188,8 @@ const FraseDeMemoria = ({ portal, enEscena }) => {
       espera ? `Volviste ${espera} después y la respondiste.` : 'Volviste días después y la respondiste.',
       'Esto es lo que quedó.',
     ];
+    // En escritorio lo que quedó está del otro lado, en el pozo.
+    if (sinCierre) lineas.pop();
   } else {
     const cerrada = fechas?.disponible
       && Date.now() > new Date(fechas.disponible).getTime() + VENTANA_MAXIMA_DIAS * 86400000;
@@ -416,7 +418,18 @@ function CompletedScenePanel({
   ) : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={`flex flex-col ${bloqueEnLaCabina ? 'gap-5' : 'gap-4'}`}>
+      {/* En escritorio el nombre de la forma se queda de este lado, donde
+          estuvo durante la espera y el regreso (Carlos, 14 nov 2026: «no tiene
+          razón de ser en el lado derecho, debería de quedarse en el lado
+          izquierdo como siempre estuvo»). Debajo, las dos fechas del recorrido. */}
+      {bloqueEnLaCabina ? (
+        <div data-titulo-de-la-memoria>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+          <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
+          <FraseDeMemoria portal={portal} enEscena sinCierre />
+        </div>
+      ) : null}
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
       {/* El bloque: su nombre y la fila «Lo que falta · Contestarle a la obra».
           Al abrirla, el gato propone la palabra dentro de la frase y «Pasar al

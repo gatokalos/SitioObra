@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
@@ -32,6 +32,8 @@ const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoence
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
 // El gato del fondo del pozo, el del primer acto, en su versión ligera (65 KB).
 const GATO_DEL_POZO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-neo@1920.webp';
+// El túnel del descenso del primer acto (105 KB); en la caída va dos veces.
+const TUNEL_DEL_POZO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/tile-tunel@1920.webp';
 // El plazo de la bitácora (72 h) vive sólo en el backend (routes/bitacora.js) y
 // llega como `available_at` en la respuesta de /consent. Aquí no se calcula.
 
@@ -1547,19 +1549,33 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const centroConMemoria = formaAlCentro === portal
     ? bitacoraCompleted
     : readResonanceProgress(formaAlCentro).bitacoraDone;
-  // Hasta dónde baja el bloque: la imagen del pozo se mide con eso, para que
-  // el bloque, abierto y con todas las palabras, no le tape la cabeza al gato.
-  const bloqueDelPozoRef = useRef(null);
-  const [fondoDelBloque, setFondoDelBloque] = useState(0);
-  useEffect(() => {
-    const el = bloqueDelPozoRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') { setFondoDelBloque(0); return undefined; }
-    const medir = () => setFondoDelBloque(el.hidden ? 0 : el.offsetTop + el.offsetHeight);
-    const ro = new ResizeObserver(medir);
-    ro.observe(el);
-    medir();
-    return () => ro.disconnect();
-  }, [enElPozo, centroConMemoria, formaAlCentro, ultimaPreguntaOpen]);
+  // La caída (Carlos, 14 nov 2026: «del gato de la cabina se hace una caída
+  // hacia el pozo»; «la imagen de la cabina, un tile que se repite 2 veces y
+  // luego la conexión con el pozo»). Es la torre del primer acto: cuatro tramos
+  // que suben con la misma curva y la misma duración (7 s, power3.inOut). Solo
+  // ocurre cuando el regreso se acaba de contestar; quien vuelve otro día ya
+  // está abajo. Con las animaciones reducidas, la cabina se funde con el pozo.
+  const sinMovimiento = useReducedMotion();
+  const [caidaHecha, setCaidaHecha] = useState(false);
+  useEffect(() => { if (!open) setCaidaHecha(false); }, [open]);
+  const hayCaida = enElPozo && regresoRecien && !sinMovimiento;
+  const cayendo = hayCaida && !caidaHecha;
+  // Del pozo se pasa directo al acto final (Carlos, 14 nov 2026: «nos vamos a
+  // saltar esos pasos de globo de texto dentro del pozo»): la palabra elegida
+  // y la respuesta tentativa viajan a La Réplica igual que antes.
+  const pasarDelPozoAlActoFinal = (carga) => {
+    if (!carga?.texto) return;
+    lsPatch(portal, { ultima_pregunta_abierta: true });
+    setUltimaPreguntaVista(true);
+    const termino = carga.termino ?? null;
+    escribirBorradorDeReplica({
+      quote: (termino && carga.respuestas?.[termino]) || carga.texto,
+      borradorId: carga.borradorId ?? null,
+      huella: { anonId: carga.anonId, sessionId: carga.sessionId, campo: carga.campo, original: carga.original },
+      termino,
+    });
+    irAlSitio('#provoca');
+  };
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -2913,9 +2929,26 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 aria-hidden="true"
                 data-fondo-del-pozo={enElPozo ? 'a-la-vista' : 'en-espera'}
                 className="fondo-del-pozo"
-                style={{ opacity: enElPozo ? 1 : 0, '--bloque-del-pozo': `${fondoDelBloque}px` }}
+                style={{ opacity: enElPozo ? 1 : 0 }}
               >
                 <img src={GATO_DEL_POZO_URL} alt="" className="fondo-del-pozo__imagen" />
+                <img src={TUNEL_DEL_POZO_URL} alt="" hidden />
+              </div>
+            ) : null}
+            {hayCaida ? (
+              <div className="caida-al-pozo" aria-hidden="true" data-caida={caidaHecha ? 'hecha' : 'cayendo'}>
+                <motion.div
+                  className="caida-al-pozo__torre"
+                  initial={{ y: '0%' }}
+                  animate={{ y: '-75%' }}
+                  transition={{ duration: 7, ease: [0.65, 0, 0.35, 1] }}
+                  onAnimationComplete={() => setCaidaHecha(true)}
+                >
+                  <img src={CAT_CABINA_URL} alt="" className="caida-al-pozo__tramo caida-al-pozo__tramo--cabina" />
+                  <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+                  <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+                  <img src={GATO_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+                </motion.div>
               </div>
             ) : null}
             <div
@@ -2923,11 +2956,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               className="absolute inset-y-0 left-0 w-24"
               style={{ background: 'linear-gradient(to right, rgb(5,3,9), transparent)' }}
             />
-            {/* El bloque de la forma, arriba, sobre la grieta: el gato queda a
-                la vista al fondo. Mientras el gato cuenta (última pregunta) se
-                esconde sin desmontarse, para no volver a pedir la palabra. */}
-            {enElPozo && centroConMemoria ? (
-              <div ref={bloqueDelPozoRef} className="absolute inset-x-5 top-[4.5rem] z-20" hidden={ultimaPreguntaOpen}>
+            {/* La tarjeta del pozo, arriba, sobre la grieta. Llega cuando la
+                caída termina. */}
+            {enElPozo && centroConMemoria && !cayendo ? (
+              <div className="absolute inset-x-5 top-[4.5rem] z-20" hidden={ultimaPreguntaOpen}>
                 <LoQueQuedo
                   key={formaAlCentro}
                   enElPozo
@@ -2935,7 +2967,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   entry={CATALOG.find((f) => f.key === formaAlCentro)}
                   late={!ultimaPreguntaVista}
                   regresoRecien={regresoRecien}
-                  onUltimaPregunta={abrirUltimaPregunta}
+                  onUltimaPregunta={pasarDelPozoAlActoFinal}
                   onGoToSite={irAlSitio}
                 />
               </div>
