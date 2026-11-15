@@ -1,43 +1,24 @@
-// La ficha habla en pasado de lo que la persona ya hizo (Carlos, 15 nov 2026:
-// «aquí el usuario va a ver lo que ya hizo, en tiempo pasado. Como un logro.
-// No lo que APENAS va a hacer […] es una sutileza que refuerza el gesto»).
+// El renglón que, en la ficha, liga el gesto ya hecho con la obra destacada
+// (Carlos, 15 nov 2026: «un copy con CTA que haga saber que ese gesto fue
+// inspirado en la obra destacada y que ese botón haga un scroll»). Solo aparece
+// con el gesto registrado, y por ahora solo en La escritura.
 //
-// El bloque «Al entrar en escena…» anuncia; con el gesto ya registrado, cuenta.
-// Solo dice lo que el registro dice: quien leyó en voz alta lee «Leíste»; quien
-// leyó a medias o prefirió no leer, lee eso (D-69 distingue siempre enunciado,
-// parcial y declinado). Sin gesto registrado, el bloque sigue anunciando.
-//
-// Por ahora solo La escritura: es la única forma cuyo gesto está definido. Las
-// demás entran cuando Carlos tenga los suyos (cronograma aparte).
+// Aquí vivió unas horas, el 15 nov 2026, una versión del bloque «Al entrar en
+// escena…» en pasado («Entraste en escena», «Leíste en voz alta…», «Nada se
+// grabó…»). Carlos la retiró: «muy técnico y terrible». Lo que pide es otra
+// cosa: frases que reconozcan lo que la persona ya hizo, con el mismo tono de
+// las que acompañan la intuición y la preparación («Respondiste antes de saber
+// algo más…»). Queda por escribir, con su visto bueno.
 import { readResonanceRecord } from '@/lib/bitacoraShared';
 
-const EN_PASADO = {
-  literatura: {
-    title: 'ENTRASTE EN ESCENA',
-    porGesto: {
-      enunciado: [
-        '🎙️ Leíste en voz alta — tu voz hizo avanzar la escena.',
-        '🔒 Nada se grabó — tu voz se detectó para avanzar; no se guardó ni se transcribió.',
-      ],
-      parcial: [
-        '🎙️ Leíste en voz alta, a medias — tu voz alcanzó a mover la escena.',
-        '🔒 Nada se grabó — tu voz se detectó para avanzar; no se guardó ni se transcribió.',
-      ],
-      declinado: [
-        '🎙️ Preferiste no leer en voz alta — la escena quedó así.',
-        '🔒 Nada se grabó ni se transcribió.',
-      ],
-    },
-    siempre: ['✍️ El material no fue fijo — lo convocaron tus propias palabras.'],
-    obra: { texto: 'El gesto que hiciste viene de esta obra.', boton: 'Ver la obra destacada' },
-  },
+const OBRA_DEL_GESTO = {
+  literatura: { texto: 'El gesto que hiciste viene de esta obra.', boton: 'Ver la obra destacada' },
 };
 
 export const fichaEnPasado = (portal) => {
-  const forma = EN_PASADO[portal];
-  if (!forma) return null;
+  const obra = OBRA_DEL_GESTO[portal];
+  if (!obra) return null;
   const gesto = readResonanceRecord(portal).gesto_resultado;
-  const lineas = forma.porGesto[gesto];
-  if (!lineas) return null;
-  return { title: forma.title, notes: [...lineas, ...forma.siempre], obra: forma.obra, gesto };
+  if (!['enunciado', 'parcial', 'declinado'].includes(gesto)) return null;
+  return { obra, gesto };
 };

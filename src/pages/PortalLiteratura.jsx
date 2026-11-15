@@ -135,7 +135,7 @@ const PortalLiteratura = () => {
     setIsResonanceOpen(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const readingTooltipRef = useRef(null);
-  // Con el gesto ya registrado, la ficha cuenta en pasado lo que se hizo.
+  // Con el gesto ya registrado, un renglón liga el gesto con la obra destacada.
   const enPasado = fichaEnPasado('literatura');
 
   const handleOpenLogin = useCallback(() => {
@@ -323,7 +323,6 @@ const PortalLiteratura = () => {
                   chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
                   chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
-                  {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
                   compact
                 />
                 {/* El gesto viene de la obra destacada: un renglón y un botón
@@ -444,7 +443,6 @@ const PortalLiteratura = () => {
               chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
               chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
-              {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
               compact
             />
           </div>
