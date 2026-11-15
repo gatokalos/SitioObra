@@ -440,8 +440,8 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                     /* El copy lo eligió Carlos (14 nov 2026, juego 2): lo que
                        había «no se siente como un gran final». */
                     <>
-                      <span className="block">De todo lo que dijiste, algo quedó.</span>
-                      <span className="block">Todavía no tiene nombre.</span>
+                      <span className="block">Lo que aquí dijiste,</span>
+                      <span className="block">todavía no tiene nombre.</span>
                     </>
                   ) : 'No encontramos lo que escribiste en este navegador'}
                 </h3>
@@ -455,7 +455,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   <>
                     <div className="eleccion-del-pozo" role="radiogroup" aria-label="La palabra que falta" data-palabras-del-pozo>
                       <p className="palabras-del-pozo__rotulo">
-                        {terminos.length === 1 ? 'El gato la rodeó con una palabra. ¿Se acerca?' : 'El gato la rodeó con dos palabras. Elige la que más se acerca.'}
+                        {terminos.length === 1 ? 'El gato la rodeó con una palabra. ¿Se acerca?' : 'El gato lo rodeó con dos nombres probables. Elige el que más se acerca.'}
                       </p>
                       {terminos.map((p) => opcionDelPozo(p))}
                     </div>
