@@ -67,6 +67,7 @@ import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
 import DorsoPrimeraIntuicion from '@/components/transmedia/DorsoPrimeraIntuicion';
+import DorsoLogin from '@/components/transmedia/DorsoLogin';
 import TableroEnLaTarjeta from '@/components/transmedia/TableroEnLaTarjeta';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
@@ -1655,6 +1656,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const girarLaTarjeta = (formatId) => {
     if (tarjetaGirandoId || tarjetaGiradaId) return;
     // Al volver a la recomendada, la otra que estuviera encendida se apaga.
+    setTarjetaConLoginId(null);
     setDesktopVitranaRevealId(null);
     setMobileVitranaRevealId(null);
     setTarjetaGirandoId(formatId);
@@ -1663,6 +1665,46 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setTarjetaGirandoId(null);
     }, 340);
   };
+  // El login en el dorso de una tarjeta bloqueada, en escritorio (Carlos,
+  // 14 nov 2026: «en lugar de que aparezca el overlay, se hiciera un flip en la
+  // tarjeta bloqueada y ahí apareciera una versión de login también con su
+  // tigre»). Al entrar, la misma tarjeta pasa a su pregunta: la promesa del
+  // giro se cumple también para quien inicia sesión desde otra forma.
+  const GIRAR_AL_VOLVER_KEY = 'gatoencerrado:girar-al-volver';
+  const [tarjetaConLoginId, setTarjetaConLoginId] = useState(null);
+  const girarAlLogin = (formatId) => {
+    if (tarjetaGirandoId || tarjetaConLoginId === formatId) return;
+    setTarjetaGiradaId(null);
+    setTarjetaGirandoId(formatId);
+    window.setTimeout(() => {
+      setTarjetaConLoginId(formatId);
+      setTarjetaGirandoId(null);
+    }, 340);
+  };
+  // Otra vitrina encendida, o ninguna: el dorso de login se cierra.
+  useEffect(() => {
+    if (tarjetaConLoginId && desktopVitranaRevealId !== tarjetaConLoginId) setTarjetaConLoginId(null);
+  }, [desktopVitranaRevealId, tarjetaConLoginId]);
+  // Entró con el código del correo, sin salir de la página: la tarjeta deja el
+  // login y enseña su pregunta.
+  useEffect(() => {
+    if (!isAuthenticated || !tarjetaConLoginId) return;
+    const formatId = tarjetaConLoginId;
+    setTarjetaConLoginId(null);
+    setDesktopVitranaRevealId(null);
+    if (laTarjetaTieneDorso(formatId)) setTarjetaGiradaId(formatId);
+  }, [isAuthenticated, tarjetaConLoginId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Entró con Google o Apple: la página se fue y volvió. Si dejó dicho a qué
+  // tarjeta iba, se le lleva a ella y se gira.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let pendiente = null;
+    try {
+      pendiente = window.sessionStorage.getItem(GIRAR_AL_VOLVER_KEY);
+      if (pendiente) window.sessionStorage.removeItem(GIRAR_AL_VOLVER_KEY);
+    } catch { /* sin almacenamiento */ }
+    if (pendiente && showcaseDefinitions[pendiente]) saltarALaTarjeta(pendiente);
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
   const entrarPorLaTarjeta = (formatId) => {
     if (!laTarjetaTieneDorso(formatId)) {
       handleFormatClick(formatId);
@@ -1854,6 +1896,29 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
             </motion.div>
           )}
         </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+
+  const renderDorsoDeLogin = (format, frente, className = '') => (
+    <div key={`${format.id}-login`} className={`relative flex flex-col ${className}`}>
+      <div aria-hidden="true" className="invisible pointer-events-none flex flex-1 flex-col [&>*]:flex-1">
+        {frente}
+      </div>
+      <motion.div
+        initial={{ rotateY: -90 }}
+        animate={{ rotateY: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        style={{ transformPerspective: 1400 }}
+        className="absolute inset-0"
+      >
+        <DorsoLogin
+          formaTitle={format.title}
+          onVolver={() => setTarjetaConLoginId(null)}
+          onAntesDeSalir={() => {
+            try { window.sessionStorage.setItem(GIRAR_AL_VOLVER_KEY, format.id); } catch { /* sin almacenamiento */ }
+          }}
+        />
       </motion.div>
     </div>
   );
@@ -6389,9 +6454,15 @@ const renderDramaFeaturedWork = () => (
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Igual en teléfono y en computadora: a iniciar sesión
-                            // (Carlos, 1 nov 2026). La recomendada con pase tiene su
+                            // A iniciar sesión (Carlos, 1 nov 2026). Desde el 14 nov
+                            // 2026, en escritorio la tarjeta gira y el login va en
+                            // su dorso, sin ventana encima; al entrar, la tarjeta
+                            // enseña su pregunta. La recomendada con pase tiene su
                             // propio botón, arriba, que lleva a la forma.
+                            if (!isVitrinaCarouselViewport) {
+                              girarAlLogin(format.id);
+                              return;
+                            }
                             writePendingContinuation({
                               source: 'transmedia-vitrana',
                               showcaseId: format.id,
@@ -6420,6 +6491,7 @@ const renderDramaFeaturedWork = () => (
                     />
                   </motion.button>
                 );
+                if (tarjetaConLoginId === format.id) return renderDorsoDeLogin(format, tarjeta);
                 return tarjetaGiradaId === format.id ? renderDorsoDeLaTarjeta(format, tarjeta) : tarjeta;
               })}
             </div>
