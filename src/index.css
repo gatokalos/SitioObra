@@ -6937,3 +6937,16 @@ body {
   .otras-del-pozo,
   .tarjeta-del-pozo__salida { animation: none; }
 }
+
+/* El panel derecho a oscuras mientras la constelación enseña otra forma. */
+.panel-a-oscuras {
+  position: absolute;
+  inset: 0;
+  /* Sobre la tarjeta y los globos, debajo del botón de cerrar (z 30). */
+  z-index: 25;
+  background: rgba(3, 2, 8, 0.88);
+  -webkit-backdrop-filter: blur(4px) saturate(0.5);
+  backdrop-filter: blur(4px) saturate(0.5);
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}

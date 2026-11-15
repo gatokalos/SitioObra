@@ -1549,6 +1549,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const centroConMemoria = formaAlCentro === portal
     ? bitacoraCompleted
     : readResonanceProgress(formaAlCentro).bitacoraDone;
+  // Con otra forma en el primer plano de la constelación, el panel derecho se
+  // queda a oscuras (Carlos, 14 nov 2026: «de lo contrario, uno puede continuar
+  // contestando y el usuario ya está viendo otra cosa en el panel izquierdo»).
+  // Vale para el regreso y para el pozo; nada se desmonta, así que lo escrito
+  // sigue ahí al volver a la esfera propia. La excepción: una forma que ya
+  // tiene su Memoria trae su propia tarjeta.
+  const panelEnOscuro = !enPantallaChica
+    && (holograficoOpen || regresoEnEscritorio)
+    && formaAlCentro !== portal
+    && !(enElPozo && centroConMemoria);
   // La caída (Carlos, 14 nov 2026: «del gato de la cabina se hace una caída
   // hacia el pozo»; «la imagen de la cabina, un tile que se repite 2 veces y
   // luego la conexión con el pozo»). Es la torre del primer acto: cuatro tramos
@@ -2855,7 +2865,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           </div>
 
           {/* ── Columna derecha: gato de la cabina — solo desktop ── */}
-          <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden bg-[rgb(5,3,9)]">
+          <div
+            className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden bg-[rgb(5,3,9)]"
+            data-panel-derecho={panelEnOscuro ? 'a-oscuras' : 'encendido'}
+            {...(panelEnOscuro ? { inert: '' } : {})}
+          >
             {/* El recuerdo, otra vez al alcance (Carlos, 20 sep 2026). Sólo se
                 podía descargar dentro de la cascada del clímax y una única vez;
                 quien no lo tomara ahí se quedaba sin él para siempre. Aquí, al
@@ -3024,6 +3038,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
               </div>
             )}
+            <div aria-hidden="true" className="panel-a-oscuras" style={{ opacity: panelEnOscuro ? 1 : 0 }} />
           </div>
         </motion.div>
       )}
