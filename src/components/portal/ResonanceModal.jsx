@@ -17,8 +17,10 @@ import {
   clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanceProgress,
   readGlobalConsentCanal, writeGlobalConsentCanal,
   readPendingAvisoCanal, writePendingAvisoCanal, clearPendingAvisoCanal,
+  CATALOG,
 } from '@/lib/bitacoraShared';
 import FarewellVideoPanel from './FarewellVideoPanel';
+import LoQueQuedo from './LoQueQuedo';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
 import { getResonanceDramaturgy, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
@@ -28,6 +30,8 @@ export { readGlobalConsent, writeGlobalConsent };
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
+// El gato del fondo del pozo, el del primer acto, en su versión ligera (65 KB).
+const GATO_DEL_POZO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-neo@1920.webp';
 // El plazo de la bitácora (72 h) vive sólo en el backend (routes/bitacora.js) y
 // llega como `available_at` en la respuesta de /consent. Aquí no se calcula.
 
@@ -1526,6 +1530,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, [open, enPantallaChica, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
   const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen;
 
+  // ── La Memoria en escritorio, al fondo del pozo (Carlos, 14 nov 2026) ──
+  // «Adaptemos el bloque morado en el panel de la derecha, pero ahora usemos
+  // la estética… del gato en el pozo… el gato Neo al fondo del pozo». Con el
+  // regreso contestado, la cabina le deja el panel derecho al gato del pozo y
+  // el bloque «Lo que falta · Contestarle a la obra» va ahí, con otra piel; a
+  // la izquierda quedan la constelación y la línea. La caída de la cabina al
+  // pozo (un scroll hacia abajo: la cabina, un tile dos veces y el pozo) es un
+  // paso posterior: por ahora la cabina se funde con el pozo.
+  // Mientras el regreso sigue abierto (el permiso para compartir llega con la
+  // bitácora ya guardada) la cabina no se va: el pozo espera a que cierre.
+  const enElPozo = !enPantallaChica && bitacoraCompleted && holograficoOpen && !bitacoraOpen;
+  // El bloque sigue a la forma del primer plano de la constelación, si esa
+  // forma ya tiene su Memoria; con otra forma al centro, el pozo calla.
+  const formaAlCentro = holograficoPoster ?? portal;
+  const centroConMemoria = formaAlCentro === portal
+    ? bitacoraCompleted
+    : readResonanceProgress(formaAlCentro).bitacoraDone;
+  // Hasta dónde baja el bloque: la imagen del pozo se mide con eso, para que
+  // el bloque, abierto y con todas las palabras, no le tape la cabeza al gato.
+  const bloqueDelPozoRef = useRef(null);
+  const [fondoDelBloque, setFondoDelBloque] = useState(0);
+  useEffect(() => {
+    const el = bloqueDelPozoRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') { setFondoDelBloque(0); return undefined; }
+    const medir = () => setFondoDelBloque(el.hidden ? 0 : el.offsetTop + el.offsetHeight);
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    medir();
+    return () => ro.disconnect();
+  }, [enElPozo, centroConMemoria, formaAlCentro, ultimaPreguntaOpen]);
+
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
     // Caché legacy (formato viejo con .message pero sin .step1) → refetch
@@ -2348,6 +2383,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       souvenirGenerando={isSouvenirGenerating}
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
+                      bloqueEnLaCabina={!enPantallaChica}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
@@ -2815,7 +2851,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               </div>
             ) : null}
             {(holograficoOpen || regresoEnEscritorio) && l3Rec?.step3 ? (
-              <div className="absolute inset-x-5 bottom-5 z-20 space-y-2">
+              <div className={`absolute inset-x-5 bottom-5 z-20 space-y-2${enElPozo ? ' recuerdo-en-el-pozo' : ''}`}>
                 <button
                   type="button"
                   onClick={() => void handleDownloadSouvenir()}
@@ -2869,11 +2905,41 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 className="star-pulse absolute inset-0"
               />
             </div>
+            {/* El fondo del pozo: se trae desde que el regreso se está
+                contestando, para que al terminar la cabina se funda con él sin
+                esperar la imagen. */}
+            {!enPantallaChica && (bitacoraOpen || bitacoraCompleted) ? (
+              <div
+                aria-hidden="true"
+                data-fondo-del-pozo={enElPozo ? 'a-la-vista' : 'en-espera'}
+                className="fondo-del-pozo"
+                style={{ opacity: enElPozo ? 1 : 0, '--bloque-del-pozo': `${fondoDelBloque}px` }}
+              >
+                <img src={GATO_DEL_POZO_URL} alt="" className="fondo-del-pozo__imagen" />
+              </div>
+            ) : null}
             <div
               aria-hidden="true"
               className="absolute inset-y-0 left-0 w-24"
               style={{ background: 'linear-gradient(to right, rgb(5,3,9), transparent)' }}
             />
+            {/* El bloque de la forma, arriba, sobre la grieta: el gato queda a
+                la vista al fondo. Mientras el gato cuenta (última pregunta) se
+                esconde sin desmontarse, para no volver a pedir la palabra. */}
+            {enElPozo && centroConMemoria ? (
+              <div ref={bloqueDelPozoRef} className="absolute inset-x-5 top-[4.5rem] z-20" hidden={ultimaPreguntaOpen}>
+                <LoQueQuedo
+                  key={formaAlCentro}
+                  enElPozo
+                  portal={formaAlCentro}
+                  entry={CATALOG.find((f) => f.key === formaAlCentro)}
+                  late={!ultimaPreguntaVista}
+                  regresoRecien={regresoRecien}
+                  onUltimaPregunta={abrirUltimaPregunta}
+                  onGoToSite={irAlSitio}
+                />
+              </div>
+            ) : null}
             {/* El globo, el mismo de la cabina de móvil y con la misma fuente de
                 texto (preguntaDelPaso), para que las dos versiones digan
                 exactamente lo mismo. Aquí no se transforma en campo —el campo

@@ -399,6 +399,7 @@ function CompletedScenePanel({
   onUltimaPregunta,
   ultimaPreguntaVista,
   regresoRecien = false,
+  bloqueEnLaCabina = false,
 }) {
   // El recuerdo comparte renglón con el nombre de la forma (Carlos, 20 sep
   // 2026). En escritorio vive al pie de la cabina.
@@ -420,15 +421,19 @@ function CompletedScenePanel({
       {/* El bloque: su nombre y la fila «Lo que falta · Contestarle a la obra».
           Al abrirla, el gato propone la palabra dentro de la frase y «Pasar al
           acto final» lleva a la cabina. */}
-      <LoQueQuedo
-        portal={portal}
-        entry={entry}
-        chip={chip}
-        late={!ultimaPreguntaVista}
-        regresoRecien={regresoRecien}
-        onUltimaPregunta={onUltimaPregunta}
-        onGoToSite={onGoToSite}
-      />
+      {/* En escritorio el bloque va al panel derecho, al fondo del pozo
+          (ResonanceModal lo monta ahí): de este lado queda la línea. */}
+      {bloqueEnLaCabina ? null : (
+        <LoQueQuedo
+          portal={portal}
+          entry={entry}
+          chip={chip}
+          late={!ultimaPreguntaVista}
+          regresoRecien={regresoRecien}
+          onUltimaPregunta={onUltimaPregunta}
+          onGoToSite={onGoToSite}
+        />
+      )}
     </div>
   );
 }
@@ -446,6 +451,7 @@ function HolograficoPanel({
   onOpenVideo,
   onRequireLogin,
   readOnly = false,
+  bloqueEnLaCabina = false,
   onDownloadSouvenir = null,
   souvenirGenerando = false,
 }) {
@@ -482,6 +488,7 @@ function HolograficoPanel({
               onUltimaPregunta={onUltimaPregunta}
               ultimaPreguntaVista={ultimaPreguntaVista}
               regresoRecien={regresoRecien}
+              bloqueEnLaCabina={bloqueEnLaCabina}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
@@ -523,6 +530,7 @@ function HolograficoPanel({
             onUltimaPregunta={onUltimaPregunta}
             ultimaPreguntaVista={ultimaPreguntaVista}
             regresoRecien={regresoRecien}
+            bloqueEnLaCabina={bloqueEnLaCabina}
             recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
@@ -572,6 +580,7 @@ const CuadernoHolografico = ({
   onPosterChange,
   onRequireLogin,
   readOnly = false,
+  bloqueEnLaCabina = false,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -713,6 +722,7 @@ const CuadernoHolografico = ({
           onOpenVideo={handleOpenVideo}
           onRequireLogin={onRequireLogin}
           readOnly={readOnly}
+          bloqueEnLaCabina={bloqueEnLaCabina}
         />
       </div>
 

@@ -196,7 +196,10 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra', { recien = false }
   return momentos;
 };
 
-const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, onUltimaPregunta, onGoToSite }) => {
+// `enElPozo` (Carlos, 14 nov 2026): en escritorio el bloque deja la columna de
+// la constelación y va al panel derecho, sobre el gato del fondo del pozo, con
+// otra piel. Dice y hace lo mismo; solo cambia de lugar y de material.
+const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, onUltimaPregunta, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -322,8 +325,27 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     </button>
   );
 
+  // En el pozo hay sitio para todas las palabras de la obra (Carlos, 14 nov
+  // 2026: «poner todos los chips de las emociones del universo, no nada más
+  // las dos que sugiere… las dos que sugiere y después las otras de abajo»).
+  const otrasPalabras = PALABRAS_DE_LA_OBRA.filter((p) => !terminos.includes(p));
+  const chipDePalabra = (p, sugerida = false) => (
+    <button
+      key={p}
+      type="button"
+      aria-pressed={termino === p}
+      onClick={() => setTermino(p)}
+      className={`palabra-del-pozo${sugerida ? ' palabra-del-pozo--sugerida' : ''}`}
+    >
+      {p}
+    </button>
+  );
+
   return (
-    <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
+    <section
+      className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}${enElPozo ? ' bloque-forma--pozo' : ''}`}
+      {...(enElPozo ? { 'data-bloque-en-el-pozo': portal } : {})}
+    >
       <div className="bloque-forma__cabecera">
         <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry?.color ?? ''}`}>{entry?.form ?? entry?.name}</h2>
         {chip}
@@ -365,6 +387,26 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
             <div id="memoria-paso-previo" className="bloque-forma__abierto">
               {/* «Falta una palabra para decirlo. / Por lo que dijiste, quizá sea …, / o ….»
                   (Carlos, 27 oct: opción B). Las dos palabras se tocan en la frase. */}
+              {enElPozo ? (
+                <div className="palabras-del-pozo" data-palabras-del-pozo>
+                  <p className="memoria-descripcion text-sm leading-relaxed">Falta una palabra para decirlo.</p>
+                  {cargando ? (
+                    <p className="palabras-del-pozo__rotulo">El gato está leyendo lo que dejaste…</p>
+                  ) : terminos.length > 0 ? (
+                    <>
+                      <p className="palabras-del-pozo__rotulo">Por lo que dijiste, quizá sea</p>
+                      <div className="palabras-del-pozo__fila">{terminos.map((p) => chipDePalabra(p, true))}</div>
+                      <p className="palabras-del-pozo__rotulo">o alguna de las otras</p>
+                      <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="palabras-del-pozo__rotulo">Quizá sea alguna de estas</p>
+                      <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                    </>
+                  )}
+                </div>
+              ) : (
               <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">
                 <span className="block">Falta una palabra para decirlo.</span>
                 {cargando ? (
@@ -380,6 +422,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   <span className="block">La pones tú en el acto final.</span>
                 )}
               </p>
+              )}
               {!cargando ? (
                 <button type="button" onClick={pasarAlActoFinal} disabled={!sesion || !palabra} className="ultima-pregunta__salida">
                   Pasar al acto final

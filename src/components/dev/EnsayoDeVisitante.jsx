@@ -61,6 +61,7 @@ const PASOS = [
   { id: 'bambalinas', titulo: 'Entre bambalinas', nota: 'Ya vio el video; las tres filas.' },
   { id: 'ficha', titulo: 'Ficha revelada', nota: 'Tocó «Mientras tanto»; la tarjeta abre la ficha y el método, el libreto.' },
   { id: 'regreso', titulo: 'El día del regreso', nota: 'La pregunta ya volvió.' },
+  { id: 'memoria', titulo: 'La Memoria', nota: 'Ya contestó el regreso; falta contestarle a la obra.' },
 ];
 
 const registroDelPaso = (paso, forma) => {
@@ -93,7 +94,19 @@ const registroDelPaso = (paso, forma) => {
   if (paso === 'bambalinas') return r;
   Object.assign(r, { ficha_revelada: true });
   if (paso === 'ficha') return { ...r, bitacora_available_at: new Date(ahora + 3 * 864e5).toISOString() };
-  return { ...r, bitacora_consented: true, bitacora_available_at: new Date(ahora - 36e5).toISOString() };
+  Object.assign(r, { bitacora_consented: true, bitacora_available_at: new Date(ahora - 36e5).toISOString() });
+  if (paso === 'regreso') return r;
+  // La Memoria: el regreso ya contestado, con lo que el método guarda al cerrarlo.
+  return {
+    ...r,
+    l1: ahora - 4 * 864e5,
+    bitacora_completed: true,
+    bitacora_completed_at: new Date(ahora).toISOString(),
+    bitacora_p1_afirmativa: true,
+    bitacora_p1_response: 'Sí, regresó algo',
+    bitacora_p2_response: 'En el camión, de regreso del trabajo.',
+    bitacora_p3_response: 'Que hay cosas que solo se entienden al contarlas.',
+  };
 };
 
 const EnsayoDeVisitante = () => {
