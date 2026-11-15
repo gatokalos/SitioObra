@@ -9,7 +9,7 @@
 // quedó se lee después de las preguntas del regreso (D-34), y lo dice el gato.
 // «Retirar lo que escribí» vive en La Réplica (D-38), no aquí.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { PALABRAS_DE_LA_OBRA } from '@/lib/provocaDraft';
@@ -211,7 +211,7 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra', { recien = false }
 // la constelación y va al panel derecho, sobre el gato del fondo del pozo, como
 // una tarjeta de vidrio: las siete palabras de la obra a la vista y el botón
 // dorado. De ahí se pasa directo al acto final, sin los globos del gato.
-const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, onUltimaPregunta, onGoToSite }) => {
+const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, gradiente = 'from-emerald-400 via-teal-500 to-cyan-500', onUltimaPregunta, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -221,6 +221,8 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
   const [cargando, setCargando] = useState(false);
   const [propuesta, setPropuesta] = useState(null); // { terminos, respuestas, borradorId }
   const [termino, setTermino] = useState(null);
+  // En el pozo las palabras que el gato no sugirió esperan plegadas.
+  const [otrasAbiertas, setOtrasAbiertas] = useState(false);
 
   const fetchHuella = useCallback(async () => {
     if (isDevAuth) {
@@ -374,56 +376,101 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     </button>
   );
 
-  // La tarjeta del pozo (escritorio): sin el nombre de la forma, que se queda a
-  // la izquierda, y sin acordeón. Lo que falta, las palabras y una sola salida,
-  // el botón dorado de «Ver mi boleto» del primer acto.
+  // La tarjeta del pozo (escritorio). Sin el nombre de la forma, que se queda a
+  // la izquierda, y sin acordeón de entrada. Segunda vuelta (Carlos, 14 nov
+  // 2026: «no se ve prominente lo que tiene que hacer… que sean más prominentes
+  // las dos opciones, que se sepa que tiene que escoger… poner el icono de
+  // memoria arriba para que se entienda que ya es la última. Y que haga un
+  // guiño al tablero»): arriba, el nodo de Memoria de la línea; lo que falta,
+  // como título; las dos palabras del gato como una elección a la vista; las
+  // otras cinco, plegadas; y la salida dorada, que dice lo que se va a hacer.
   if (enElPozo) {
+    const opcionDelPozo = (p) => (
+      <button
+        key={p}
+        type="button"
+        role="radio"
+        aria-checked={termino === p}
+        onClick={() => setTermino(p)}
+        className="opcion-del-pozo"
+      >
+        <span className="opcion-del-pozo__marca" aria-hidden="true" />
+        <span className="opcion-del-pozo__palabra">{p}</span>
+      </button>
+    );
+    const eligioOtra = Boolean(termino) && !terminos.includes(termino);
+    const nodoDeMemoria = (
+      <span className="tarjeta-del-pozo__nodo" aria-hidden="true">
+        <span className={`tarjeta-del-pozo__nodo-halo bg-gradient-to-br ${gradiente}`} />
+        <span className={`tarjeta-del-pozo__nodo-disco bg-gradient-to-br ${gradiente}`}>
+          <BookOpen size={18} className="text-white drop-shadow-sm" />
+        </span>
+      </span>
+    );
     return (
       <section className="bloque-forma bloque-forma--pozo tarjeta-del-pozo" data-bloque-en-el-pozo={portal}>
         {replicaPublicada ? (
           <>
-            <button type="button" className="huella-puerta" onClick={() => onGoToSite?.('#provoca')}>
-              <span className="huella-puerta__texto">
+            <header className="tarjeta-del-pozo__cabecera">
+              {nodoDeMemoria}
+              <span className="tarjeta-del-pozo__titulos">
                 <span className="huella-puerta__eyebrow">Tu réplica</span>
-                <span className="huella-puerta__titulo">Ya está en el acto final</span>
+                <h3 className="tarjeta-del-pozo__titulo">Ya está en el acto final</h3>
               </span>
-              <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
-            </button>
-            <div className="flex justify-end pb-3">
+              <button type="button" className="tarjeta-del-pozo__ir" onClick={() => onGoToSite?.('#provoca')} aria-label="Ir al acto final">
+                <ArrowRight size={17} aria-hidden="true" />
+              </button>
+            </header>
+            <div className="flex justify-end">
               <button type="button" onClick={() => void retirarReplica()} className="lo-que-quedo__enlace">Retirar mi réplica</button>
             </div>
           </>
         ) : (
           <>
             <header className="tarjeta-del-pozo__cabecera">
-              <p className="huella-puerta__eyebrow">Lo que falta</p>
-              <h3 className="huella-puerta__titulo">
-                {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Contestarle a la obra' : 'No encontramos lo que escribiste en este navegador'}
-              </h3>
+              {nodoDeMemoria}
+              <span className="tarjeta-del-pozo__titulos">
+                <span className="huella-puerta__eyebrow">Memoria</span>
+                <h3 className="tarjeta-del-pozo__titulo">
+                  {cargandoSesion ? 'Leyendo lo que dejaste…' : sesion ? 'Falta una palabra para decirlo.' : 'No encontramos lo que escribiste en este navegador'}
+                </h3>
+              </span>
             </header>
             {sesion ? (
               <div className="tarjeta-del-pozo__cuerpo">
-                <div className="palabras-del-pozo" data-palabras-del-pozo>
-                  <p className="memoria-descripcion text-sm leading-relaxed">Falta una palabra para decirlo.</p>
-                  {cargando || !propuesta ? (
-                    <p className="palabras-del-pozo__rotulo">El gato está leyendo lo que dejaste…</p>
-                  ) : terminos.length > 0 ? (
-                    <>
+                {cargando || !propuesta ? (
+                  <p className="palabras-del-pozo__rotulo">El gato está leyendo lo que dejaste…</p>
+                ) : terminos.length > 0 ? (
+                  <>
+                    <div className="eleccion-del-pozo" role="radiogroup" aria-label="La palabra que falta" data-palabras-del-pozo>
                       <p className="palabras-del-pozo__rotulo">Por lo que dijiste, quizá sea</p>
-                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--sugeridas">{terminos.map((p) => chipDePalabra(p, true))}</div>
-                      <p className="palabras-del-pozo__rotulo palabras-del-pozo__rotulo--otras">o alguna de las otras</p>
-                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--otras">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="palabras-del-pozo__rotulo">Quizá sea alguna de estas</p>
-                      <div className="palabras-del-pozo__fila palabras-del-pozo__fila--otras">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
-                    </>
-                  )}
-                </div>
+                      {terminos.map((p) => opcionDelPozo(p))}
+                    </div>
+                    <div className="otras-del-pozo">
+                      <button
+                        type="button"
+                        className="otras-del-pozo__puerta"
+                        aria-expanded={otrasAbiertas}
+                        onClick={() => setOtrasAbiertas((v) => !v)}
+                      >
+                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : 'Otra palabra'}
+                        <ChevronDown size={14} aria-hidden="true" />
+                      </button>
+                      {otrasAbiertas ? (
+                        <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <div className="eleccion-del-pozo" data-palabras-del-pozo>
+                    <p className="palabras-del-pozo__rotulo">Quizá sea alguna de estas</p>
+                    <div className="palabras-del-pozo__fila">{otrasPalabras.map((p) => chipDePalabra(p))}</div>
+                  </div>
+                )}
                 {!cargando && propuesta ? (
                   <button type="button" onClick={pasarAlActoFinal} disabled={!palabra} className="cabina-bubble__cta tarjeta-del-pozo__salida">
-                    Pasar al acto final
+                    Contestarle a la obra
+                    <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 ) : null}
               </div>

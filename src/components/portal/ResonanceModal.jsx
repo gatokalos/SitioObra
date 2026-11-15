@@ -2963,6 +2963,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 <LoQueQuedo
                   key={formaAlCentro}
                   enElPozo
+                  gradiente={PORTAL_GRADIENT[formaAlCentro]}
                   portal={formaAlCentro}
                   entry={CATALOG.find((f) => f.key === formaAlCentro)}
                   late={!ultimaPreguntaVista}
