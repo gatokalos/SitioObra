@@ -127,7 +127,9 @@ const PortalLiteratura = () => {
   }, []);
   // Quien contestó la pregunta madre en el dorso de su tarjeta, en la galería
   // (13 nov 2026), llega aquí con el método ya en su tablero.
-  useEffect(() => {
+  // Antes de pintar (15 nov 2026): en teléfono la ficha se veía una fracción
+  // de segundo antes del método (Carlos: «se pierde la estética en ese brinco»).
+  React.useLayoutEffect(() => {
     if (location.state?.portalLaunchSource !== 'primera-intuicion') return;
     setIsResonanceOpen(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

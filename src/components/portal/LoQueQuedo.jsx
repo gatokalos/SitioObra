@@ -437,7 +437,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                        había «no se siente como un gran final». */
                     <>
                       <span className="block">De todo lo que dijiste, algo quedó.</span>
-                      <span className="block">Ponle nombre.</span>
+                      <span className="block">Todavía no tiene nombre.</span>
                     </>
                   ) : 'No encontramos lo que escribiste en este navegador'}
                 </h3>
@@ -451,7 +451,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                   <>
                     <div className="eleccion-del-pozo" role="radiogroup" aria-label="La palabra que falta" data-palabras-del-pozo>
                       <p className="palabras-del-pozo__rotulo">
-                        {terminos.length === 1 ? 'El gato oyó una palabra. ¿Es la tuya?' : 'El gato oyó dos palabras. Elige la tuya.'}
+                        {terminos.length === 1 ? 'El gato la rodeó con una palabra. ¿Se acerca?' : 'El gato la rodeó con dos palabras. Elige la que más se acerca.'}
                       </p>
                       {terminos.map((p) => opcionDelPozo(p))}
                     </div>
@@ -462,7 +462,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                         aria-expanded={otrasAbiertas}
                         onClick={() => setOtrasAbiertas((v) => !v)}
                       >
-                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : terminos.length === 1 ? 'No es esa' : 'Ninguna de las dos'}
+                        {eligioOtra && !otrasAbiertas ? <>Elegiste <b>{termino}</b></> : terminos.length === 1 ? 'No se acerca' : 'Ninguna se acerca'}
                         <ChevronDown size={14} aria-hidden="true" />
                       </button>
                       {otrasAbiertas ? (

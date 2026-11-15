@@ -700,6 +700,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [momento, setMomento]                         = useState(0);
   const [ultimaPreguntaVista, setUltimaPreguntaVista] = useState(() => Boolean(lsRead(portal).ultima_pregunta_abierta));
   const ultimaPreguntaOpen = Boolean(ultimaPregunta);
+  // Quien llega al portal con el método ya abierto (viene de contestar en su
+  // tarjeta, o vuelve el día del regreso) lo encuentra puesto, sin fundido: con
+  // el fundido la ficha se alcanzaba a ver debajo (Carlos, 15 nov 2026).
+  const [sinFundidoAlLlegar] = useState(() => {
+    try { return window.history.state?.usr?.portalLaunchSource === 'primera-intuicion'; } catch { return false; }
+  });
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
   const [bitacoraOpen, setBitacoraOpen]               = useState(() => {
     const stored = lsRead(portal);
@@ -2158,7 +2164,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             enPantallaChica ? 'fixed inset-0' : 'absolute inset-0 rounded-[2.5rem]'
           }`}
           style={enPantallaChica ? { height: '100dvh' } : undefined}
-          initial={{ opacity: 0 }}
+          initial={sinFundidoAlLlegar ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
