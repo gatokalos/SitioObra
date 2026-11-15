@@ -679,11 +679,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // incluso cuando la persona volvió por su cuenta.
   // Quien hizo el recorrido en la tarjeta ya vio En el foco allá: al abrir el
   // método desde la ficha no vuelve al tablero, llega al libreto, que lo deja
-  // listo para su regreso (Carlos, 14 nov 2026). Solo en escritorio por ahora.
-  const esPantallaChica = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches;
+  // listo para su regreso (Carlos, 14 nov 2026). Desde el 15 nov 2026 también
+  // en teléfono (Carlos: «sigo viendo pasajes de la vieja arquitectura […] ya
+  // no debe abrir el dashboard sino la memoria»).
   const abreEnElLibreto = () => {
     const s = lsRead(portal);
-    return !!s.bitacora_completed || (!soloEnElFoco && !!s.ficha_revelada && !!s.recorrido_en_tarjeta && !esPantallaChica());
+    return !!s.bitacora_completed || (!soloEnElFoco && !!s.ficha_revelada && !!s.recorrido_en_tarjeta);
   };
   const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || abreEnElLibreto());
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);

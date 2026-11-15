@@ -64,6 +64,11 @@ const TableroEnLaTarjeta = ({
   };
 
   const escena = 'rounded-2xl border px-4 py-3';
+  // En teléfono la escena que va al frente no lleva caja propia: su caja es la
+  // tarjeta (Carlos, 15 nov 2026: «quitar el contenedor, usar el contenedor de
+  // la tarjeta ya como su contenedor»). En el carrusel (<1024) una caja dentro
+  // de otra le quitaba ancho al video y a las filas.
+  const alFrente = 'max-lg:rounded-none max-lg:border-0 max-lg:bg-transparent max-lg:px-0 max-lg:shadow-none';
   const eco = 'rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90';
 
   // Una escena ya vivida, plegada: su esfera encendida y su nombre.
@@ -117,7 +122,7 @@ const TableroEnLaTarjeta = ({
               retención con sus tres filas. «Mientras tanto» es `onClose`. */}
           <motion.section
             data-tablero="foco"
-            className={`${escena} shrink-0 space-y-3 border-sky-400/50 bg-sky-500/[0.07] shadow-[0_0_28px_rgba(56,189,248,0.18)]`}
+            className={`${escena} ${alFrente} shrink-0 space-y-3 border-sky-400/50 bg-sky-500/[0.07] shadow-[0_0_28px_rgba(56,189,248,0.18)]`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.1 }}

@@ -223,6 +223,10 @@ const VITRINA_TU_FORMA_LABEL = 'Entra en escena';
 const VITRINA_IMPROVISA_LABEL = 'Improvisa una respuesta';
 // Quien ya contestó y dejó el tablero a medias en la tarjeta (13 nov 2026).
 const VITRINA_SIGUE_LABEL = 'Sigue donde quedaste';
+// La pregunta ya volvió y el regreso está por contestar (Carlos, 15 nov 2026:
+// «hay que cambiar el verbo a "terminar la escena" en vez de entra en escena
+// para cuidar el arco narrativo de las vitrinas»).
+const VITRINA_REGRESO_LABEL = 'Termina la escena';
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
@@ -6197,7 +6201,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : elRegresoYaVolvio(format.id) ? VITRINA_REGRESO_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -6484,7 +6488,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : elRegresoYaVolvio(format.id) ? VITRINA_REGRESO_LABEL : VITRINA_TU_FORMA_LABEL}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
