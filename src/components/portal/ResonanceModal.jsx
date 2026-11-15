@@ -771,11 +771,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Con el modal anclado a la pantalla, el fondo no debe seguir desplazándose
   // detrás: en un teléfono eso se siente como si la página se escapara.
   useEffect(() => {
-    if (!open || !enPantallaChica || typeof document === 'undefined') return undefined;
+    // En la tarjeta de la galería (`soloEnElFoco`) no hay modal anclado: En el
+    // foco vive dentro de la página. Con este candado puesto, en ventanas de
+    // menos de 1024 la página dejaba de desplazarse en cuanto la tarjeta
+    // enseñaba En el foco (Carlos, 15 nov 2026: «de pronto detecta la vitrina y
+    // ya no me detecta el sitio y me atoro»).
+    if (!open || !enPantallaChica || soloEnElFoco || typeof document === 'undefined') return undefined;
     const previo = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previo; };
-  }, [open, enPantallaChica]);
+  }, [open, enPantallaChica, soloEnElFoco]);
 
   const bitacoraAvailable = bitacoraAvailableAt
     ? new Date(bitacoraAvailableAt).getTime() <= bitacoraAvailabilityTick
