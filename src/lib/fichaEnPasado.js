@@ -1,24 +1,34 @@
-// El renglón que, en la ficha, liga el gesto ya hecho con la obra destacada
-// (Carlos, 15 nov 2026: «un copy con CTA que haga saber que ese gesto fue
-// inspirado en la obra destacada y que ese botón haga un scroll»). Solo aparece
-// con el gesto registrado, y por ahora solo en La escritura.
+// En la ficha, el bloque «Al entrar en escena…» se lee después de haber
+// entrado: por eso ahí va en pasado y con otro título (Carlos, 15 nov 2026:
+// «ese bloque es leído después de haber entrado en escena […] no nomás es
+// cambiar el pasado, también el título»). La misma lista, en presente, se queda
+// en el panel de la constelación, donde invita a pasar a otra forma.
 //
-// Aquí vivió unas horas, el 15 nov 2026, una versión del bloque «Al entrar en
-// escena…» en pasado («Entraste en escena», «Leíste en voz alta…», «Nada se
-// grabó…»). Carlos la retiró: «muy técnico y terrible». Lo que pide es otra
-// cosa: frases que reconozcan lo que la persona ya hizo, con el mismo tono de
-// las que acompañan la intuición y la preparación («Respondiste antes de saber
-// algo más…»). Queda por escribir, con su visto bueno.
+// Título: «Tú en escena…», tomado de la captura que mandó Carlos. Las tres
+// frases las propuso Claude y Carlos las aprobó («el tono de las frases se
+// queda»). Solo aparecen cuando el registro dice que la persona leyó en voz
+// alta (gesto enunciado o parcial); si no, el bloque sigue anunciando.
+//
+// Por ahora solo La escritura: las otras ocho no tienen gesto todavía, así que
+// no hay nada hecho que contar.
 import { readResonanceRecord } from '@/lib/bitacoraShared';
 
-const OBRA_DEL_GESTO = {
-  literatura: { texto: 'El gesto que hiciste viene de esta obra.', boton: 'Ver la obra destacada' },
+const EN_PASADO = {
+  literatura: {
+    title: 'TÚ EN ESCENA…',
+    notes: [
+      '🎙️ Prestaste tu voz: leíste en voz alta cuando la escena te lo pidió.',
+      '🔒 Nada se grabó. Tu voz abrió el paso y se quedó contigo.',
+      '✍️ El texto no estaba escrito de antemano: lo convocaron tus palabras.',
+    ],
+    boton: 'Ver la obra destacada',
+  },
 };
 
 export const fichaEnPasado = (portal) => {
-  const obra = OBRA_DEL_GESTO[portal];
-  if (!obra) return null;
+  const forma = EN_PASADO[portal];
+  if (!forma) return null;
   const gesto = readResonanceRecord(portal).gesto_resultado;
-  if (!['enunciado', 'parcial', 'declinado'].includes(gesto)) return null;
-  return { obra, gesto };
+  if (gesto !== 'enunciado' && gesto !== 'parcial') return null;
+  return forma;
 };

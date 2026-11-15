@@ -56,6 +56,10 @@ const IAInsightCard = ({
   // que siempre (estado propio).
   isOpen: controlledIsOpen,
   onToggle,
+  // Algo que va dentro de la caja, al pie, se abra o no el acordeón: el botón
+  // hacia la obra destacada en la ficha (Carlos, 15 nov 2026: «acomoda el
+  // botón adentro. No por fuera»).
+  footer = null,
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -243,6 +247,7 @@ const IAInsightCard = ({
           ) : null}
         </div>
       ) : null}
+      {footer ? <div className="mt-4 flex justify-end">{footer}</div> : null}
     </div>
   );
 };

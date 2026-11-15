@@ -144,7 +144,7 @@ const PortalLiteratura = () => {
     return () => window.clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const readingTooltipRef = useRef(null);
-  // Con el gesto ya registrado, un renglón liga el gesto con la obra destacada.
+  // Con el gesto ya registrado, el bloque de la ficha cuenta en pasado.
   const enPasado = fichaEnPasado('literatura');
 
   const handleOpenLogin = useCallback(() => {
@@ -332,22 +332,22 @@ const PortalLiteratura = () => {
                   chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
                   chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
+                  {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
                   compact
-                />
-                {/* El gesto viene de la obra destacada: un renglón y un botón
-                    que baja hasta ella (Carlos, 15 nov 2026). */}
-                {enPasado ? (
-                  <div className="ficha-en-pasado__obra" data-gesto-de-la-obra>
-                    <p>{enPasado.obra.texto}</p>
+                  /* El botón que baja a la obra destacada va dentro de la caja
+                     (Carlos, 15 nov 2026). */
+                  footer={enPasado ? (
                     <button
                       type="button"
+                      className="ficha-en-pasado__boton"
+                      data-gesto-de-la-obra
                       onClick={() => document.getElementById('obra-destacada')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                     >
-                      {enPasado.obra.boton}
+                      {enPasado.boton}
                       <span aria-hidden="true">↓</span>
                     </button>
-                  </div>
-                ) : null}
+                  ) : null}
+                />
               </div>
 
               <div className={`px-6 sm:px-8 pb-6 sm:pb-8 lg:py-8 lg:pl-3 lg:pr-8 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : ''}`}>
@@ -452,6 +452,7 @@ const PortalLiteratura = () => {
               chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
               chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
+              {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
               compact
             />
           </div>

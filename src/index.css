@@ -7015,29 +7015,17 @@ body {
   background: #f4f0e6;
   color: #0a0c18;
 }
-/* En la ficha, con el gesto hecho: el renglón que lo liga a la obra destacada
-   y el botón que baja hasta ella (portal de teléfono). */
-.ficha-en-pasado__obra {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem 1rem;
-  margin-top: 0.75rem;
-  padding: 0 0.25rem;
-  font-size: 0.85rem;
-  line-height: 1.45;
-  color: rgba(226, 232, 240, 0.82);
-}
-.ficha-en-pasado__obra button {
+/* En la ficha, con el gesto hecho: el botón que baja a la obra destacada, dentro
+   de la caja del bloque (portal de teléfono). */
+.ficha-en-pasado__boton {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   border: 1px solid rgba(196, 181, 253, 0.4);
   border-radius: 999px;
   background: rgba(139, 92, 246, 0.12);
-  padding: 0.4rem 0.85rem;
-  font-size: 0.78rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #ede9fe;
 }
