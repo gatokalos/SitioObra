@@ -18,8 +18,26 @@ export const PALABRAS_DE_LA_OBRA = [
   'querer estar bien',
 ];
 
+// Las siete palabras están escritas para la pregunta de La Réplica, que habla
+// de tú («¿Qué te provoca una emoción que no entiendes del todo?»). Cuando una
+// pasa a la respuesta de la persona, que habla de yo, su verbo cambia con ella
+// (Carlos, 15 nov 2026: «está mal escrito porque no se conjuga la emoción»).
+// Solo una de las siete lleva verbo conjugado. El servidor hace lo mismo al
+// escribir la respuesta tentativa; aquí se repite para lo que ya estaba
+// guardado en este navegador.
+const EN_PRIMERA_PERSONA = [
+  ['una emoción que no entiendes del todo', 'una emoción que no entiendo del todo'],
+];
+export function palabraEnPrimeraPersona(texto) {
+  if (typeof texto !== 'string') return texto;
+  return EN_PRIMERA_PERSONA.reduce(
+    (t, [deTu, deYo]) => t.replace(`lo que me provoca ${deTu}`, `lo que me provoca ${deYo}`),
+    texto,
+  );
+}
+
 export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null }) {
-  const texto = typeof quote === 'string' ? quote.slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
+  const texto = typeof quote === 'string' ? palabraEnPrimeraPersona(quote).slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
   if (!texto) return;
   try {
     const previousRaw = localStorage.getItem(PROVOCA_DRAFT_KEY);

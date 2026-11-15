@@ -372,6 +372,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     apps:              'juegos',
     oraculo:           'oraculo',
   };
+  // La pregunta ya volvió (pasaron los días) y el regreso sigue sin contestar.
+  const elRegresoYaVolvio = (formatId) => {
+    const portal = SHOWCASE_TO_PORTAL[formatId];
+    if (!portal) return false;
+    const progreso = readResonanceProgress(portal);
+    if (!progreso.l1Done || progreso.bitacoraDone) return false;
+    const regreso = progreso.record.bitacora_available_at;
+    return Boolean(regreso) && new Date(regreso).getTime() <= Date.now();
+  };
 
   // Indica si el usuario ya contestó el Nivel 1 del portal activo
   const [activePortalL1Done, setActivePortalL1Done] = useState(false);
@@ -746,8 +755,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (!portalRoute) {
         return false;
       }
+      // Si la pregunta ya volvió, el portal abre el regreso al llegar, sin
+      // pasar por «Sigue donde quedaste» (Carlos, 15 nov 2026: «ahorrarnos el
+      // paso»). Es la misma seña con la que el portal abre el método a quien
+      // viene de contestar en la tarjeta.
+      const fuente = elRegresoYaVolvio(formatId) ? 'primera-intuicion' : 'transmedia-mobile-portal';
       navigate(portalRoute, {
-        state: createPortalLaunchState(location, 'transmedia-mobile-portal', {
+        state: createPortalLaunchState(location, fuente, {
           showcaseId: formatId,
         }),
       });
@@ -1705,8 +1719,36 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     } catch { /* sin almacenamiento */ }
     if (pendiente && showcaseDefinitions[pendiente]) saltarALaTarjeta(pendiente);
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Quien vuelve a los tres días o más: la tarjeta abre la ficha con el
+  // regreso ya en escena (Carlos, 15 nov 2026: «lo mejor sería que la vitrina
+  // ya abriera la ficha mostrando ese momento. O sea, ahorrarnos el paso»).
+  // Antes había que abrir la ficha y luego tocar «Sigue donde quedaste».
+  const ABRIR_METODO_POR_PORTAL = {
+    obra: setIsDramaResonanceOpen,
+    literatura: setIsLiteraturaResonanceOpen,
+    artesanias: setIsArtesaniasResonanceOpen,
+    grafico: setIsGraficosResonanceOpen,
+    cine: setIsCineResonanceOpen,
+    sonoridades: setIsSonoroResonanceOpen,
+    movimiento: setIsMovimientoResonanceOpen,
+    juegos: setIsJuegosResonanceOpen,
+    oraculo: setIsOraculoResonanceOpen,
+  };
+  const [regresoPendienteId, setRegresoPendienteId] = useState(null);
+  useEffect(() => {
+    if (!regresoPendienteId) return undefined;
+    if (activeShowcase === regresoPendienteId && showcaseOpenTransition.phase === 'idle') {
+      ABRIR_METODO_POR_PORTAL[SHOWCASE_TO_PORTAL[regresoPendienteId]]?.(true);
+      setRegresoPendienteId(null);
+      return undefined;
+    }
+    // Si la ficha no llegó a abrirse (tarjeta bloqueada, teléfono), se olvida.
+    const olvido = window.setTimeout(() => setRegresoPendienteId(null), 5000);
+    return () => window.clearTimeout(olvido);
+  }, [regresoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
   const entrarPorLaTarjeta = (formatId) => {
     if (!laTarjetaTieneDorso(formatId)) {
+      if (elRegresoYaVolvio(formatId)) setRegresoPendienteId(formatId);
       handleFormatClick(formatId);
       return;
     }
