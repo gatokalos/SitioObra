@@ -12,7 +12,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { PALABRAS_DE_LA_OBRA } from '@/lib/provocaDraft';
+import { PALABRAS_DE_LA_OBRA, FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
@@ -327,7 +327,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
       termino,
       respuestas: propuesta?.respuestas ?? {},
       borradorId: propuesta?.borradorId ?? null,
-      momentos: momentosDe(sesion, termino, entry?.form ?? entry?.name ?? 'la obra', { recien: regresoRecien }),
+      momentos: momentosDe(sesion, termino === FUERA_DE_LA_LISTA ? null : termino, entry?.form ?? entry?.name ?? 'la obra', { recien: regresoRecien }),
     });
   };
 
@@ -363,14 +363,18 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
   // En el pozo hay sitio para todas las palabras de la obra (Carlos, 14 nov
   // 2026: «poner todos los chips de las emociones del universo, no nada más
   // las dos que sugiere… las dos que sugiere y después las otras de abajo»).
-  const otrasPalabras = PALABRAS_DE_LA_OBRA.filter((p) => !terminos.includes(p));
+  // Al final, «otra»: la salida para quien no se reconoce en ninguna (15 nov
+  // 2026). Va detrás del pliegue, después de las de la obra, para que no sea la
+  // salida cómoda.
+  const otrasPalabras = [...PALABRAS_DE_LA_OBRA.filter((p) => !terminos.includes(p)), FUERA_DE_LA_LISTA];
   const chipDePalabra = (p, sugerida = false) => (
     <button
       key={p}
       type="button"
       aria-pressed={termino === p}
       onClick={() => setTermino(p)}
-      className={`palabra-del-pozo${sugerida ? ' palabra-del-pozo--sugerida' : ''}`}
+      data-fuera-de-la-lista={p === FUERA_DE_LA_LISTA ? '' : undefined}
+      className={`palabra-del-pozo${sugerida ? ' palabra-del-pozo--sugerida' : ''}${p === FUERA_DE_LA_LISTA ? ' palabra-del-pozo--otra' : ''}`}
     >
       {p}
     </button>

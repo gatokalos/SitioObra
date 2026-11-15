@@ -36,6 +36,16 @@ export function palabraEnPrimeraPersona(texto) {
   );
 }
 
+// «otra»: ninguna de las siete se acerca (Carlos, 15 nov 2026: «lo más honesto
+// es que agreguemos el chip de otra cuando ninguna se acerca»). No es una
+// palabra de la obra: queda fuera de su vocabulario, y por eso no entra en
+// PALABRAS_DE_LA_OBRA. Se guarda como categoría propia —no como hueco— para
+// poder leer aparte esas réplicas, que contestan otra pregunta. Se distingue de
+// «una emoción que no entiendes del todo», que sí es palabra de la obra: aquella
+// dice «siento algo y no sé nombrarlo»; esta, «lo mío no está en esta lista».
+export const FUERA_DE_LA_LISTA = 'otra';
+export const PREGUNTA_FUERA_DE_LA_LISTA = '¿Qué te provocó esta obra?';
+
 export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null }) {
   const texto = typeof quote === 'string' ? palabraEnPrimeraPersona(quote).slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
   if (!texto) return;

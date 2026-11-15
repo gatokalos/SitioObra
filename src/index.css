@@ -6989,3 +6989,12 @@ body {
   line-height: 1.5;
   color: rgba(190, 176, 206, 0.8);
 }
+
+/* «otra» en la tarjeta del pozo (15 nov 2026): no es palabra de la obra, y se
+   nota: trazo punteado, sin el tinte de las demás. */
+.palabra-del-pozo--otra {
+  border-style: dashed;
+  border-color: rgba(226, 240, 240, 0.34);
+  background: transparent;
+  font-style: italic;
+}

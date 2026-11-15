@@ -24,6 +24,7 @@ import {
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import { irALaAlianza } from '@/lib/revelarAlianza';
+import { FUERA_DE_LA_LISTA, PREGUNTA_FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
@@ -300,6 +301,12 @@ export const ProvocaSection = () => {
     return () => media.removeListener(openDesktopComposer);
   }, []);
   const currentProvocaTitleTerm = terminoFijado ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
+  // Quien llega del pozo con «otra» —ninguna de las siete se acercó— no recibe
+  // una palabra de la obra en la pregunta, sino la pregunta abierta (Carlos, 15
+  // nov 2026).
+  const preguntaDeLaReplica = terminoFijado === FUERA_DE_LA_LISTA
+    ? PREGUNTA_FUERA_DE_LA_LISTA
+    : `¿Qué te provoca ${currentProvocaTitleTerm}?`;
   const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
   const rankedVoicesPool = useMemo(() => {
@@ -1074,7 +1081,7 @@ export const ProvocaSection = () => {
             <div className="min-w-0">
               <h3
                 className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
-                aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
+                aria-label={preguntaDeLaReplica}
               >
                 <span className="provoca-stage-question__stack">
                   {/* Todas comparten celda: la más alta reserva el espacio real
@@ -1094,7 +1101,7 @@ export const ProvocaSection = () => {
                       exit={{ opacity: 0, y: -7, filter: 'blur(5px)' }}
                       transition={{ duration: 0.45, ease: 'easeOut' }}
                     >
-                      ¿Qué te provoca {currentProvocaTitleTerm}?
+                      {preguntaDeLaReplica}
                     </motion.span>
                   </AnimatePresence>
                 </span>
