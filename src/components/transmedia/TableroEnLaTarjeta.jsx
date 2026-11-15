@@ -31,6 +31,8 @@ const TableroEnLaTarjeta = ({
   gradiente = null,
   isDevAuth = false,
   onHabitar,
+  // La forma todavía no tiene artefacto: el recorrido sigue sin él.
+  sinArtefacto = false,
   onVolver,
   onMientrasTanto,
   onIrALaMemoria,
@@ -244,10 +246,12 @@ const TableroEnLaTarjeta = ({
                   {/* Los mismos textos del tablero completo para quien salió de
                       la escena antes de terminarla. */}
                   <p className="font-display text-base uppercase leading-tight tracking-[0.1em] text-amber-100">
-                    {dramaturgia.form} {escenaAbierta || sellada ? 'sigue en escena' : 'entra en escena'}
+                    {sinArtefacto ? `${dramaturgia.form} aún no abre su escena` : `${dramaturgia.form} ${escenaAbierta || sellada ? 'sigue en escena' : 'entra en escena'}`}
                   </p>
                   <p className="mt-1 max-w-[30ch] text-xs leading-relaxed text-slate-300/75">
-                    {sellada
+                    {sinArtefacto
+                      ? 'El artefacto de esta forma está en construcción. El recorrido sigue sin él.'
+                      : sellada
                       ? 'La conversación quedó abierta en la escena. Vuelve para terminarla.'
                       : escenaAbierta
                         ? 'Saliste antes del gesto. La forma queda abierta donde la dejaste.'
@@ -261,7 +265,8 @@ const TableroEnLaTarjeta = ({
                     onClick={() => onHabitar?.()}
                     className="flex w-full flex-col items-center gap-2 pt-3 transition active:scale-[0.98]"
                     whileHover={{ scale: 1.03 }}
-                    aria-label={escenaAbierta || sellada ? 'Volver a la escena' : 'Habitar la forma'}
+                    data-sin-artefacto={sinArtefacto ? '' : undefined}
+                    aria-label={sinArtefacto ? 'Seguir el recorrido' : escenaAbierta || sellada ? 'Volver a la escena' : 'Habitar la forma'}
                   >
                     <span
                       className="relative block h-20 w-20 overflow-hidden rounded-full bg-black ring-2 ring-white/25 motion-safe:animate-[latido_3.2s_ease-in-out_infinite]"
@@ -276,7 +281,7 @@ const TableroEnLaTarjeta = ({
                       <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />
                     </span>
                     <span className="text-sm font-semibold tracking-wide text-amber-200">
-                      {escenaAbierta || sellada ? 'Volver a la escena' : 'Habitar la forma'}
+                      {sinArtefacto ? 'Seguir el recorrido' : escenaAbierta || sellada ? 'Volver a la escena' : 'Habitar la forma'}
                     </span>
                   </motion.button>
                 </motion.div>

@@ -65,7 +65,7 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
-import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarEscenaSinGesto, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
 import DorsoPrimeraIntuicion from '@/components/transmedia/DorsoPrimeraIntuicion';
 import DorsoLogin from '@/components/transmedia/DorsoLogin';
 import TableroEnLaTarjeta from '@/components/transmedia/TableroEnLaTarjeta';
@@ -1678,9 +1678,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const ARTEFACTO_EN_VENTANA = new Set(['miniversoNovela']);
   const tableroEnLaTarjeta = (formatId) => {
     if (!laTarjetaLlevaElRecorrido(formatId)) return false;
-    // En teléfono, las formas que todavía abren la ficha al entrar al artefacto
-    // siguen su método en el portal, como antes: su tarjeta solo pide la pregunta.
-    if (isVitrinaCarouselViewport && !ARTEFACTO_EN_VENTANA.has(formatId)) return false;
+    // Desde el 15 nov 2026 las nueve formas llevan su recorrido en la tarjeta,
+    // en escritorio y en teléfono (Carlos: «necesito que me garantices que todo
+    // va a quedar parejito»). Lo único que cambia de una a otra es el hueco del
+    // artefacto.
     const progreso = readResonanceProgress(SHOWCASE_TO_PORTAL[formatId]);
     if (!progreso.l1Done || progreso.record.ficha_revelada || progreso.bitacoraDone) return false;
     // Si la pregunta ya volvió, el regreso se vive en la ficha, como siempre.
@@ -1866,44 +1867,31 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     // (Las formas cuyo artefacto ya se abre en su propia ventana se quedan en la
     // tarjeta también en teléfono: tablero, artefacto, En el foco y, con
     // «Mientras tanto», el portal.)
-    if (isVitrinaCarouselViewport && portalRoute && !ARTEFACTO_EN_VENTANA.has(formatId)) {
-      setTarjetaGiradaId(null);
-      navigate(portalRoute, {
-        state: createPortalLaunchState(location, 'primera-intuicion', { showcaseId: formatId }),
-      });
-      return;
-    }
+    // (15 nov 2026: ya ninguna se va al portal al contestar; las nueve se
+    // quedan en la tarjeta.)
+    void portalRoute;
     // La tarjeta se queda de dorso: ahora lleva el tablero.
     setRegistroDeLaTarjetaTick((n) => n + 1);
   };
   // «Habitar la forma» desde la tarjeta: aquí sí se cambia de nivel.
   const habitarDesdeLaTarjeta = (formatId) => {
-    marcarEscenaAbierta(SHOWCASE_TO_PORTAL[formatId]);
     // El artefacto en su propia ventana, sin la ficha: la tarjeta se queda de
     // dorso debajo y ahí se vuelve al salir.
     if (ARTEFACTO_EN_VENTANA.has(formatId)) {
+      marcarEscenaAbierta(SHOWCASE_TO_PORTAL[formatId]);
       marcarRecorridoEnLaTarjeta(SHOWCASE_TO_PORTAL[formatId]);
       setArtefactoDesdeLaTarjetaId(formatId);
       ABRIR_ARTEFACTO_POR_VITRINA[formatId]?.();
       return;
     }
-    // Las demás formas: se abre la ficha y, ya abierta, el artefacto.
-    marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
-    setTarjetaGiradaId(null);
-    // El cuerpo no tiene ficha que abrir: su escena es la Salida.
-    if (formatId === 'miniversoMovimiento') {
-      handleIrALaSalida();
-      return;
-    }
-    // El riesgo abre su juego en otra pestaña: tiene que ser dentro del clic,
-    // o el navegador la bloquea.
-    if (formatId === 'apps') {
-      const u = sanitizeExternalHttpUrl(showcaseDefinitions.apps?.liveExperience?.url);
-      if (u) window.open(u, '_blank');
-    } else {
-      setArtefactoPendienteId(formatId);
-    }
-    handleFormatClick(formatId);
+    // Las demás formas: su artefacto —el gesto— todavía no existe. El recorrido
+    // sigue sin él, por el mismo camino: la escena se da por pasada, marcada
+    // «sin gesto», y la tarjeta enseña En el foco. Antes, aquí se abría la
+    // ficha con lo que cada forma tuviera (el cómic, el corto, la RA, el
+    // oráculo, la voz del drama) y el método se quedaba detenido en la segunda
+    // escena; eso sigue estando en la ficha, a la que se llega después.
+    marcarEscenaSinGesto(SHOWCASE_TO_PORTAL[formatId]);
+    setRegistroDeLaTarjetaTick((n) => n + 1);
   };
   useEffect(() => {
     if (!artefactoPendienteId) return;
@@ -1942,6 +1930,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
                 isDevAuth={isDevAuth}
                 onHabitar={() => habitarDesdeLaTarjeta(format.id)}
+                sinArtefacto={!ARTEFACTO_EN_VENTANA.has(format.id)}
                 onVolver={cerrarElDorso}
                 onMientrasTanto={() => revelarLaFicha(format.id)}
                 onIrALaMemoria={() => irALaMemoriaDesdeLaTarjeta(format.id)}

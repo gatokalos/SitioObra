@@ -74,13 +74,15 @@ const registroDelPaso = (paso, forma) => {
   if (paso === 'preparacion') return r;
   Object.assign(r, { l2_option: opcion, l2_ts: ahora });
   if (paso === 'habitar') return r;
-  Object.assign(r, { l2_narrative_opened: true, dashboard_active_level: 2, ...(enTarjeta ? { recorrido_en_tarjeta: true } : { ficha_revelada: true }) });
+  // Desde el 15 nov 2026 las nueve formas llevan el recorrido en la tarjeta.
+  // Las que aún no tienen artefacto pasan la escena «sin gesto»: sin sello ni
+  // conversación.
+  Object.assign(r, { recorrido_en_tarjeta: true, dashboard_active_level: 2, ...(enTarjeta ? { l2_narrative_opened: true } : {}) });
   if (paso === 'sin-gesto') return r;
   Object.assign(r, {
-    experience_ts: ahora,
-    gesto_resultado: 'enunciado',
-    gesto_ts: ahora,
-    l2_conv_done: true,
+    ...(enTarjeta
+      ? { experience_ts: ahora, gesto_resultado: 'enunciado', gesto_ts: ahora, l2_conv_done: true }
+      : { escena_sin_gesto: true }),
     l2_escena_terminada: true,
     dashboard_active_level: 3,
     l3_recommendation: {
@@ -192,7 +194,7 @@ const EnsayoDeVisitante = () => {
             </select>
             {!RECORRIDO_EN_TARJETA.has(forma.showcase) ? (
               <p className="text-[0.66rem] leading-snug text-slate-400">
-                Esta forma todavía abre la ficha al entrar al artefacto; el recorrido en la tarjeta por ahora es de La escritura.
+                Esta forma todavía no tiene artefacto: hace el mismo recorrido en la tarjeta y pasa la escena «sin gesto».
               </p>
             ) : null}
           </div>

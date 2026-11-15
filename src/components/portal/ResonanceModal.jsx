@@ -544,6 +544,17 @@ export const marcarFichaRevelada = (portal) => {
   lsPatch(portal, { ficha_revelada: true });
 };
 
+// El hueco del artefacto (Carlos, 15 nov 2026: «esto es como armar un coche y
+// hay unas cosas que no van a estar listas, pero otras sí […] lo único
+// pendiente son los nueve gestos. El artefacto transmedia de cada forma»). Una
+// forma cuyo artefacto todavía no existe sigue el recorrido sin él: la escena
+// se da por pasada, marcada «sin gesto», y lo demás —En el foco, la espera, el
+// regreso, la Memoria— ocurre igual que en las formas que sí lo tienen. No hay
+// sello (D-69): el servidor no recibe gesto, y aquí queda la marca.
+export const marcarEscenaSinGesto = (portal) => {
+  lsPatch(portal, { l2_escena_terminada: true, escena_sin_gesto: true, recorrido_en_tarjeta: true, dashboard_active_level: 3 });
+};
+
 export const marcarEscenaAbierta = (portal) => {
   lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
@@ -1689,7 +1700,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   // Con la escena terminada y En el foco al frente, la recomendación se pide sola.
   useEffect(() => {
-    if (!open || !escenaTerminada || !l2ConvDone || dashboardActiveLevel !== 3) return;
+    // Sin artefacto no hay conversación que esperar: la escena se dio por
+    // pasada «sin gesto» y En el foco sigue (15 nov 2026).
+    const sinGesto = !!lsRead(portal).escena_sin_gesto;
+    if (!open || !escenaTerminada || !(l2ConvDone || sinGesto) || dashboardActiveLevel !== 3) return;
     if (bitacoraCompleted || l3Loading) return;
     if (l3Rec && (l3Rec.step1 || l3Rec.error || l3Rec.all_complete)) return;
     fetchL3Recommendation();
