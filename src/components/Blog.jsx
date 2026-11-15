@@ -1160,7 +1160,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
               Cambia de lugar<br />en la obra
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Este es un espacio, la mirada cambia de dirección: quien parecía ocupar la butaca se descubre frente al espejo de sus propias preguntas.
+              En este espacio la mirada cambia de dirección: quien parecía ocupar la butaca se descubre frente al espejo de sus propias preguntas.
             </p>
           </motion.div>
 
