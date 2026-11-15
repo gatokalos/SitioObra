@@ -1577,6 +1577,34 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   useEffect(() => { if (!open) setCaidaHecha(false); }, [open]);
   const hayCaida = enElPozo && regresoRecien && !sinMovimiento;
   const cayendo = hayCaida && !caidaHecha;
+  // En teléfono, lo mismo a pantalla completa (Carlos, 15 nov 2026: «el usuario
+  // no tendría que volver a ver la memoria después de contestar las preguntas
+  // diferidas. Debería de hacerse el scroll de la torre. Llegar hasta abajo y
+  // ver lo que ya se muestra en el escritorio»). El pozo cubre la Memoria: la
+  // tarjeta arriba, el gato Neo al fondo y el recuerdo al pie.
+  const pozoEnTelefono = enPantallaChica && bitacoraCompleted && holograficoOpen && !bitacoraOpen;
+  const hayCaidaEnTelefono = pozoEnTelefono && regresoRecien && !sinMovimiento;
+  const cayendoEnTelefono = hayCaidaEnTelefono && !caidaHecha;
+  const laCaida = (
+    <div className="caida-al-pozo" data-caida={caidaHecha ? 'hecha' : 'cayendo'}>
+      <motion.div
+        aria-hidden="true"
+        className="caida-al-pozo__torre"
+        initial={{ y: '0%' }}
+        animate={{ y: '-75%' }}
+        transition={{ duration: 7, ease: [0.65, 0, 0.35, 1] }}
+        onAnimationComplete={() => setCaidaHecha(true)}
+      >
+        <img src={CAT_CABINA_URL} alt="" className="caida-al-pozo__tramo caida-al-pozo__tramo--cabina" />
+        <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+        <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+        <img src={GATO_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
+      </motion.div>
+      {/* Una sola línea a media caída, en el túnel, que se va antes de llegar:
+          el anuncio del final sin volver a los globos (Carlos, 14 nov 2026). */}
+      <p className="caida-al-pozo__linea">La pregunta te trajo hasta aquí.</p>
+    </div>
+  );
   // Del pozo se pasa directo al acto final (Carlos, 14 nov 2026: «nos vamos a
   // saltar esos pasos de globo de texto dentro del pozo»): la palabra elegida
   // y la respuesta tentativa viajan a La Réplica igual que antes.
@@ -2417,6 +2445,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
                       bloqueEnLaCabina={!enPantallaChica}
+                      /* En teléfono no hay gato a un lado que dé el aviso de
+                         la espera: lo da el bloque morado, al pie de la
+                         Memoria (Carlos, 15 nov 2026). */
+                      avisoDeEspera={enPantallaChica && !bitacoraAvailable && !bitacoraCompleted ? {
+                        texto: `${dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.`,
+                        hecho: bitacoraConsented ? avisoDoneHint : null,
+                        onAviso: handleAvisoPorCorreo,
+                      } : null}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
@@ -2956,27 +2992,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 <img src={TUNEL_DEL_POZO_URL} alt="" hidden />
               </div>
             ) : null}
-            {hayCaida ? (
-              <div className="caida-al-pozo" data-caida={caidaHecha ? 'hecha' : 'cayendo'}>
-                <motion.div
-                  aria-hidden="true"
-                  className="caida-al-pozo__torre"
-                  initial={{ y: '0%' }}
-                  animate={{ y: '-75%' }}
-                  transition={{ duration: 7, ease: [0.65, 0, 0.35, 1] }}
-                  onAnimationComplete={() => setCaidaHecha(true)}
-                >
-                  <img src={CAT_CABINA_URL} alt="" className="caida-al-pozo__tramo caida-al-pozo__tramo--cabina" />
-                  <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
-                  <img src={TUNEL_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
-                  <img src={GATO_DEL_POZO_URL} alt="" className="caida-al-pozo__tramo" />
-                </motion.div>
-                {/* Una sola línea a media caída, en el túnel, que se va antes
-                    de llegar: el anuncio del final sin volver a los globos
-                    (Carlos, 14 nov 2026). */}
-                <p className="caida-al-pozo__linea">La pregunta te trajo hasta aquí.</p>
-              </div>
-            ) : null}
+            {hayCaida ? laCaida : null}
             <div
               aria-hidden="true"
               className="absolute inset-y-0 left-0 w-24"
@@ -3047,6 +3063,59 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             )}
             <div aria-hidden="true" className="panel-a-oscuras" style={{ opacity: panelEnOscuro ? 1 : 0 }} />
           </div>
+          {/* Mientras se contesta el regreso en teléfono, las imágenes de la
+              caída se van trayendo. */}
+          {enPantallaChica && bitacoraOpen ? (
+            <div hidden aria-hidden="true">
+              <img src={TUNEL_DEL_POZO_URL} alt="" />
+              <img src={GATO_DEL_POZO_URL} alt="" />
+            </div>
+          ) : null}
+          {pozoEnTelefono ? (
+            <div className="pozo-en-telefono" data-pozo-en-telefono={cayendoEnTelefono ? 'cayendo' : 'al-fondo'}>
+              <div aria-hidden="true" className="fondo-del-pozo">
+                <img src={GATO_DEL_POZO_URL} alt="" className="fondo-del-pozo__imagen" />
+              </div>
+              {hayCaidaEnTelefono ? laCaida : null}
+              {!cayendoEnTelefono ? (
+                <div className="pozo-en-telefono__contenido" hidden={ultimaPreguntaOpen}>
+                  <LoQueQuedo
+                    key={portal}
+                    enElPozo
+                    gradiente={PORTAL_GRADIENT[portal]}
+                    portal={portal}
+                    entry={CATALOG.find((f) => f.key === portal)}
+                    late={!ultimaPreguntaVista}
+                    regresoRecien={regresoRecien}
+                    onUltimaPregunta={pasarDelPozoAlActoFinal}
+                    onGoToSite={irAlSitio}
+                  />
+                  {l3Rec?.step3 ? (
+                    <div className="recuerdo-en-el-pozo">
+                      <button
+                        type="button"
+                        onClick={() => void handleDownloadSouvenir()}
+                        disabled={isSouvenirGenerating}
+                        className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo"
+                      >
+                        <span className="cabina-antesala-opcion__mirilla">
+                          <Download size={17} aria-hidden="true" />
+                        </span>
+                        <span className="cabina-antesala-opcion__texto">
+                          <span className="cabina-antesala-opcion__titulo">
+                            {isSouvenirGenerating ? 'Preparando tu recuerdo…' : 'Llevarme el recuerdo'}
+                          </span>
+                          <span className="cabina-antesala-opcion__detalle">
+                            Tu consigna y la fecha en que la pregunta vuelve
+                          </span>
+                        </span>
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </motion.div>
       )}
     </AnimatePresence>

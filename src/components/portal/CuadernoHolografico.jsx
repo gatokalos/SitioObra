@@ -465,6 +465,7 @@ function HolograficoPanel({
   onRequireLogin,
   readOnly = false,
   bloqueEnLaCabina = false,
+  avisoDeEspera = null,
   onDownloadSouvenir = null,
   souvenirGenerando = false,
 }) {
@@ -532,6 +533,24 @@ function HolograficoPanel({
                 onAnswer={onStartBitacora}
                 showAction={!readOnly}
               />}
+              {/* En teléfono el aviso de la espera va aquí, en el bloque
+                  morado, sin gato (Carlos, 15 nov 2026: «vamos a usar el
+                  bloque morado, que está instalado en la parte abajo de la
+                  memoria, para darle el aviso»). El texto es el del globo del
+                  gato en escritorio. */}
+              {avisoDeEspera ? (
+                <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera>
+                  <p className="huella-puerta__eyebrow">Entre bambalinas</p>
+                  <p className="bloque-forma__aviso">{avisoDeEspera.texto}</p>
+                  {avisoDeEspera.hecho ? (
+                    <p className="bloque-forma__aviso-hecho">{avisoDeEspera.hecho}</p>
+                  ) : (
+                    <button type="button" onClick={avisoDeEspera.onAviso} className="ultima-pregunta__salida">
+                      Avísame por correo
+                    </button>
+                  )}
+                </section>
+              ) : null}
             </div>
           )
         ) : hasBitacora ? (
@@ -594,6 +613,7 @@ const CuadernoHolografico = ({
   onRequireLogin,
   readOnly = false,
   bloqueEnLaCabina = false,
+  avisoDeEspera = null,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -736,6 +756,7 @@ const CuadernoHolografico = ({
           onRequireLogin={onRequireLogin}
           readOnly={readOnly}
           bloqueEnLaCabina={bloqueEnLaCabina}
+          avisoDeEspera={avisoDeEspera}
         />
       </div>
 
