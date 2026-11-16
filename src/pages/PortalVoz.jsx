@@ -976,16 +976,6 @@ const PortalVoz = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="absolute top-4 right-4 z-10">
-              <RelatedReadingTooltipButton
-                slug={latestSceneReading?.slug}
-                authorLabel={sceneReadingAuthorLabel}
-                thumbnailUrl={sceneReadingThumbnailUrl}
-                ariaLabel="Mostrar lectura relacionada de Escena"
-                tone="cyan"
-                miniversoLabel="El drama"
-              />
-            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1066,6 +1056,20 @@ const PortalVoz = () => {
           <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
             {/* Sección Obra destacada — estilo Reel: object-cover, recorta lados, llena vertical */}
             <div className="relative min-h-[30rem] overflow-hidden">
+              {/* El librito, en la esquina de la obra destacada (Carlos, 15 nov
+                  2026: «va a tener un mejor lugar ahí donde está la obra
+                  destacada»). Antes iba en la esquina de la ficha. Queda
+                  pendiente que cuente más de la obra: por qué es una forma. */}
+            <div className="absolute top-4 right-4 z-10" data-librito-en-la-obra>
+              <RelatedReadingTooltipButton
+                slug={latestSceneReading?.slug}
+                authorLabel={sceneReadingAuthorLabel}
+                thumbnailUrl={sceneReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Escena"
+                tone="cyan"
+                miniversoLabel="El drama"
+              />
+            </div>
               <video
                 className="absolute inset-0 h-full w-full object-cover"
                 src={OBRA_TRAILER_URL}

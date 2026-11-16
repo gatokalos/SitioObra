@@ -327,16 +327,6 @@ const PortalSonoridades = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-cyan-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="absolute top-4 right-4 z-10">
-              <RelatedReadingTooltipButton
-                slug={latestSonoridadesReading?.slug}
-                authorLabel={sonoridadesReadingAuthorLabel}
-                thumbnailUrl={sonoridadesReadingThumbnailUrl}
-                ariaLabel="Mostrar lectura relacionada de Sonoridades"
-                tone="cyan"
-                miniversoLabel="La vibración"
-              />
-            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -460,6 +450,20 @@ const PortalSonoridades = () => {
           <div className="lg:order-2 space-y-6">
             <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
               <div className="relative min-h-[30rem] overflow-hidden">
+              {/* El librito, en la esquina de la obra destacada (Carlos, 15 nov
+                  2026: «va a tener un mejor lugar ahí donde está la obra
+                  destacada»). Antes iba en la esquina de la ficha. Queda
+                  pendiente que cuente más de la obra: por qué es una forma. */}
+            <div className="absolute top-4 right-4 z-10" data-librito-en-la-obra>
+              <RelatedReadingTooltipButton
+                slug={latestSonoridadesReading?.slug}
+                authorLabel={sonoridadesReadingAuthorLabel}
+                thumbnailUrl={sonoridadesReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Sonoridades"
+                tone="cyan"
+                miniversoLabel="La vibración"
+              />
+            </div>
                 <video
                   key={sonoroFeaturedVideo?.id || sonoroFeaturedVideo?.url_video || SONORIDADES_VIDEO_URL}
                   ref={(el) => { if (el) { el.play().catch(() => {}); } }}

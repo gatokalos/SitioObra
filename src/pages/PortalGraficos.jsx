@@ -357,16 +357,6 @@ const PortalGraficos = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-fuchsia-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="absolute top-4 right-4 z-10">
-              <RelatedReadingTooltipButton
-                slug={latestGraficosReading?.slug}
-                authorLabel={graficosReadingAuthorLabel}
-                thumbnailUrl={graficosReadingThumbnailUrl}
-                ariaLabel="Mostrar lectura relacionada de Gráficos"
-                tone="cyan"
-                miniversoLabel="La imagen"
-              />
-            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -437,6 +427,20 @@ const PortalGraficos = () => {
           {/* Reel Card: Obra destacada + Resonancia */}
           <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
             <div className="relative min-h-[30rem] overflow-hidden">
+              {/* El librito, en la esquina de la obra destacada (Carlos, 15 nov
+                  2026: «va a tener un mejor lugar ahí donde está la obra
+                  destacada»). Antes iba en la esquina de la ficha. Queda
+                  pendiente que cuente más de la obra: por qué es una forma. */}
+            <div className="absolute top-4 right-4 z-10" data-librito-en-la-obra>
+              <RelatedReadingTooltipButton
+                slug={latestGraficosReading?.slug}
+                authorLabel={graficosReadingAuthorLabel}
+                thumbnailUrl={graficosReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Gráficos"
+                tone="cyan"
+                miniversoLabel="La imagen"
+              />
+            </div>
               <img
                 src={GRAFICOS_SWIPE_SHOWCASE.previewImage}
                 alt={GRAFICOS_SWIPE_SHOWCASE.title}

@@ -21,7 +21,11 @@ const EN_PASADO = {
       '🔒 Nada se grabó. Tu voz abrió el paso y se quedó contigo.',
       '✍️ El texto no estaba escrito de antemano: lo convocaron tus palabras.',
     ],
-    boton: 'Ver la obra destacada',
+    // «Gemelo»: cada forma tiene dos, una obra autónoma y un artefacto
+    // transmedia (regla de entrada de las nueve formas, 26 oct 2026). Desde el
+    // artefacto, el gemelo es la obra destacada (Carlos, 15 nov 2026: «la obra
+    // destacada como copy no resuelve. ¿Podría decir conoce su gemelo?»).
+    boton: 'Conoce su gemelo',
   },
 };
 
