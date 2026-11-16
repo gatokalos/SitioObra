@@ -76,6 +76,20 @@ const RelatedReadingTooltipButton = ({
   const [placement, setPlacement] = useState('above');
   const rootRef = useRef(null);
   const panelRef = useRef(null);
+  // El espejo del Camerino sobre la obra destacada (Carlos, 15 nov 2026: «en
+  // vez de revelar un tooltip, que todo ese contenedor se vuelva
+  // momentáneamente el espejo con un botón para irse hacia el camerino […]
+  // solo sería diseño para ir hacia donde ya va actualmente»). Cuando el
+  // librito vive en la esquina de una obra destacada, el contenedor entero se
+  // cubre con el espejo; si no, se queda el globito de siempre. Mismo texto y
+  // mismo destino: las tres preguntas por ámbito son trabajo aparte.
+  const espejoRef = useRef(null);
+  const [espejoHost, setEspejoHost] = useState(null);
+  const alternar = () => {
+    setEspejoHost(rootRef.current?.closest('[data-librito-en-la-obra]')?.parentElement ?? null);
+    setIsOpen((prev) => !prev);
+  };
+  const globitoAbierto = isOpen && !espejoHost;
   const navigate = useNavigate();
   const styles = TONE_STYLES[tone] || TONE_STYLES.cyan;
 
@@ -116,7 +130,7 @@ const RelatedReadingTooltipButton = ({
   };
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!globitoAbierto) {
       setPanelStyle(null);
       return undefined;
     }
@@ -169,14 +183,18 @@ const RelatedReadingTooltipButton = ({
       document.removeEventListener('scroll', updatePlacement, true);
       window.removeEventListener('resize', updatePlacement);
     };
-  }, [isOpen]);
+  }, [globitoAbierto]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
 
     const handlePointerDown = (event) => {
       if (!rootRef.current) return;
-      if (!rootRef.current.contains(event.target) && !panelRef.current?.contains(event.target)) {
+      if (
+        !rootRef.current.contains(event.target) &&
+        !panelRef.current?.contains(event.target) &&
+        !espejoRef.current?.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -201,7 +219,7 @@ const RelatedReadingTooltipButton = ({
       <div
         ref={panelRef}
         className={`fixed z-[510] w-[min(88vw,18rem)] sm:w-[min(76vw,18.5rem)] md:w-[19rem] lg:w-[20rem] xl:w-[21rem] h-44 md:h-48 overflow-hidden rounded-2xl border shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition duration-200 camerino-apuntador-panel ${
-          isOpen ? 'pointer-events-auto opacity-100 translate-y-0' : `pointer-events-none opacity-0 ${hiddenTranslateClass}`
+          globitoAbierto ? 'pointer-events-auto opacity-100 translate-y-0' : `pointer-events-none opacity-0 ${hiddenTranslateClass}`
         }`}
         style={{
           ...(panelStyle || { top: 0, left: 0, visibility: 'hidden' }),
@@ -223,7 +241,7 @@ const RelatedReadingTooltipButton = ({
         {/* Los mismos foquitos del espejo del Apuntador en el Camerino: el
             librito anuncia a dónde lleva. Sólo respiran con el panel abierto. */}
         <div
-          className={`camerino-mirror-lights camerino-mirror-lights--compact ${isOpen ? 'camerino-mirror-lights--listening' : ''}`}
+          className={`camerino-mirror-lights camerino-mirror-lights--compact ${globitoAbierto ? 'camerino-mirror-lights--listening' : ''}`}
           aria-hidden="true"
         >
           {['left', 'right'].map((side) => (
@@ -248,11 +266,44 @@ const RelatedReadingTooltipButton = ({
       document.body,
     );
 
+  const espejo = isOpen && espejoHost && typeof document !== 'undefined'
+    ? createPortal(
+      <div
+        ref={espejoRef}
+        className="espejo-en-la-obra"
+        data-espejo-en-la-obra
+        role="dialog"
+        aria-label="El Camerino"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="camerino-mirror-lights camerino-mirror-lights--listening" aria-hidden="true">
+          {['left', 'right'].map((side) => (
+            <span key={side} className={`camerino-mirror-rail camerino-mirror-rail--${side}`}>
+              {Array.from({ length: 6 }, (_, index) => (
+                <i key={index} className="camerino-mirror-bulb" style={{ '--bulb-index': index }} />
+              ))}
+            </span>
+          ))}
+        </div>
+        <button type="button" className="espejo-en-la-obra__volver" onClick={() => setIsOpen(false)}>
+          Volver
+        </button>
+        <div className="espejo-en-la-obra__contenido">
+          <p className="espejo-en-la-obra__texto">Averigua más sobre este #Miniverso en El Camerino.</p>
+          <button type="button" className="espejo-en-la-obra__boton" onClick={handleAskApuntador}>
+            Preguntar al Apuntador →
+          </button>
+        </div>
+      </div>,
+      espejoHost,
+    )
+    : null;
+
   return (
     <div ref={rootRef} className="relative inline-flex">
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={alternar}
         className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 ${styles.button}`}
         aria-label={ariaLabel}
         aria-expanded={isOpen}
@@ -261,6 +312,7 @@ const RelatedReadingTooltipButton = ({
         <BookOpen size={16} />
       </button>
       {tooltipPanel}
+      {espejo}
     </div>
   );
 };

@@ -7234,3 +7234,72 @@ body {
   outline: none;
   border-color: rgba(42, 32, 28, 0.7);
 }
+
+/* El espejo del Camerino sobre la obra destacada (15 nov 2026). El velo deja
+   ver la imagen de la obra; los foquitos van en «screen» para que alumbren
+   sobre ella en vez de taparla (Carlos: «alguna transparencia o screen para
+   que el camerino tenga sus focos, pero pueda verse el fondo de la imagen»). */
+.espejo-en-la-obra {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 4.25rem;
+  text-align: center;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 40%, rgba(60, 24, 52, 0.5), rgba(14, 8, 20, 0.8) 78%);
+  -webkit-backdrop-filter: blur(3px) saturate(0.85);
+  backdrop-filter: blur(3px) saturate(0.85);
+  animation: espejo-en-la-obra-entra 0.35s ease-out both;
+}
+.espejo-en-la-obra .camerino-mirror-lights {
+  mix-blend-mode: screen;
+}
+.espejo-en-la-obra__contenido {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  max-width: 22rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.espejo-en-la-obra__texto {
+  font-size: 1rem;
+  line-height: 1.45;
+  color: rgba(237, 233, 254, 0.95);
+  text-wrap: balance;
+}
+.espejo-en-la-obra__boton {
+  border: 1px solid rgba(221, 214, 254, 0.4);
+  border-radius: 0.5rem;
+  background: rgba(196, 181, 253, 0.1);
+  padding: 0.55rem 0.9rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #ede9fe;
+  transition: background 0.2s ease;
+}
+.espejo-en-la-obra__boton:hover {
+  background: rgba(196, 181, 253, 0.2);
+}
+.espejo-en-la-obra__volver {
+  position: absolute;
+  top: 0.9rem;
+  right: 3.6rem;
+  z-index: 4;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@keyframes espejo-en-la-obra-entra {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .espejo-en-la-obra { animation: none; }
+}
