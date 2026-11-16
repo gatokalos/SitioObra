@@ -7303,3 +7303,40 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .espejo-en-la-obra { animation: none; }
 }
+
+/* Las tres preguntas del espejo (15 nov 2026). */
+.espejo-en-la-obra__contenido {
+  width: 100%;
+  max-width: 27rem;
+  gap: 0.8rem;
+}
+.espejo-en-la-obra__ceja {
+  font-size: 0.62rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(221, 214, 254, 0.75);
+}
+.espejo-en-la-obra__preguntas {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.espejo-en-la-obra__pregunta {
+  border: 1px solid rgba(221, 214, 254, 0.32);
+  border-radius: 0.9rem;
+  background: rgba(20, 10, 28, 0.55);
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: #ede9fe;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.espejo-en-la-obra__pregunta:hover {
+  border-color: rgba(221, 214, 254, 0.6);
+  background: rgba(60, 30, 80, 0.6);
+}
+@media (max-width: 640px) {
+  .espejo-en-la-obra { padding: 2.75rem 3.4rem 1.25rem; }
+}

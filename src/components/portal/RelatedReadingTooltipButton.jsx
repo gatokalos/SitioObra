@@ -98,6 +98,10 @@ const RelatedReadingTooltipButton = ({
 
   const formaId = FORMA_ID_POR_NOMBRE[miniversoLabel ?? ''] ?? '';
   const [vozDeForma, setVozDeForma] = useState(null);
+  // La voz del vestíbulo que habla del universo entero (ámbito «obra», sin
+  // forma). Para que las nueve formas no ofrezcan la misma, cada una toma la
+  // que le toca por su lugar en la lista.
+  const [vozDelUniverso, setVozDelUniverso] = useState(null);
   useEffect(() => {
     if (!formaId) return undefined;
     let vigente = true;
@@ -106,6 +110,9 @@ const RelatedReadingTooltipButton = ({
       const usadas = leerVocesUsadas();
       const voz = lista.find((v) => v && v.forma === formaId && typeof v.texto === 'string' && v.texto.trim() && v.id && !usadas.has(v.id));
       setVozDeForma(voz ?? null);
+      const delUniverso = lista.filter((v) => v && !v.forma && v.ambito === 'obra' && typeof v.texto === 'string' && v.texto.trim() && v.id && !usadas.has(v.id));
+      const lugar = Math.max(0, Object.values(FORMA_ID_POR_NOMBRE).indexOf(formaId));
+      setVozDelUniverso(delUniverso.length ? delUniverso[lugar % delUniverso.length] : null);
     });
     return () => { vigente = false; };
   }, [formaId]);
@@ -118,6 +125,32 @@ const RelatedReadingTooltipButton = ({
     if (formaId) params.set('apuntador_forma', formaId);
     return `/?${params.toString()}#dialogo-critico`;
   }, [miniversoLabel, formaId, vozDeForma]);
+
+  // Las tres preguntas del espejo, una por ámbito (Carlos, 15 nov 2026: «que
+  // haya tres tipos de preguntas […] para contestar sobre la obra destacada,
+  // sobre la forma en el universo, y sobre el universo mismo»). Ninguna es
+  // nueva: la primera es la voz del vestíbulo de esta forma, la segunda la
+  // pregunta de respaldo del librito (21 sep 2026) y la tercera una voz del
+  // vestíbulo sobre el universo. Las que esta persona ya usó no se ofrecen.
+  const preguntasDelEspejo = useMemo(() => {
+    const hrefDe = (texto, vozId) => {
+      const params = new URLSearchParams({ apuntador_q: texto });
+      if (vozId) params.set('apuntador_voz', vozId);
+      if (formaId) params.set('apuntador_forma', formaId);
+      return `/?${params.toString()}#dialogo-critico`;
+    };
+    const deLaForma = PREGUNTA_POR_FORMA[miniversoLabel ?? ''] ?? '';
+    return [
+      vozDeForma ? { ambito: 'obra-destacada', texto: vozDeForma.texto.trim(), href: hrefDe(vozDeForma.texto, vozDeForma.id) } : null,
+      deLaForma ? { ambito: 'forma', texto: deLaForma, href: hrefDe(deLaForma, null) } : null,
+      vozDelUniverso ? { ambito: 'universo', texto: vozDelUniverso.texto.trim(), href: hrefDe(vozDelUniverso.texto, vozDelUniverso.id) } : null,
+    ].filter(Boolean);
+  }, [miniversoLabel, formaId, vozDeForma, vozDelUniverso]);
+  const irAlCamerino = (href) => {
+    setIsOpen(false);
+    onBeforeNavigate?.();
+    navigate(href);
+  };
 
   const handleAskApuntador = () => {
     setIsOpen(false);
@@ -289,9 +322,30 @@ const RelatedReadingTooltipButton = ({
           Volver
         </button>
         <div className="espejo-en-la-obra__contenido">
-          <p className="espejo-en-la-obra__texto">Averigua más sobre este #Miniverso en El Camerino.</p>
-          <button type="button" className="espejo-en-la-obra__boton" onClick={handleAskApuntador}>
-            Preguntar al Apuntador →
+          <p className="espejo-en-la-obra__ceja">El Camerino{miniversoLabel ? ` · ${miniversoLabel}` : ''}</p>
+          {preguntasDelEspejo.length ? (
+            <>
+              {/* Texto de Claude, por revisar. */}
+              <p className="espejo-en-la-obra__texto">¿Con qué pregunta quieres entrar?</p>
+              <div className="espejo-en-la-obra__preguntas">
+                {preguntasDelEspejo.map((pregunta) => (
+                  <button
+                    key={pregunta.ambito}
+                    type="button"
+                    className="espejo-en-la-obra__pregunta"
+                    data-pregunta-del-espejo={pregunta.ambito}
+                    onClick={() => irAlCamerino(pregunta.href)}
+                  >
+                    {pregunta.texto}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="espejo-en-la-obra__texto">Averigua más sobre este #Miniverso en El Camerino.</p>
+          )}
+          <button type="button" className="espejo-en-la-obra__boton" onClick={() => irAlCamerino('/#dialogo-critico')}>
+            Ir al Camerino →
           </button>
         </div>
       </div>,
