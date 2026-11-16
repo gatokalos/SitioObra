@@ -7077,3 +7077,134 @@ body {
   line-height: 1.4;
   color: rgba(203, 213, 225, 0.62);
 }
+
+/* La caja de «Entre bambalinas» en la tarjeta de la galería (15 nov 2026, sobre
+   una maqueta de Carlos): el aviso por teléfono a la vista, el recuerdo y la
+   salida. El botón del aviso es dorado: aquí, en el tablero, no chilla. */
+.caja-de-bambalinas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(196, 181, 253, 0.2);
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(49, 38, 84, 0.55), rgba(24, 18, 44, 0.7));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+.caja-de-bambalinas__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.caja-de-bambalinas__icono {
+  display: flex;
+  flex: 0 0 auto;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  background: linear-gradient(160deg, rgba(139, 92, 246, 0.28), rgba(49, 38, 84, 0.5));
+  color: #e9d5ff;
+}
+.caja-de-bambalinas__titulo {
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+.caja-de-bambalinas__texto {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(226, 232, 240, 0.78);
+}
+.caja-de-bambalinas__aviso {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.caja-de-bambalinas__campo {
+  min-width: 0;
+  flex: 1 1 11rem;
+  border: 1px solid rgba(196, 181, 253, 0.35);
+  border-radius: 999px;
+  background: rgba(10, 8, 22, 0.55);
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: #f8fafc;
+}
+.caja-de-bambalinas__campo::placeholder {
+  color: rgba(203, 213, 225, 0.5);
+}
+.caja-de-bambalinas__campo:focus {
+  outline: none;
+  border-color: rgba(246, 207, 122, 0.8);
+}
+.caja-de-bambalinas__avisar {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f6cf7a, #e0a94a);
+  padding: 0.6rem 1.1rem;
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1206;
+  box-shadow: 0 8px 22px rgba(224, 169, 74, 0.28);
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+.caja-de-bambalinas__avisar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.caja-de-bambalinas__hecho {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #a7f3d0;
+}
+.caja-de-bambalinas__recuerdo {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(196, 181, 253, 0.4);
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #ede9fe;
+}
+.caja-de-bambalinas__recuerdo:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+.caja-de-bambalinas__ceja {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(233, 213, 255, 0.65);
+}
+.caja-de-bambalinas__cabecera .caja-de-bambalinas__titulo {
+  margin-top: 0.15rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+}
+.caja-de-bambalinas__cabecera + div .caja-de-bambalinas__texto {
+  margin-top: 0;
+  font-size: 0.88rem;
+}
+/* La salida de la caja no trae la entrada animada del pozo, que la dejaba
+   encendida aunque estuviera apagada. */
+.caja-de-bambalinas .tarjeta-del-pozo__salida {
+  animation: none;
+}
+.caja-de-bambalinas .tarjeta-del-pozo__salida:disabled {
+  opacity: 0.38;
+  filter: saturate(0.35);
+  box-shadow: none;
+}

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bell, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Bell, CalendarDays, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -714,10 +714,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const ultimaPreguntaOpen = Boolean(ultimaPregunta);
   // En el foco dentro de la tarjeta de la galería, con quien la lleva a la Memoria.
   const enLaTarjeta = soloEnElFoco && typeof onIrALaMemoria === 'function';
-  // El aviso elegido sin cuenta: queda anotado y la ventana de entrar no se abre.
-  const [avisoAnotado, setAvisoAnotado] = useState(() => {
-    try { return readPendingAvisoCanal() === 'correo'; } catch { return false; }
-  });
   // Quien llega al portal con el método ya abierto (viene de contestar en su
   // tarjeta, o vuelve el día del regreso) lo encuentra puesto, sin fundido: con
   // el fundido la ficha se alcanzaba a ver debajo (Carlos, 15 nov 2026).
@@ -1818,6 +1814,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   cierre del detonante y el anuncio de la espera. D-42 se sostiene —la
                   espera no ofrece nada— porque lo que hay debajo cierra En el foco, no
                   ocupa los tres días. */}
+              {/* En la tarjeta el encabezado va dentro de la caja (Carlos, 15 nov
+                  2026: «no sé por qué entre bambalinas lo pusiste por fuera»). */}
+              {enLaTarjeta ? null : (
               <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
                 <div className="px-2 pb-1 pt-4 text-center">
                   <div className="flex items-center gap-3" aria-hidden="true">
@@ -1838,15 +1837,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   </p>
                 </div>
               </motion.div>
+              )}
 
-              {/* En la tarjeta de la galería (15 nov 2026, Carlos): las filas van de
-                  borde a borde del contenedor («que no se vea como un abdomen»).
-                  Segunda vuelta del mismo día: «que cada icono abra su caja como
-                  antes y que sean como "preferencias" para que al seleccionar
-                  mínimo uno se habilite un CTA que lleva a la ficha», y «sin pedir
-                  mi modal del login». El aviso y el recuerdo se eligen aquí mismo;
-                  «Mientras tanto» deja de ser fila y es el botón de salida. */}
-              <div className={`cabina-antesala-stack${enLaTarjeta ? ' cabina-antesala-stack--a-sangre' : ''}`}>
+              {enLaTarjeta ? null : (
+              <div className="cabina-antesala-stack">
               {/* El aviso es la primera fila del stack, con la misma caja que las otras
                   dos. El atril es provisional, hasta que exista el icono definitivo. */}
               {!bitacoraCompleted && (
@@ -1865,18 +1859,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         <span className="cabina-antesala-opcion__detalle">
                           {bitacoraAvailable ? dramaturgy.returnBackNowHint : avisoDoneHint}
                         </span>
-                      </span>
-                    </div>
-                  ) : enLaTarjeta && avisoAnotado && avisoPaso === null ? (
-                    <div className="cabina-antesala-opcion cabina-antesala-opcion--completa" data-fila-de-bambalinas="aviso-anotado">
-                      <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
-                        <Check size={18} aria-hidden="true" />
-                      </span>
-                      <span className="cabina-antesala-opcion__texto">
-                        <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
-                          {dramaturgy.closingLine.replace(/\.$/, '')}
-                        </span>
-                        <span className="cabina-antesala-opcion__detalle">{dramaturgy.avisoAnotadoHint}</span>
                       </span>
                     </div>
                   ) : avisoPaso === null ? (
@@ -1904,21 +1886,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
                           sesión, la del correo es un solo toque y nombra la cuenta.
                           WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
-                      <button
-                        type="button"
-                        data-aviso-con-correo
-                        onClick={enLaTarjeta && !user?.id
-                          ? () => { writePendingAvisoCanal('correo'); setAvisoAnotado(true); setAvisoPaso(null); }
-                          : handleAvisoPorCorreo}
-                        className="cabina-antesala-eleccion"
-                      >
+                      <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
                         <span className="cabina-antesala-eleccion__titulo">
                           {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
                         </span>
                         <span className="cabina-antesala-eleccion__detalle">
-                          {correoEnmascarado
-                            ? dramaturgy.avisoCorreoConCuentaHint
-                            : enLaTarjeta ? dramaturgy.avisoCorreoSinCuentaHint : dramaturgy.avisoCorreoHint}
+                          {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
                         </span>
                       </button>
                       {AVISO_WHATSAPP_DISPONIBLE && (
@@ -1987,7 +1960,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             </button>
               </motion.div>
 
-              {enLaTarjeta ? null : (
+              {(
               <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
             {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
                 ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
@@ -2005,25 +1978,81 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   {dramaturgy.meanwhileTitle}
                 </span>
                 <span className="cabina-antesala-opcion__detalle">
-                  {enLaTarjeta ? dramaturgy.meanwhileHintObra : dramaturgy.meanwhileHint}
+                  {dramaturgy.meanwhileHint}
                 </span>
               </span>
             </button>
               </motion.div>
               )}
               </div>
+              )}
+              {/* En la tarjeta de la galería, una sola caja (Carlos, 15 nov 2026, con
+                  una maqueta: el dato de contacto a la vista, la descarga y la
+                  salida). Pide el teléfono, no el correo: «no pongamos el correo y
+                  pongamos el teléfono ¡y ya! Ya sé que todavía no está listo, por lo
+                  menos lo parchamos hoy». El número se registra por el camino del
+                  aviso por WhatsApp, que ya existía y estaba oculto desde el 3 nov
+                  porque todavía no hay cuenta de WhatsApp que envíe: hoy se guarda
+                  el consentimiento y nada sale. La salida se enciende al elegir al
+                  menos una de las dos. */}
               {enLaTarjeta ? (
-                <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="bambalinas-salida" data-salida-de-bambalinas>
+                <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="caja-de-bambalinas" data-caja-de-bambalinas>
+                  <div className="caja-de-bambalinas__cabecera">
+                    <span className="caja-de-bambalinas__icono" aria-hidden="true"><CalendarDays size={22} /></span>
+                    <div className="min-w-0">
+                      <p className="caja-de-bambalinas__ceja">Tres días</p>
+                      <p className="caja-de-bambalinas__titulo">Entre bambalinas</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="caja-de-bambalinas__texto">{dramaturgy.closingLine} {dramaturgy.bambalinasCajaTexto}</p>
+                  </div>
+                  {bitacoraCompleted ? null : bitacoraConsented ? (
+                    <p className="caja-de-bambalinas__hecho" data-aviso-hecho>
+                      <Check size={15} aria-hidden="true" />
+                      <span>{avisoDoneHint}</span>
+                    </p>
+                  ) : (
+                    <form
+                      className="caja-de-bambalinas__aviso"
+                      onSubmit={(e) => { e.preventDefault(); if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); }}
+                    >
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        placeholder={dramaturgy.bambalinasCajaPlaceholder}
+                        aria-label={dramaturgy.bambalinasCajaPlaceholder}
+                        className="caja-de-bambalinas__campo"
+                      />
+                      <button type="submit" disabled={phoneInput.trim().length < 8} className="caja-de-bambalinas__avisar">
+                        {dramaturgy.bambalinasCajaAvisar}
+                      </button>
+                    </form>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleDownloadSouvenir}
+                    disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+                    className="caja-de-bambalinas__recuerdo"
+                    data-recuerdo-de-la-caja
+                  >
+                    {souvenirDeliveredAt ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
+                    {isSouvenirGenerating ? 'Preparando el recuerdo…' : souvenirDeliveredAt ? 'Recuerdo entregado' : dramaturgy.souvenirCta}
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleClose()}
-                    disabled={!(bitacoraConsented || avisoAnotado || souvenirDeliveredAt || bitacoraCompleted)}
+                    disabled={!(bitacoraConsented || souvenirDeliveredAt || bitacoraCompleted)}
                     className="tarjeta-del-pozo__salida"
+                    data-salida-de-bambalinas
                   >
                     {dramaturgy.bambalinasCta}
                     <span aria-hidden="true">→</span>
                   </button>
-                  {!(bitacoraConsented || avisoAnotado || souvenirDeliveredAt || bitacoraCompleted) ? (
+                  {!(bitacoraConsented || souvenirDeliveredAt || bitacoraCompleted) ? (
                     <p className="bambalinas-salida__pista">{dramaturgy.bambalinasCtaPista}</p>
                   ) : null}
                 </motion.div>
