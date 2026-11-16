@@ -14,7 +14,7 @@ import { readResonanceProgress } from '@/lib/bitacoraShared';
 // El tablero del método, dentro de la tarjeta de la galería (Carlos, 13 nov
 // 2026). Después de enviar la primera intuición al dorso, saltar de la tarjeta
 // a la ficha completa «se ve totalmente disruptivo»: el recorrido sigue aquí
-// mismo —el eco de la intuición y la preparación de escena— hasta el botón que
+// mismo —el eco de la intuición y la Sentir la escena— hasta el botón que
 // abre el artefacto.
 // Desde el 14 nov 2026 (Carlos) el artefacto se abre en su propia ventana, sin
 // la ficha, y al salir se vuelve a esta tarjeta: En el foco sube al primer

@@ -37,7 +37,7 @@ export { CATALOG };
 // cuadraba): cada nodo lleva el icono que ese momento ya tiene en el libreto y
 // en las insignias de la vitrina —chispas para En el foco, libro para Memoria—
 // y En escena recibe uno propio, la burbuja de la cabina, donde ocurre. Antes
-// el ojo era el de Primera intuición y la llama la de Preparación de escena.
+// el ojo era el de Primera intuición y la llama la de Sentir la escena.
 const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;

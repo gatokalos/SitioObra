@@ -488,7 +488,7 @@ export const enviarPrimeraIntuicion = async ({
   return acknowledgment;
 };
 
-// La expectativa (el chip de la preparación de escena) y la marca de «escena
+// La expectativa (el chip de la Sentir la escena) y la marca de «escena
 // abierta», fuera del componente desde el 13 nov 2026: las usa también el
 // tablero que vive en la tarjeta de la galería (TableroEnLaTarjeta.jsx), donde
 // el recorrido sigue hasta abrir el artefacto sin saltar a la ficha. Guardan

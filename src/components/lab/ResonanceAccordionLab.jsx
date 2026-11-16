@@ -15,7 +15,7 @@ import {
 const PORTAL_OPTIONS = [
   {
     id: 'obra', label: 'Dramaturgia', form: 'El drama',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Ubica desde dónde miras',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Ubica desde dónde miras',
     phase2Description: 'Antes de entrar en escena, ubica hacia quién diriges lo que estás por decir. Esa referencia nos ayudará a comprender desde dónde miras lo que viene.',
     phase2Question: '¿Qué esperas encontrar cuando alguien se expone frente a otros?',
     phase1Answer: 'Para ti, exponerse frente a otros empieza por la verdad.',
@@ -23,7 +23,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'literatura', label: 'Literatura', form: 'La escritura',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Reconoce lo que buscas',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Reconoce lo que buscas',
     phase2Description: 'Antes de abrir la historia, reconoce qué esperas encontrar en ella. Esa expectativa será el punto desde el que comenzarás a leer.',
     phase2Question: '¿Qué esperas encontrar cuando una historia se abre contigo?',
     phase1Answer: 'Una historia deja de ser ajena cuando te devuelve una herida conocida.',
@@ -31,7 +31,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'artesanias', label: 'Artesanías', form: 'El objeto',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Reconoce lo que conservas',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Reconoce lo que conservas',
     phase2Description: 'Antes de acercarte a lo que alguien conserva, reconoce qué objetos siguen teniendo un lugar en ti aunque su utilidad haya terminado.',
     phase2Question: '¿Qué cosas te cuesta dejar ir aunque ya no tengan utilidad?',
     phase1Answer: 'Un objeto deja de ser para ti solo un objeto cuando alguien más lo recuerda contigo.',
@@ -39,7 +39,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'grafico', label: 'Gráficos', form: 'La imagen',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Afina tu mirada',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Afina tu mirada',
     phase2Description: 'Antes de mirar de frente, reconoce qué clase de imagen suele quedarse observándote cuando todo lo demás se retira.',
     phase2Question: '¿Qué imágenes sientes que te observan cuando vuelves a estar a solas?',
     phase1Answer: 'Una imagen deja de ser superficie cuando en ella reconoces una mirada.',
@@ -47,7 +47,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'cine', label: 'Cine', form: 'La proyección',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Sostén la mirada',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Sostén la mirada',
     phase2Description: 'Antes de que comience la escena, reconoce qué momentos suelen hacerte apartar la mirada. Esa será tu posición frente a lo que viene.',
     phase2Question: '¿Qué tipo de momentos te cuesta mirar de frente en una historia?',
     phase1Answer: 'Mirar una historia de frente también significa encontrarte con la vulnerabilidad.',
@@ -55,7 +55,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'sonoridades', label: 'Sonoridades', form: 'La vibración',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Afina el oído',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Afina el oído',
     phase2Description: 'Antes de escuchar, reconoce qué sonidos regresan cuando el ruido se apaga. Esa memoria afinará tu manera de entrar.',
     phase2Question: '¿Qué sonidos sientes que regresan cuando estás solo?',
     phase1Answer: 'Un sonido permanece cuando vuelve a ti como una voz conocida.',
@@ -63,7 +63,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'movimiento', label: 'Movimiento', form: 'El cuerpo',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Escucha tu cuerpo',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Escucha tu cuerpo',
     phase2Description: 'Antes de moverte, observa qué hace tu cuerpo cuando todavía no encuentras palabras. Esa reacción también es una forma de mirar.',
     phase2Question: '¿Qué hace tu cuerpo cuando aún no entiendes lo que sientes?',
     phase1Answer: 'Tu cuerpo empieza a responder antes que las palabras cuando cambia la respiración.',
@@ -71,7 +71,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'juegos', label: 'Juegos', form: 'El riesgo',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Reconoce tu impulso',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Reconoce tu impulso',
     phase2Description: 'Antes de elegir, reconoce cuál suele ser tu primer impulso. Esa decisión inicial será la coordenada de tu recorrido.',
     phase2Question: 'Cuando una experiencia te obliga a elegir, ¿qué sueles hacer primero?',
     phase1Answer: 'Una decisión cambia la historia cuando tu primer impulso es seguir tu intuición.',
@@ -79,7 +79,7 @@ const PORTAL_OPTIONS = [
   },
   {
     id: 'oraculo', label: 'Oráculo', form: 'La pregunta',
-    phase2Eyebrow: 'Preparación de escena', phase2Title: 'Sostén la pregunta',
+    phase2Eyebrow: 'Sentir la escena', phase2Title: 'Sostén la pregunta',
     phase2Description: 'Antes de formular otra pregunta, reconoce qué haces con aquellas que se quedan contigo. Esa disposición orientará la consulta.',
     phase2Question: '¿Qué haces cuando una pregunta sigue contigo más tiempo del esperado?',
     phase1Answer: 'Una pregunta permanece contigo cuando decides darle vueltas en silencio.',

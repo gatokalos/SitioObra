@@ -1411,7 +1411,7 @@ export const formats = [
     title: 'El objeto',
     icon: Coffee,
     iconClass: 'text-amber-300',
-    vitrinaCopy: 'Sostiene lo mismo que El drama\nuna emoción que alguien puso ahí.\nAunque sin derramarse.',
+    vitrinaCopy: 'Sostiene lo mismo que El drama\nuna emoción que alguien puso ahí.\nPero sin que se derrame.',
 
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',

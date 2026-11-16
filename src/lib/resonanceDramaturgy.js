@@ -4,7 +4,7 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // cuadro y ya no hay vuelta atrás.
   // «El detonante» era vocabulario de dirección (D-42) y, como «Retención», no
   // es palabra para el visitante (Carlos, 14 nov 2026). La ceja sigue la serie
-  // de las otras dos: «Antes de entrar», «Preparación de escena».
+  // de las otras dos: «Antes de entrar», «Sentir la escena».
   phase3Eyebrow: 'Al salir de escena',
   phase3Title: 'En el foco',
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
@@ -27,17 +27,17 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // El aviso ya concedido no desaparece: se queda con el mismo gesto de
   // confirmación que el recuerdo entregado (Carlos, 18 sep 2026).
   returnDone: 'La pregunta volverá',
-  returnDoneHint: 'Te buscará por WhatsApp cuando llegue el momento.',
+  returnDoneHint: 'Te buscaré por WhatsApp cuando llegue el momento.',
   // Fase 2 (3 nov 2026): el aviso también llega por correo, al de la cuenta.
-  returnDoneHintCorreo: 'Te buscará en tu correo cuando llegue el momento.',
-  returnDoneHintGenerico: 'Te buscará cuando llegue el momento.',
+  returnDoneHintCorreo: 'Te buscaré en tu correo cuando llegue el momento.',
+  returnDoneHintGenerico: 'Te buscaré cuando llegue el momento.',
   // Las dos vías del aviso (prototipo del segundo acto v0.4; Carlos, 22 oct 2026).
   avisoCorreoTitle: 'Con mi correo',
   avisoCorreoHint: 'Inicias sesión aquí mismo. Un solo correo, el mismo de tu cuenta.',
   // La caja de «Entre bambalinas» en la tarjeta de la galería (15 nov 2026).
   // El título es la línea de la retención; el texto lo propuso Claude con las
   // frases que ya decía el gato, y Carlos pidió proponerlo: por revisar.
-  bambalinasCajaTexto: 'En tres días, una nueva pregunta volverá a buscarte. Deja tu número y te avisamos por WhatsApp.',
+  bambalinasCajaTexto: 'En tres días, una nueva pregunta volverá a buscarte. Deja tu número y yo te aviso.',
   bambalinasCajaPlaceholder: 'Tu número de WhatsApp',
   bambalinasCajaAvisar: 'Avísame',
   // La salida no nombra al gemelo (Carlos: «no vamos a poner conoce su gemelo ahí»).
@@ -70,13 +70,13 @@ export const RESONANCE_DRAMATURGY_BY_PORTAL = {
   obra: {
     label: 'Dramaturgia',
     form: 'El drama',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Ubica desde dónde miras',
   },
   literatura: {
     label: 'Literatura',
     form: 'La escritura',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Reconoce lo que buscas',
     // Modo gesto (Carlos, 11 oct 2026): sustituye a «Ya forma parte de tu obra».
     // Sin número y en futuro: la convocatoria ocurre al abrir el Marcador y el
@@ -86,43 +86,43 @@ export const RESONANCE_DRAMATURGY_BY_PORTAL = {
   artesanias: {
     label: 'Artesanías',
     form: 'El objeto',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Reconoce lo que conservas',
   },
   grafico: {
     label: 'Gráficos',
     form: 'La imagen',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Afina tu mirada',
   },
   cine: {
     label: 'Cine',
     form: 'La proyección',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Sostén la mirada',
   },
   sonoridades: {
     label: 'Sonoridades',
     form: 'La vibración',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Afina el oído',
   },
   movimiento: {
     label: 'Movimiento',
     form: 'El cuerpo',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Escucha tu cuerpo',
   },
   juegos: {
     label: 'Juegos',
     form: 'El riesgo',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Reconoce tu impulso',
   },
   oraculo: {
     label: 'Oráculo',
     form: 'La pregunta',
-    phase2Eyebrow: 'Preparación de escena',
+    phase2Eyebrow: 'Sentir la escena',
     phase2Title: 'Sostén la pregunta',
   },
 };
