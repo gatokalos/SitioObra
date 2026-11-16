@@ -1555,7 +1555,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       setBitacoraOpen(true);
     }
   }, [open, enPantallaChica, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
-  const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen;
+  // Mientras el gato da el aviso de la espera, la cabina también se enciende
+  // (Carlos, 15 nov 2026: el globo «no se ve bien si está sobre una cabina
+  // oscurecida. Tendría que estar encendida»). Antes hablaba desde la penumbra.
+  const globoDeEspera = holograficoOpen && !bitacoraOpen && !ultimaPreguntaOpen
+    && !bitacoraCompleted && !bitacoraAvailable && holograficoPoster === portal;
+  const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen || globoDeEspera;
 
   // ── La Memoria en escritorio, al fondo del pozo (Carlos, 14 nov 2026) ──
   // «Adaptemos el bloque morado en el panel de la derecha, pero ahora usemos
@@ -2980,10 +2985,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             {/* Antes del regreso, el gato dice qué pasa y ofrece el aviso en su
                 globo (Carlos, 14 nov 2026: «le falta un mensaje en el globo del
                 gato para que le diga al visitante qué pasa»; el aviso «puede ir
-                en el globo de texto del gato»). Habla desde la penumbra: el
-                encendido sigue reservado para cuando vuelve la pregunta. Con
-                otra forma al centro de la constelación, calla. */}
-            {holograficoOpen && !bitacoraOpen && !ultimaPreguntaOpen && !bitacoraCompleted && !bitacoraAvailable && holograficoPoster === portal && (
+                en el globo de texto del gato»). Habla con la cabina encendida
+                (15 nov 2026). Con otra forma al centro de la constelación,
+                calla y la cabina vuelve a la penumbra. */}
+            {globoDeEspera && (
               <div className="cabina-bubble cabina-bubble--escritorio" data-globo="espera">
                 <p className="cabina-bubble__preludio">Entre bambalinas</p>
                 <p className="cabina-bubble__texto">{dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.</p>

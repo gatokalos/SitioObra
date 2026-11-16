@@ -2417,12 +2417,41 @@ const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionCont
   );
 };
 
+// El librito, en la esquina de la obra destacada también en escritorio
+// (Carlos, 15 nov 2026: «hay que poner el librito en el lugar que debe de
+// estar en los escritorios también»). Antes iba junto al título de la ficha.
+// Queda pendiente que cuente más de la obra: por qué es una forma.
+const renderLibritoDeLaObra = () => (
+  <div
+    className="absolute right-4 top-4 z-20"
+    data-librito-en-la-obra
+    onClick={(e) => e.stopPropagation()}
+  >
+    <RelatedReadingTooltipButton
+      slug={latestBlogPostByShowcase[activeShowcase]?.slug}
+      authorLabel={latestBlogPostByShowcase[activeShowcase]?.author?.trim() || 'autor invitado'}
+      thumbnailUrl={
+        sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.featured_image_url) ||
+        sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.cover_image) ||
+        sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.image_url) ||
+        sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.author_avatar_url) ||
+        null
+      }
+      ariaLabel="Mostrar lectura disponible en Textos"
+      tone="cyan"
+      miniversoLabel={activeDefinition.label}
+      onBeforeNavigate={handleCloseShowcase}
+    />
+  </div>
+);
+
 const renderDramaFeaturedWork = () => (
   <motion.div
     layout
     transition={{ duration: 0.35, ease: 'easeInOut' }}
     className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30"
   >
+    {renderLibritoDeLaObra()}
     <video
       className="absolute inset-0 h-full w-full object-cover"
       src={OBRA_TRAILER_URL}
@@ -2613,6 +2642,7 @@ const renderDramaFeaturedWork = () => (
                   transition={{ default: { duration: 0.22, ease: 'easeInOut' }, layout: { duration: 0.35, ease: 'easeInOut' } }}
                   className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
                 >
+                  {renderLibritoDeLaObra()}
                   <img
                     src={MARIANA_GALLERY[0].url}
                     alt={MARIANA_GALLERY[0].caption}
@@ -2648,6 +2678,7 @@ const renderDramaFeaturedWork = () => (
                   transition={{ default: { duration: 0.22, ease: 'easeInOut' }, layout: { duration: 0.35, ease: 'easeInOut' } }}
                   className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
                 >
+                  {renderLibritoDeLaObra()}
                   {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
                     <video
                       className="absolute inset-0 h-full w-full object-cover"
@@ -2773,6 +2804,7 @@ const renderDramaFeaturedWork = () => (
                 transition={{ duration: 0.35, ease: 'easeInOut' }}
                 className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-white/10"
               >
+                {renderLibritoDeLaObra()}
                 <video
                   key={sonoroFeaturedVideo?.id || sonoroFeaturedVideo?.url_video || activeDefinition.videoUrl}
                   ref={(el) => { if (el) { el.play().catch(() => {}); } }}
@@ -2864,6 +2896,7 @@ const renderDramaFeaturedWork = () => (
                 transition={{ duration: 0.35, ease: 'easeInOut' }}
                 className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-violet-200/20"
               >
+                {renderLibritoDeLaObra()}
                 {activeDefinition.videoUrl ? (
                   <video
                     ref={(el) => { if (el) { el.play().catch(() => {}); } }}
@@ -3501,6 +3534,7 @@ const renderDramaFeaturedWork = () => (
                   >
                     {/* Imagen full-bleed con texto superpuesto */}
                     <div className="relative h-full min-h-[30rem]">
+                      {renderLibritoDeLaObra()}
                       {entry.previewImage ? (
                         <img
                           src={entry.previewImage}
@@ -3655,6 +3689,7 @@ const renderDramaFeaturedWork = () => (
                     transition={{ duration: 0.35, ease: 'easeInOut' }}
                     className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-white/10 bg-black"
                   >
+                    {renderLibritoDeLaObra()}
                     <video
                       key={`${currentDiosa.id}-bg`}
                       className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
@@ -3822,6 +3857,7 @@ const renderDramaFeaturedWork = () => (
               transition={{ duration: 0.35, ease: 'easeInOut' }}
               className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-emerald-200/20"
             >
+              {renderLibritoDeLaObra()}
               {activeDefinition.videoUrl ? (
                 <video
                   ref={(el) => { if (el) { el.play().catch(() => {}); } }}
@@ -4014,6 +4050,7 @@ const renderDramaFeaturedWork = () => (
         showBadge = true,
         showArtefactoChip = false,
         titleAtTop = false,
+        conLibrito = false,
       }) => {
         if (!asset?.url) return null;
         const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
@@ -4025,6 +4062,7 @@ const renderDramaFeaturedWork = () => (
             transition={{ duration: 0.35, ease: 'easeInOut' }}
             className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black/30"
           >
+            {conLibrito ? renderLibritoDeLaObra() : null}
             <div className="absolute inset-0">
               {isVideoFile ? (
                 <div className="relative h-full w-full bg-black/60">
@@ -4147,6 +4185,7 @@ const renderDramaFeaturedWork = () => (
           showBadge: false,
           showArtefactoChip: true,
           titleAtTop: true,
+          conLibrito: true,
           extraContent: quironStills.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {quironStills.map((still, index) => {
@@ -4489,6 +4528,7 @@ const renderDramaFeaturedWork = () => (
                         transition={{ duration: 0.35, ease: 'easeInOut' }}
                         className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-black/30"
                       >
+                        {entry.eyebrow === 'Obra destacada' ? renderLibritoDeLaObra() : null}
                         {imageSrc ? (
                           /\.mp4($|\?)/i.test(imageSrc) ? (
                             <video
@@ -4933,21 +4973,6 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
                         </div>
                       </div>
-                      <RelatedReadingTooltipButton
-                        slug={latestBlogPostByShowcase[activeShowcase]?.slug}
-                        authorLabel={latestBlogPostByShowcase[activeShowcase]?.author?.trim() || 'autor invitado'}
-                        thumbnailUrl={
-                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.featured_image_url) ||
-                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.cover_image) ||
-                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.image_url) ||
-                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.author_avatar_url) ||
-                          null
-                        }
-                        ariaLabel="Mostrar lectura disponible en Textos"
-                        tone="cyan"
-                        miniversoLabel={activeDefinition.label}
-                        onBeforeNavigate={handleCloseShowcase}
-                      />
                     </div>
                     <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                       {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}

@@ -297,16 +297,6 @@ const PortalOraculo = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="absolute top-4 right-4 z-10">
-              <RelatedReadingTooltipButton
-                slug={latestOraculoReading?.slug}
-                authorLabel={oraculoReadingAuthorLabel}
-                thumbnailUrl={oraculoReadingThumbnailUrl}
-                ariaLabel="Mostrar lectura relacionada de Oráculo"
-                tone="cyan"
-                miniversoLabel="La pregunta"
-              />
-            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -377,6 +367,19 @@ const PortalOraculo = () => {
 
           <div className="lg:order-2 rounded-3xl border border-violet-200/20 overflow-hidden">
             <div className="relative min-h-[26rem] overflow-hidden sm:min-h-[30rem]">
+              {/* El librito, en la esquina de la obra destacada (Carlos, 15 nov
+                  2026). Antes iba en la esquina de la ficha. Queda pendiente que
+                  cuente más de la obra: por qué es una forma. */}
+              <div className="absolute top-4 right-4 z-10" data-librito-en-la-obra>
+                <RelatedReadingTooltipButton
+                  slug={latestOraculoReading?.slug}
+                  authorLabel={oraculoReadingAuthorLabel}
+                  thumbnailUrl={oraculoReadingThumbnailUrl}
+                  ariaLabel="Mostrar lectura relacionada de Oráculo"
+                  tone="cyan"
+                  miniversoLabel="La pregunta"
+                />
+              </div>
               {ORACULO_VIDEO_URL ? (
                 <video
                   ref={(el) => { if (el) { el.play().catch(() => {}); } }}
