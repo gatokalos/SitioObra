@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 // El dorso de la tarjeta recomendada en la galería (Carlos, 13 nov 2026).
 // La pregunta madre se contesta aquí, antes de abrir la ficha: leer sobre la
@@ -11,11 +11,21 @@ import { useId, useState } from 'react';
 const CONSENTIMIENTO_COMPLETO =
   'Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan sin tu nombre —salvo que decidas firmarlas— y puedes detenerte cuando quieras. Lo que escribes se procesa fuera de este sitio para poder devolvértelo. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.';
 
+// Lo escrito sin enviar, por forma, mientras dure la visita (15 nov 2026). Al
+// tocar otra tarjeta, la que estaba girada se cierra: si se vuelve a ella, lo
+// escrito sigue ahí. No se guarda en el navegador: se va al recargar o enviar.
+const borradores = new Map();
+
 const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnviar, onVolver }) => {
-  const [nombre, setNombre] = useState('');
-  const [firmando, setFirmando] = useState(false);
-  const [respuesta, setRespuesta] = useState('');
-  const [acepta, setAcepta] = useState(false);
+  const llave = formaTitle ?? question;
+  const previo = borradores.get(llave);
+  const [nombre, setNombre] = useState(previo?.nombre ?? '');
+  const [firmando, setFirmando] = useState(previo?.firmando ?? false);
+  const [respuesta, setRespuesta] = useState(previo?.respuesta ?? '');
+  const [acepta, setAcepta] = useState(previo?.acepta ?? false);
+  useEffect(() => {
+    borradores.set(llave, { nombre, firmando, respuesta, acepta });
+  }, [llave, nombre, firmando, respuesta, acepta]);
   const [leyendo, setLeyendo] = useState(false);
   const [enviando, setEnviando] = useState(false);
   // La galería dibuja la tarjeta dos veces (carrusel y cuadrícula): los ids no
@@ -32,6 +42,7 @@ const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnvia
     setEnviando(true);
     try {
       await onEnviar?.({ nombre, respuesta: respuesta.trim() });
+      borradores.delete(llave);
     } finally {
       setEnviando(false);
     }

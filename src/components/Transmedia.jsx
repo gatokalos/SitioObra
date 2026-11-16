@@ -1699,7 +1699,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   };
   const laTarjetaTieneDorso = (formatId) => pideIntuicionEnLaTarjeta(formatId) || tableroEnLaTarjeta(formatId);
   const girarLaTarjeta = (formatId) => {
-    if (tarjetaGirandoId || tarjetaGiradaId) return;
+    if (tarjetaGirandoId || tarjetaGiradaId === formatId) return;
+    // Con otra tarjeta girada, el toque ya no se ignora: la abierta se cierra
+    // y gira la nueva (Carlos, 15 nov 2026: «que gire la nueva y cierre la
+    // girada»). Lo escrito sin enviar en la que se cierra se conserva (ver
+    // DorsoPrimeraIntuicion).
+    if (tarjetaGiradaId) setTarjetaGiradaId(null);
     // Al volver a la recomendada, la otra que estuviera encendida se apaga.
     setTarjetaConLoginId(null);
     setDesktopVitranaRevealId(null);

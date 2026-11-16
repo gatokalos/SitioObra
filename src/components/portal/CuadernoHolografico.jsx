@@ -534,9 +534,12 @@ function HolograficoPanel({
                   memoria, para darle el aviso»). El texto es el del globo del
                   gato en escritorio. */}
               {avisoDeEspera ? (
-                <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera>
+                <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera aria-label={avisoDeEspera.texto}>
                   <p className="huella-puerta__eyebrow">Entre bambalinas</p>
-                  <p className="bloque-forma__aviso">{avisoDeEspera.texto}</p>
+                  {/* Sin la descripción (Carlos, 15 nov 2026, noche): «si no,
+                      el bloque morado es muy ancho y aplasta la constelación
+                      en pantallas chicas». El plazo ya lo dice la línea de
+                      arriba («Entre bambalinas · 3 días»). */}
                   {/* Lo mismo que la caja de «Entre bambalinas» de la tarjeta: el
                       teléfono a la vista y el recuerdo (Carlos, 15 nov 2026, noche:
                       «sigue teniendo la tabla vieja […] habría que cambiarlo»). */}
