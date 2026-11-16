@@ -34,6 +34,13 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // Las dos vías del aviso (prototipo del segundo acto v0.4; Carlos, 22 oct 2026).
   avisoCorreoTitle: 'Con mi correo',
   avisoCorreoHint: 'Inicias sesión aquí mismo. Un solo correo, el mismo de tu cuenta.',
+  // En la tarjeta de la galería elegir el aviso no abre la ventana de entrar:
+  // solo queda anotado (Carlos, 15 nov 2026: «sin pedir mi modal del login»).
+  // Textos de Claude, por revisar.
+  avisoCorreoSinCuentaHint: 'Queda anotado. Tu correo te lo pido después, en la Memoria.',
+  avisoAnotadoHint: 'Anotado. Tu correo te lo pido en la Memoria.',
+  bambalinasCta: 'Conoce su gemelo',
+  bambalinasCtaPista: 'Elige al menos una para seguir.',
   avisoCorreoConCuentaHint: 'El de tu cuenta. Un solo correo.',
   avisoWhatsAppTitle: 'Por WhatsApp',
   avisoWhatsAppHint: 'Sin cuenta. Solo tu número, solo para esto.',

@@ -714,6 +714,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const ultimaPreguntaOpen = Boolean(ultimaPregunta);
   // En el foco dentro de la tarjeta de la galería, con quien la lleva a la Memoria.
   const enLaTarjeta = soloEnElFoco && typeof onIrALaMemoria === 'function';
+  // El aviso elegido sin cuenta: queda anotado y la ventana de entrar no se abre.
+  const [avisoAnotado, setAvisoAnotado] = useState(() => {
+    try { return readPendingAvisoCanal() === 'correo'; } catch { return false; }
+  });
   // Quien llega al portal con el método ya abierto (viene de contestar en su
   // tarjeta, o vuelve el día del regreso) lo encuentra puesto, sin fundido: con
   // el fundido la ficha se alcanzaba a ver debajo (Carlos, 15 nov 2026).
@@ -1836,9 +1840,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               </motion.div>
 
               {/* En la tarjeta de la galería (15 nov 2026, Carlos): las filas van de
-                  borde a borde del contenedor («que no se vea como un abdomen») y no
-                  despliegan nada ahí: el aviso y el recuerdo llevan a la Memoria —el
-                  revés de la ficha—, y «Mientras tanto» a la ficha, por su frente. */}
+                  borde a borde del contenedor («que no se vea como un abdomen»).
+                  Segunda vuelta del mismo día: «que cada icono abra su caja como
+                  antes y que sean como "preferencias" para que al seleccionar
+                  mínimo uno se habilite un CTA que lleva a la ficha», y «sin pedir
+                  mi modal del login». El aviso y el recuerdo se eligen aquí mismo;
+                  «Mientras tanto» deja de ser fila y es el botón de salida. */}
               <div className={`cabina-antesala-stack${enLaTarjeta ? ' cabina-antesala-stack--a-sangre' : ''}`}>
               {/* El aviso es la primera fila del stack, con la misma caja que las otras
                   dos. El atril es provisional, hasta que exista el icono definitivo. */}
@@ -1860,10 +1867,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         </span>
                       </span>
                     </div>
+                  ) : enLaTarjeta && avisoAnotado && avisoPaso === null ? (
+                    <div className="cabina-antesala-opcion cabina-antesala-opcion--completa" data-fila-de-bambalinas="aviso-anotado">
+                      <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
+                        <Check size={18} aria-hidden="true" />
+                      </span>
+                      <span className="cabina-antesala-opcion__texto">
+                        <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
+                          {dramaturgy.closingLine.replace(/\.$/, '')}
+                        </span>
+                        <span className="cabina-antesala-opcion__detalle">{dramaturgy.avisoAnotadoHint}</span>
+                      </span>
+                    </div>
                   ) : avisoPaso === null ? (
                     <button
                       type="button"
-                      onClick={() => (enLaTarjeta ? onIrALaMemoria('aviso') : setAvisoPaso('elegir'))}
+                      onClick={() => setAvisoPaso('elegir')}
                       data-fila-de-bambalinas="aviso"
                       className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
                     >
@@ -1885,12 +1904,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
                           sesión, la del correo es un solo toque y nombra la cuenta.
                           WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
-                      <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
+                      <button
+                        type="button"
+                        data-aviso-con-correo
+                        onClick={enLaTarjeta && !user?.id
+                          ? () => { writePendingAvisoCanal('correo'); setAvisoAnotado(true); setAvisoPaso(null); }
+                          : handleAvisoPorCorreo}
+                        className="cabina-antesala-eleccion"
+                      >
                         <span className="cabina-antesala-eleccion__titulo">
                           {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
                         </span>
                         <span className="cabina-antesala-eleccion__detalle">
-                          {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
+                          {correoEnmascarado
+                            ? dramaturgy.avisoCorreoConCuentaHint
+                            : enLaTarjeta ? dramaturgy.avisoCorreoSinCuentaHint : dramaturgy.avisoCorreoHint}
                         </span>
                       </button>
                       {AVISO_WHATSAPP_DISPONIBLE && (
@@ -1930,8 +1958,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
             <button
               type="button"
-              onClick={enLaTarjeta ? () => onIrALaMemoria('recuerdo') : handleDownloadSouvenir}
-              disabled={!enLaTarjeta && (isSouvenirGenerating || Boolean(souvenirDeliveredAt))}
+              onClick={handleDownloadSouvenir}
+              disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
               data-fila-de-bambalinas="recuerdo"
               className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
             >
@@ -1959,6 +1987,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             </button>
               </motion.div>
 
+              {enLaTarjeta ? null : (
               <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
             {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
                 ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
@@ -1981,7 +2010,24 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               </span>
             </button>
               </motion.div>
+              )}
               </div>
+              {enLaTarjeta ? (
+                <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="bambalinas-salida" data-salida-de-bambalinas>
+                  <button
+                    type="button"
+                    onClick={() => handleClose()}
+                    disabled={!(bitacoraConsented || avisoAnotado || souvenirDeliveredAt || bitacoraCompleted)}
+                    className="tarjeta-del-pozo__salida"
+                  >
+                    {dramaturgy.bambalinasCta}
+                    <span aria-hidden="true">→</span>
+                  </button>
+                  {!(bitacoraConsented || avisoAnotado || souvenirDeliveredAt || bitacoraCompleted) ? (
+                    <p className="bambalinas-salida__pista">{dramaturgy.bambalinasCtaPista}</p>
+                  ) : null}
+                </motion.div>
+              ) : null}
 
               {!bitacoraCompleted && (
                 <div className="space-y-2 px-1">

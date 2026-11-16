@@ -7062,3 +7062,18 @@ body {
 .cabina-antesala-stack--en-la-memoria {
   margin-top: 0.25rem;
 }
+
+/* La salida de «Entre bambalinas» en la tarjeta: un solo botón, que se enciende
+   al elegir al menos una preferencia (Carlos, 15 nov 2026). */
+.bambalinas-salida {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+.bambalinas-salida__pista {
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(203, 213, 225, 0.62);
+}
