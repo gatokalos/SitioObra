@@ -7208,3 +7208,29 @@ body {
   filter: saturate(0.35);
   box-shadow: none;
 }
+
+/* El aviso por teléfono dentro del globo del gato, en la Memoria de escritorio. */
+.globo-aviso {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.globo-aviso__campo {
+  min-width: 0;
+  flex: 1 1 10rem;
+  border: 1px solid rgba(42, 32, 28, 0.32);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #1f1a17;
+}
+.globo-aviso__campo::placeholder {
+  color: rgba(42, 32, 28, 0.5);
+}
+.globo-aviso__campo:focus {
+  outline: none;
+  border-color: rgba(42, 32, 28, 0.7);
+}

@@ -1814,178 +1814,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   cierre del detonante y el anuncio de la espera. D-42 se sostiene —la
                   espera no ofrece nada— porque lo que hay debajo cierra En el foco, no
                   ocupa los tres días. */}
-              {/* En la tarjeta el encabezado va dentro de la caja (Carlos, 15 nov
-                  2026: «no sé por qué entre bambalinas lo pusiste por fuera»). */}
-              {enLaTarjeta ? null : (
-              <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
-                <div className="px-2 pb-1 pt-4 text-center">
-                  <div className="flex items-center gap-3" aria-hidden="true">
-                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
-                    <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
-                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
-                  </div>
-                  {/* Sin copy descriptivo: el título dialoga con las tres filas y
-                      cada fila dice lo suyo (Carlos, 22 oct 2026). */}
-                  {/* «Retención» era vocabulario de dirección y en pantalla sonaba mal
-                      (Carlos, 14 nov 2026). La ceja dice lo que dura la espera, igual
-                      que la línea de la forma en el libreto. */}
-                  <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                    Tres días
-                  </p>
-                  <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                    Entre bambalinas
-                  </p>
-                </div>
-              </motion.div>
-              )}
-
-              {enLaTarjeta ? null : (
-              <div className="cabina-antesala-stack">
-              {/* El aviso es la primera fila del stack, con la misma caja que las otras
-                  dos. El atril es provisional, hasta que exista el icono definitivo. */}
-              {!bitacoraCompleted && (
-                <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="cabina-antesala-stack__fila space-y-2">
-                  {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
-                      cambia de estado (Carlos, 18 sep 2026). */}
-                  {bitacoraConsented ? (
-                    <div className="cabina-antesala-opcion cabina-antesala-opcion--completa">
-                      <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
-                        <Check size={18} aria-hidden="true" />
-                      </span>
-                      <span className="cabina-antesala-opcion__texto">
-                        <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
-                          {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.closingLine.replace(/\.$/, '')}
-                        </span>
-                        <span className="cabina-antesala-opcion__detalle">
-                          {bitacoraAvailable ? dramaturgy.returnBackNowHint : avisoDoneHint}
-                        </span>
-                      </span>
-                    </div>
-                  ) : avisoPaso === null ? (
-                    <button
-                      type="button"
-                      onClick={() => setAvisoPaso('elegir')}
-                      data-fila-de-bambalinas="aviso"
-                      className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
-                    >
-                      {/* Iconos de trazo en vez de los PNG (Carlos, 22 oct 2026). */}
-                      <span className="cabina-antesala-opcion__mirilla">
-                        <Bell size={18} aria-hidden="true" />
-                      </span>
-                      <span className="cabina-antesala-opcion__texto">
-                        <span className="cabina-antesala-opcion__titulo">
-                          {dramaturgy.closingLine.replace(/\.$/, '')}
-                        </span>
-                        <span className="cabina-antesala-opcion__detalle">
-                          {dramaturgy.returnCta}
-                        </span>
-                      </span>
-                    </button>
-                  ) : avisoPaso === 'elegir' ? (
-                    <div className="cabina-antesala-form space-y-2">
-                      {/* Las dos vías (prototipo v0.4, aprobado el 22 oct 2026). Con
-                          sesión, la del correo es un solo toque y nombra la cuenta.
-                          WhatsApp oculto hasta que exista la cuenta (3 nov 2026). */}
-                      <button type="button" onClick={handleAvisoPorCorreo} className="cabina-antesala-eleccion">
-                        <span className="cabina-antesala-eleccion__titulo">
-                          {correoEnmascarado ? `Avisarme a ${correoEnmascarado}` : dramaturgy.avisoCorreoTitle}
-                        </span>
-                        <span className="cabina-antesala-eleccion__detalle">
-                          {correoEnmascarado ? dramaturgy.avisoCorreoConCuentaHint : dramaturgy.avisoCorreoHint}
-                        </span>
-                      </button>
-                      {AVISO_WHATSAPP_DISPONIBLE && (
-                        <button type="button" onClick={() => setAvisoPaso('whatsapp')} className="cabina-antesala-eleccion">
-                          <span className="cabina-antesala-eleccion__titulo">{dramaturgy.avisoWhatsAppTitle}</span>
-                          <span className="cabina-antesala-eleccion__detalle">{dramaturgy.avisoWhatsAppHint}</span>
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="cabina-antesala-form space-y-2">
-                      <p className="cabina-antesala-form__pregunta">
-                        ¿A qué número te enviamos el aviso?
-                      </p>
-                      <div className="flex gap-2">
-                        <input
-                          type="tel"
-                          value={phoneInput}
-                          onChange={(e) => setPhoneInput(e.target.value)}
-                          placeholder="+52 55 0000 0000"
-                          className="cabina-antesala-form__input min-w-0 flex-1"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
-                          disabled={phoneInput.trim().length < 8}
-                          className="cabina-antesala-form__confirmar shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Confirmar →
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
-            <button
-              type="button"
-              onClick={handleDownloadSouvenir}
-              disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-              data-fila-de-bambalinas="recuerdo"
-              className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
-            >
-              {souvenirDeliveredAt ? (
-                <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
-                  <Check size={18} aria-hidden="true" />
-                </span>
-              ) : (
-                <span className="cabina-antesala-opcion__mirilla">
-                  <Download size={18} aria-hidden="true" />
-                </span>
-              )}
-              <span className="cabina-antesala-opcion__texto">
-                <span className={`cabina-antesala-opcion__titulo${souvenirDeliveredAt ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>
-                  {isSouvenirGenerating
-                    ? 'Preparando el recuerdo…'
-                    : souvenirDeliveredAt
-                      ? 'Recuerdo entregado'
-                      : dramaturgy.souvenirCta}
-                </span>
-                <span className="cabina-antesala-opcion__detalle">
-                  {souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint}
-                </span>
-              </span>
-            </button>
-              </motion.div>
-
-              {(
-              <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
-            {/* «Mientras tanto» (Carlos, 22 oct 2026): la casa está abierta. No manda a
-                ningún lugar; cierra la vitrina y la persona sigue por donde quiera. */}
-            <button
-              type="button"
-              onClick={() => handleClose()}
-              data-fila-de-bambalinas="mientras-tanto"
-              className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
-            >
-              <span className="cabina-antesala-opcion__mirilla">
-                <Compass size={18} aria-hidden="true" />
-              </span>
-              <span className="cabina-antesala-opcion__texto">
-                <span className="cabina-antesala-opcion__titulo">
-                  {dramaturgy.meanwhileTitle}
-                </span>
-                <span className="cabina-antesala-opcion__detalle">
-                  {dramaturgy.meanwhileHint}
-                </span>
-              </span>
-            </button>
-              </motion.div>
-              )}
-              </div>
-              )}
               {/* En la tarjeta de la galería, una sola caja (Carlos, 15 nov 2026, con
                   una maqueta: el dato de contacto a la vista, la descarga y la
                   salida). Pide el teléfono, no el correo: «no pongamos el correo y
@@ -1995,7 +1823,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   porque todavía no hay cuenta de WhatsApp que envíe: hoy se guarda
                   el consentimiento y nada sale. La salida se enciende al elegir al
                   menos una de las dos. */}
-              {enLaTarjeta ? (
+              {/* Desde la noche del 15 nov 2026 la caja es la única versión: también
+                  dentro de la ficha, donde quedaban las tres filas viejas (Carlos:
+                  «sigue teniendo la tabla vieja […] habría que cambiarlo también»). */}
+              {(
                 <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="caja-de-bambalinas" data-caja-de-bambalinas>
                   <div className="caja-de-bambalinas__cabecera">
                     <span className="caja-de-bambalinas__icono" aria-hidden="true"><CalendarDays size={22} /></span>
@@ -2056,7 +1887,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <p className="bambalinas-salida__pista">{dramaturgy.bambalinasCtaPista}</p>
                   ) : null}
                 </motion.div>
-              ) : null}
+              )}
 
               {!bitacoraCompleted && (
                 <div className="space-y-2 px-1">
@@ -2554,8 +2385,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       avisoDeEspera={enPantallaChica && !bitacoraAvailable && !bitacoraCompleted ? {
                         texto: `${dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.`,
                         hecho: bitacoraConsented ? avisoDoneHint : null,
-                        onAviso: handleAvisoPorCorreo,
-                        titulo: dramaturgy.closingLine.replace(/\.$/, ''),
+                        telefono: {
+                          valor: phoneInput,
+                          onCambio: setPhoneInput,
+                          onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
+                          placeholder: dramaturgy.bambalinasCajaPlaceholder,
+                          boton: dramaturgy.bambalinasCajaAvisar,
+                        },
                         recuerdo: l3Rec?.step3 ? {
                           titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : souvenirDeliveredAt ? 'Recuerdo entregado' : dramaturgy.souvenirCta,
                           detalle: souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint,
@@ -3154,12 +2990,26 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 {bitacoraConsented ? (
                   <p className="cabina-bubble__instruccion">{avisoDoneHint}</p>
                 ) : (
-                  <div className="mt-4 flex justify-center">
-                    <button type="button" onClick={handleAvisoPorCorreo} className="cabina-escritura-accion">
-                      Avísame por correo
+                  <form
+                    className="globo-aviso"
+                    data-aviso-en-el-globo
+                    onSubmit={(e) => { e.preventDefault(); if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); }}
+                  >
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder={dramaturgy.bambalinasCajaPlaceholder}
+                      aria-label={dramaturgy.bambalinasCajaPlaceholder}
+                      className="globo-aviso__campo"
+                    />
+                    <button type="submit" disabled={phoneInput.trim().length < 8} className="cabina-escritura-accion disabled:opacity-40">
+                      {dramaturgy.bambalinasCajaAvisar}
                       <span aria-hidden="true">→</span>
                     </button>
-                  </div>
+                  </form>
                 )}
               </div>
             )}

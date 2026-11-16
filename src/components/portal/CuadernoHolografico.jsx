@@ -537,47 +537,47 @@ function HolograficoPanel({
                 <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera>
                   <p className="huella-puerta__eyebrow">Entre bambalinas</p>
                   <p className="bloque-forma__aviso">{avisoDeEspera.texto}</p>
-                  {/* El aviso y el recuerdo, con las filas de «Entre bambalinas»:
-                      su mirilla y su icono (Carlos, 15 nov 2026: «lo que me gusta
-                      de tras bambalinas es el estilo, los iconos»). */}
-                  <div className="cabina-antesala-stack cabina-antesala-stack--en-la-memoria">
-                    <div className="cabina-antesala-stack__fila">
-                      <button
-                        type="button"
-                        onClick={avisoDeEspera.hecho ? undefined : avisoDeEspera.onAviso}
-                        disabled={Boolean(avisoDeEspera.hecho)}
-                        data-fila-de-la-memoria="aviso"
-                        className={`cabina-antesala-opcion ${avisoDeEspera.hecho ? 'cabina-antesala-opcion--completa' : 'cabina-antesala-opcion--regreso'}`}
-                      >
-                        <span className={`cabina-antesala-opcion__mirilla${avisoDeEspera.hecho ? ' cabina-antesala-opcion__mirilla--completa' : ''}`}>
-                          {avisoDeEspera.hecho ? <Check size={18} aria-hidden="true" /> : <Bell size={18} aria-hidden="true" />}
-                        </span>
-                        <span className="cabina-antesala-opcion__texto">
-                          <span className={`cabina-antesala-opcion__titulo${avisoDeEspera.hecho ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>{avisoDeEspera.hecho ? avisoDeEspera.titulo : 'Avísame por correo'}</span>
-                          <span className="cabina-antesala-opcion__detalle">{avisoDeEspera.hecho ?? 'Cuando vuelva la pregunta'}</span>
-                        </span>
+                  {/* Lo mismo que la caja de «Entre bambalinas» de la tarjeta: el
+                      teléfono a la vista y el recuerdo (Carlos, 15 nov 2026, noche:
+                      «sigue teniendo la tabla vieja […] habría que cambiarlo»). */}
+                  {avisoDeEspera.hecho ? (
+                    <p className="caja-de-bambalinas__hecho" data-aviso-hecho>
+                      <Check size={15} aria-hidden="true" />
+                      <span>{avisoDeEspera.hecho}</span>
+                    </p>
+                  ) : (
+                    <form
+                      className="caja-de-bambalinas__aviso"
+                      data-aviso-en-la-memoria
+                      onSubmit={(e) => { e.preventDefault(); avisoDeEspera.telefono.onEnviar(); }}
+                    >
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={avisoDeEspera.telefono.valor}
+                        onChange={(e) => avisoDeEspera.telefono.onCambio(e.target.value)}
+                        placeholder={avisoDeEspera.telefono.placeholder}
+                        aria-label={avisoDeEspera.telefono.placeholder}
+                        className="caja-de-bambalinas__campo"
+                      />
+                      <button type="submit" disabled={avisoDeEspera.telefono.valor.trim().length < 8} className="caja-de-bambalinas__avisar">
+                        {avisoDeEspera.telefono.boton}
                       </button>
-                    </div>
-                    {avisoDeEspera.recuerdo ? (
-                      <div className="cabina-antesala-stack__fila">
-                        <button
-                          type="button"
-                          onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
-                          disabled={avisoDeEspera.recuerdo.ocupado || avisoDeEspera.recuerdo.entregado}
-                          data-fila-de-la-memoria="recuerdo"
-                          className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
-                        >
-                          <span className={`cabina-antesala-opcion__mirilla${avisoDeEspera.recuerdo.entregado ? ' cabina-antesala-opcion__mirilla--completa' : ''}`}>
-                            {avisoDeEspera.recuerdo.entregado ? <Check size={18} aria-hidden="true" /> : <Download size={18} aria-hidden="true" />}
-                          </span>
-                          <span className="cabina-antesala-opcion__texto">
-                            <span className={`cabina-antesala-opcion__titulo${avisoDeEspera.recuerdo.entregado ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>{avisoDeEspera.recuerdo.titulo}</span>
-                            <span className="cabina-antesala-opcion__detalle">{avisoDeEspera.recuerdo.detalle}</span>
-                          </span>
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
+                    </form>
+                  )}
+                  {avisoDeEspera.recuerdo ? (
+                    <button
+                      type="button"
+                      onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
+                      disabled={avisoDeEspera.recuerdo.ocupado || avisoDeEspera.recuerdo.entregado}
+                      data-recuerdo-en-la-memoria
+                      className="caja-de-bambalinas__recuerdo"
+                    >
+                      {avisoDeEspera.recuerdo.entregado ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
+                      {avisoDeEspera.recuerdo.titulo}
+                    </button>
+                  ) : null}
                 </section>
               ) : null}
             </div>

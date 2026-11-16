@@ -1611,7 +1611,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const revelarLaFicha = (formatId) => {
     marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
     setTarjetaGiradaId(null);
-    irALaObraDestacadaRef.current = formatId;
+    // «Continuar» abre la ficha desde arriba; ya no baja sola hasta la obra
+    // destacada (Carlos, 15 nov 2026, noche).
     handleFormatClick(formatId);
   };
   // «La obra sigue en ti» y «Llevarme el recuerdo» ya no despliegan nada en la
