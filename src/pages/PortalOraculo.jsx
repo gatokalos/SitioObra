@@ -329,6 +329,7 @@ const PortalOraculo = () => {
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('oraculo', l2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
+                    enLaFicha
                     autoReveal={l1Done}
                     portal="oraculo"
                     l2Done={l2Done}

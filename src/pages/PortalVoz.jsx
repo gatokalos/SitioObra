@@ -1010,6 +1010,7 @@ const PortalVoz = () => {
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('obra', l2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
+                    enLaFicha
                     autoReveal={l1Done}
                     portal="obra"
                     l2Done={l2Done}

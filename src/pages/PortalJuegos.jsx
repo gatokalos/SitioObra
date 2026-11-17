@@ -487,6 +487,7 @@ const PortalJuegos = () => {
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('juegos', l2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
+                    enLaFicha
                     autoReveal={l1Done}
                     portal="juegos"
                     l2Done={l2Done}

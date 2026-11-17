@@ -528,6 +528,7 @@ const PortalMovimiento = () => {
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('movimiento', l2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
+                    enLaFicha
                     autoReveal={l1Done}
                     portal="movimiento"
                     l2Done={l2Done}

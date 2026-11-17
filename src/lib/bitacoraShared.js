@@ -96,3 +96,36 @@ export const readResonanceProgress = (portal) => {
     experienceDone: !!record.experience_ts,
   };
 };
+
+// ── El momento de una forma, con las palabras de la línea de la Memoria ──
+// (Carlos, 17 nov 2026.) El botón de la vitrina decía «Entra en escena» durante
+// la espera y con todo terminado, cuando la persona ya había entrado; el del
+// recuadro «Lo que deja la duda» decía «Sigue donde quedaste →» en los tres
+// momentos. Ahora los dos dicen el momento, con la palabra que la línea ya le
+// da: esperando, «Entre bambalinas»; con la pregunta de vuelta, «Termina la
+// escena» (Carlos, 15 nov 2026: «cuidar el arco narrativo de las vitrinas»);
+// con todo terminado, «Tu memoria».
+export const momentoDeLaForma = (portal) => {
+  if (!portal) return null;
+  const progreso = readResonanceProgress(portal);
+  if (!progreso.l1Done) return null;
+  if (progreso.bitacoraDone) return 'memoria';
+  const regreso = progreso.record.bitacora_available_at;
+  if (regreso && new Date(regreso).getTime() <= Date.now()) return 'regreso';
+  return progreso.l3Done ? 'espera' : null;
+};
+export const ROTULO_DEL_MOMENTO = {
+  espera: 'Entre bambalinas',
+  regreso: 'Termina la escena',
+  memoria: 'Tu memoria',
+};
+
+// Un dato suelto en el registro local de la forma, sin tocar lo demás.
+export const patchResonanceRecord = (portal, patch) => {
+  try {
+    localStorage.setItem(
+      `gatoencerrado:resonance:${portal}`,
+      JSON.stringify({ ...readResonanceRecord(portal), ...patch }),
+    );
+  } catch { /* sin almacenamiento */ }
+};

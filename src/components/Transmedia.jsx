@@ -102,7 +102,7 @@ import useScrambleText from '@/hooks/useScrambleText';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
-import { readResonanceProgress } from '@/lib/bitacoraShared';
+import { momentoDeLaForma, readResonanceProgress, ROTULO_DEL_MOMENTO } from '@/lib/bitacoraShared';
 
 const MARIANA_GALLERY = [
   {
@@ -224,10 +224,10 @@ const VITRINA_TU_FORMA_LABEL = 'Entra en escena';
 const VITRINA_IMPROVISA_LABEL = 'Improvisa una respuesta';
 // Quien ya contestó y dejó el tablero a medias en la tarjeta (13 nov 2026).
 const VITRINA_SIGUE_LABEL = 'Sigue donde quedaste';
-// La pregunta ya volvió y el regreso está por contestar (Carlos, 15 nov 2026:
-// «hay que cambiar el verbo a "terminar la escena" en vez de entra en escena
-// para cuidar el arco narrativo de las vitrinas»).
-const VITRINA_REGRESO_LABEL = 'Termina la escena';
+// De ahí en adelante el botón dice el momento de la forma con la palabra de la
+// línea de la Memoria —«Entre bambalinas», «Termina la escena», «Tu memoria»—,
+// la misma que el botón del recuadro «Lo que deja la duda» (Carlos, 17 nov
+// 2026; ROTULO_DEL_MOMENTO en bitacoraShared.js).
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
@@ -1696,6 +1696,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       !progreso.experienceDone &&
       !progreso.l3Done
     );
+  };
+  const rotuloDeLaVitrina = (formatId) => {
+    if (pideIntuicionEnLaTarjeta(formatId)) return VITRINA_IMPROVISA_LABEL;
+    if (tableroEnLaTarjeta(formatId)) return VITRINA_SIGUE_LABEL;
+    return ROTULO_DEL_MOMENTO[momentoDeLaForma(SHOWCASE_TO_PORTAL[formatId])] ?? VITRINA_TU_FORMA_LABEL;
   };
   const laTarjetaTieneDorso = (formatId) => pideIntuicionEnLaTarjeta(formatId) || tableroEnLaTarjeta(formatId);
   const girarLaTarjeta = (formatId) => {
@@ -5055,6 +5060,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="obra"
                           l2Done={activePortalL2Done}
@@ -5096,6 +5102,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="literatura"
                           l2Done={activePortalL2Done}
@@ -5135,6 +5142,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="artesanias"
                           l2Done={activePortalL2Done}
@@ -5174,6 +5182,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="grafico"
                           l2Done={activePortalL2Done}
@@ -5214,6 +5223,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="cine"
                           l2Done={activePortalL2Done}
@@ -5253,6 +5263,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="sonoridades"
                           l2Done={activePortalL2Done}
@@ -5292,6 +5303,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="movimiento"
                           l2Done={activePortalL2Done}
@@ -5331,6 +5343,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="juegos"
                           l2Done={activePortalL2Done}
@@ -5370,6 +5383,7 @@ const renderDramaFeaturedWork = () => (
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
                           buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
+                          enLaFicha
                           autoReveal={activePortalL1Done}
                           portal="oraculo"
                           l2Done={activePortalL2Done}
@@ -6256,7 +6270,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : elRegresoYaVolvio(format.id) ? VITRINA_REGRESO_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {rotuloDeLaVitrina(format.id)}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -6543,7 +6557,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
                         >
-                          {pideIntuicionEnLaTarjeta(format.id) ? VITRINA_IMPROVISA_LABEL : tableroEnLaTarjeta(format.id) ? VITRINA_SIGUE_LABEL : elRegresoYaVolvio(format.id) ? VITRINA_REGRESO_LABEL : VITRINA_TU_FORMA_LABEL}
+                          {rotuloDeLaVitrina(format.id)}
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, Flame, Sparkles, BookOpen } from 'lucide-react';
+import { momentoDeLaForma, patchResonanceRecord, readResonanceRecord, ROTULO_DEL_MOMENTO } from '@/lib/bitacoraShared';
 
 const stripEslabon = (text) => {
   if (!text) return text;
@@ -39,11 +40,38 @@ const VitranaQuestionReveal = ({
   onL3CTA = null,
   bitacoraCompleted = false,
   showAction = true,
+  enLaFicha = false,
 }) => {
   const [isRevealed, setIsRevealed] = useState(autoReveal);
   const portalGradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const hasProgressBadges = autoReveal || l2Done || l3Done || bitacoraCompleted;
   const oracularPhrase = l3Done && l3Step3 ? stripEslabon(l3Step3) : null;
+
+  // ── El toque que destapa lo que quedó (Carlos, 17 nov 2026) ──
+  // El revelado destapaba la pregunta madre; desde que esa pregunta se contesta
+  // al dorso de la tarjeta, la ficha abre con el recorrido hecho y la frase se
+  // enseñaba sola. Carlos: «mantener la animación de los iconos como
+  // actualmente aparecen pero dejar el revelado como el toque que revela el
+  // CTA. Y la frase que necesita». Las insignias llegan solas; la frase y el
+  // botón, con el toque. Solo la primera vez: queda anotado en el registro de
+  // la forma y después el recuadro abre destapado.
+  const conRecorrido = autoReveal || Boolean(oracularPhrase);
+  const [destapado, setDestapado] = useState(
+    () => !enLaFicha || !portal || Boolean(readResonanceRecord(portal).recuadro_destapado),
+  );
+  const velado = enLaFicha && conRecorrido && !destapado;
+  // Quien destapó la pregunta en esta misma visita y luego la contestó no
+  // vuelve a encontrar el velo.
+  const tocoLaPregunta = useRef(false);
+  useEffect(() => {
+    if (!enLaFicha || !portal || destapado || !conRecorrido || !tocoLaPregunta.current) return;
+    setDestapado(true);
+    patchResonanceRecord(portal, { recuadro_destapado: Date.now() });
+  }, [enLaFicha, portal, destapado, conRecorrido]);
+
+  // El botón dice el momento de la forma, con la palabra de la línea.
+  const momento = enLaFicha ? momentoDeLaForma(portal) : null;
+  const rotulo = ROTULO_DEL_MOMENTO[momento] ? `${ROTULO_DEL_MOMENTO[momento]} →` : buttonLabel;
 
   // Sincroniza si autoReveal llega tarde (p.ej. tras verificar Supabase)
   useEffect(() => {
@@ -51,11 +79,21 @@ const VitranaQuestionReveal = ({
   }, [autoReveal]);
 
   const reveal = () => {
+    if (velado) {
+      setDestapado(true);
+      patchResonanceRecord(portal, { recuadro_destapado: Date.now() });
+      onReveal?.();
+      return;
+    }
     if (!isRevealed) {
+      tocoLaPregunta.current = true;
       setIsRevealed(true);
       onReveal?.();
     }
   };
+  // Hay algo que destapar: la pregunta todavía sin contestar, o lo que quedó.
+  const porTocar = velado || !oracularPhrase;
+  const aLaVista = !velado && (isRevealed || Boolean(oracularPhrase));
 
   return (
     <div className="flex flex-col gap-5">
@@ -114,23 +152,32 @@ const VitranaQuestionReveal = ({
 
         <div
           className="form-surface relative overflow-hidden px-6 py-8 cursor-pointer"
-          onMouseEnter={!oracularPhrase ? reveal : undefined}
-          onClick={!oracularPhrase ? reveal : undefined}
-          role={!oracularPhrase ? 'button' : undefined}
-          tabIndex={!oracularPhrase ? 0 : undefined}
-          onKeyDown={!oracularPhrase ? (e) => { if (e.key === 'Enter' || e.key === ' ') reveal(); } : undefined}
-          aria-label={!oracularPhrase ? 'Revelar pregunta de resonancia' : undefined}
+          data-recuadro-de-la-duda={velado ? 'velado' : 'destapado'}
+          /* Lo que quedó se destapa con un toque o un clic, no al pasar el
+             cursor: la ficha se abre debajo del cursor que acaba de tocar la
+             tarjeta y se destapaba sola. La pregunta sin contestar conserva
+             su revelado al pasar. */
+          onMouseEnter={porTocar && !velado ? reveal : undefined}
+          onClick={porTocar ? reveal : undefined}
+          role={porTocar ? 'button' : undefined}
+          tabIndex={porTocar ? 0 : undefined}
+          onKeyDown={porTocar ? (e) => { if (e.key === 'Enter' || e.key === ' ') reveal(); } : undefined}
+          aria-label={velado ? 'Revelar lo que deja la duda' : !oracularPhrase ? 'Revelar pregunta de resonancia' : undefined}
         >
           {oracularPhrase ? (
-            <>
+            <motion.div
+              initial={false}
+              animate={{ filter: velado ? 'blur(10px)' : 'blur(0px)' }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+            >
               <p className="mb-3 text-[0.62rem] uppercase tracking-[0.3em] text-slate-500/70 text-center select-none">Sedimento</p>
               <p className="text-slate-800 text-base leading-relaxed italic text-center font-light select-none">
                 {oracularPhrase}
               </p>
-            </>
+            </motion.div>
           ) : (
             <motion.div
-              animate={{ filter: isRevealed ? 'blur(0px)' : 'blur(10px)' }}
+              animate={{ filter: isRevealed && !velado ? 'blur(0px)' : 'blur(10px)' }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
             >
               {question ? (
@@ -143,7 +190,7 @@ const VitranaQuestionReveal = ({
             </motion.div>
           )}
 
-          {!isRevealed && !oracularPhrase && (
+          {(velado || (!isRevealed && !oracularPhrase)) && (
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div className="vitrana-sweep-beam" />
             </div>
@@ -153,16 +200,18 @@ const VitranaQuestionReveal = ({
 
       {showAction && (
         <motion.div
-          className={`mx-auto w-full max-w-md ${isRevealed || oracularPhrase ? '' : 'pointer-events-none'}`}
-          animate={(isRevealed || oracularPhrase)
+          className={`mx-auto w-full max-w-md ${aLaVista ? '' : 'pointer-events-none'}`}
+          aria-hidden={aLaVista ? undefined : true}
+          animate={aLaVista
             ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
             : { opacity: 0, y: 10, scale: 0.93, filter: 'blur(4px)' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 18, delay: (isRevealed || oracularPhrase) ? (autoReveal ? 0.1 : 0.45) : 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 18, delay: aLaVista ? (autoReveal && !enLaFicha ? 0.1 : 0.45) : 0 }}
         >
           <motion.button
             type="button"
             className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
-            animate={(isRevealed || oracularPhrase) ? { boxShadow: [
+            tabIndex={aLaVista ? undefined : -1}
+            animate={aLaVista ? { boxShadow: [
               '0 0 0px rgba(139,92,246,0)',
               '0 0 32px rgba(139,92,246,0.55)',
               '0 15px 45px rgba(67,56,202,0.45)',
@@ -170,7 +219,7 @@ const VitranaQuestionReveal = ({
             transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
             onClick={onAnswer}
           >
-            {buttonLabel}
+            {rotulo}
           </motion.button>
         </motion.div>
       )}
