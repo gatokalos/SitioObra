@@ -2387,20 +2387,26 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       /* En teléfono no hay gato a un lado que dé el aviso de
                          la espera: lo da el bloque morado, al pie de la
                          Memoria (Carlos, 15 nov 2026). */
+                      /* El bloque morado de la espera es un acordeón, como el
+                         de otra forma (Carlos, 16 nov 2026): cerrado enseña el
+                         nombre de la forma y un renglón; desplegado, la
+                         instrucción y solo lo que falte pedir. Si el número ya
+                         se dejó en la tarjeta, aquí no se vuelve a pedir; si el
+                         recuerdo ya se bajó, no se vuelve a ofrecer. */
                       avisoDeEspera={enPantallaChica && !bitacoraAvailable && !bitacoraCompleted ? {
-                        texto: `${dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.`,
-                        hecho: bitacoraConsented ? avisoDoneHint : null,
-                        telefono: {
+                        titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
+                        instruccion: bitacoraConsented
+                          ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
+                          : dramaturgy.bambalinasCajaTexto,
+                        telefono: bitacoraConsented ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
                           onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
                           placeholder: dramaturgy.bambalinasCajaPlaceholder,
                           boton: dramaturgy.bambalinasCajaAvisar,
                         },
-                        recuerdo: l3Rec?.step3 ? {
-                          titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : souvenirDeliveredAt ? 'Recuerdo entregado' : dramaturgy.souvenirCta,
-                          detalle: souvenirDeliveredAt ? 'Busca la imagen en tus descargas.' : dramaturgy.souvenirHint,
-                          entregado: Boolean(souvenirDeliveredAt),
+                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt ? {
+                          titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : dramaturgy.souvenirCta,
                           ocupado: isSouvenirGenerating,
                           onRecuerdo: handleDownloadSouvenir,
                         } : null,

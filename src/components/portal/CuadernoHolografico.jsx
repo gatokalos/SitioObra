@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
+import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, ChevronDown } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
@@ -478,7 +478,8 @@ function HolograficoPanel({
   const hasL3 = progress.l3Done;
   const hasBitacora = progress.bitacoraDone;
 
-  // El acordeón «Al entrar en escena…» de otra forma: se cierra al cambiar la
+  // El acordeón del bloque morado —«Al entrar en escena…» con otra forma al
+  // centro, el renglón de la espera con la propia—: se cierra al cambiar la
   // forma del centro.
   const [alEntrarAbierto, setAlEntrarAbierto] = useState(false);
   useEffect(() => { setAlEntrarAbierto(false); }, [centerKey]);
@@ -531,7 +532,11 @@ function HolograficoPanel({
                   <FraseDeMemoria portal={homeKey} enEscena={false} />
                 </div>
               )}
-              <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
+              {/* Con el renglón de la espera desplegado, la línea se retira en
+                  pantallas chicas, igual que con otra forma al centro. */}
+              <div className={avisoDeEspera && alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-la-espera>
+                <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
+              </div>
               {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo
                   dice el gato en su globo (Carlos, 14 nov 2026). La pregunta y
                   «Es tu turno» aparecen cuando la pregunta ya volvió. */}
@@ -553,62 +558,67 @@ function HolograficoPanel({
                   memoria, para darle el aviso»). El texto es el del globo del
                   gato en escritorio. */}
               {avisoDeEspera ? (
-                <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera aria-label={avisoDeEspera.texto}>
-                  {/* Mismo patrón que el bloque de otra forma: arriba la ceja y
-                      el nombre de la forma en su color; abajo, lo que toca. */}
+                <section className={`bloque-forma${alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
+                  {/* Mismo patrón que el bloque de otra forma (Carlos, 16 nov
+                      2026): arriba la ceja y el nombre de la forma en su
+                      color; abajo un renglón que se despliega con la
+                      instrucción y lo que falte pedir. */}
                   <div className="bloque-forma__cabecera">
                     <div className="min-w-0">
                       <p className="huella-puerta__eyebrow" data-ceja-del-bloque>Entre bambalinas</p>
                       <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
                     </div>
                   </div>
-                  <div className="bloque-forma__espera">
-                  {/* Sin la descripción (Carlos, 15 nov 2026, noche): «si no,
-                      el bloque morado es muy ancho y aplasta la constelación
-                      en pantallas chicas». El plazo ya lo dice la línea de
-                      arriba («Entre bambalinas · 3 días»). */}
-                  {/* Lo mismo que la caja de «Entre bambalinas» de la tarjeta: el
-                      teléfono a la vista y el recuerdo (Carlos, 15 nov 2026, noche:
-                      «sigue teniendo la tabla vieja […] habría que cambiarlo»). */}
-                  {avisoDeEspera.hecho ? (
-                    <p className="caja-de-bambalinas__hecho" data-aviso-hecho>
-                      <Check size={15} aria-hidden="true" />
-                      <span>{avisoDeEspera.hecho}</span>
-                    </p>
-                  ) : (
-                    <form
-                      className="caja-de-bambalinas__aviso"
-                      data-aviso-en-la-memoria
-                      onSubmit={(e) => { e.preventDefault(); avisoDeEspera.telefono.onEnviar(); }}
-                    >
-                      <input
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel"
-                        value={avisoDeEspera.telefono.valor}
-                        onChange={(e) => avisoDeEspera.telefono.onCambio(e.target.value)}
-                        placeholder={avisoDeEspera.telefono.placeholder}
-                        aria-label={avisoDeEspera.telefono.placeholder}
-                        className="caja-de-bambalinas__campo"
-                      />
-                      <button type="submit" disabled={avisoDeEspera.telefono.valor.trim().length < 8} className="caja-de-bambalinas__avisar">
-                        {avisoDeEspera.telefono.boton}
-                      </button>
-                    </form>
-                  )}
-                  {avisoDeEspera.recuerdo ? (
-                    <button
-                      type="button"
-                      onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
-                      disabled={avisoDeEspera.recuerdo.ocupado || avisoDeEspera.recuerdo.entregado}
-                      data-recuerdo-en-la-memoria
-                      className="caja-de-bambalinas__recuerdo"
-                    >
-                      {avisoDeEspera.recuerdo.entregado ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
-                      {avisoDeEspera.recuerdo.titulo}
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setAlEntrarAbierto((v) => !v)}
+                    aria-expanded={alEntrarAbierto}
+                    className="huella-puerta"
+                    data-renglon-de-espera
+                  >
+                    <span className="huella-puerta__texto">
+                      <span className="huella-puerta__titulo">{avisoDeEspera.titulo}</span>
+                    </span>
+                    <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
+                  </button>
+                  {alEntrarAbierto ? (
+                    <div className="bloque-forma__abierto" data-espera-desplegada>
+                      <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>
+                      {avisoDeEspera.telefono ? (
+                        <form
+                          className="caja-de-bambalinas__aviso"
+                          data-aviso-en-la-memoria
+                          onSubmit={(e) => { e.preventDefault(); avisoDeEspera.telefono.onEnviar(); }}
+                        >
+                          <input
+                            type="tel"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            value={avisoDeEspera.telefono.valor}
+                            onChange={(e) => avisoDeEspera.telefono.onCambio(e.target.value)}
+                            placeholder={avisoDeEspera.telefono.placeholder}
+                            aria-label={avisoDeEspera.telefono.placeholder}
+                            className="caja-de-bambalinas__campo"
+                          />
+                          <button type="submit" disabled={avisoDeEspera.telefono.valor.trim().length < 8} className="caja-de-bambalinas__avisar">
+                            {avisoDeEspera.telefono.boton}
+                          </button>
+                        </form>
+                      ) : null}
+                      {avisoDeEspera.recuerdo ? (
+                        <button
+                          type="button"
+                          onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
+                          disabled={avisoDeEspera.recuerdo.ocupado}
+                          data-recuerdo-en-la-memoria
+                          className="caja-de-bambalinas__recuerdo"
+                        >
+                          <Download size={15} aria-hidden="true" />
+                          {avisoDeEspera.recuerdo.titulo}
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
-                  </div>
                 </section>
               ) : null}
             </div>

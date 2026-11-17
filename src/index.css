@@ -7341,12 +7341,3 @@ body {
   .espejo-en-la-obra { padding: 2.75rem 3.4rem 1.25rem; }
 }
 
-/* El bloque de la espera, con el patrón del bloque de otra forma (16 nov
-   2026): bajo la ceja y el nombre, una raya y lo que toca. */
-.bloque-forma__espera {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-top: 0.95rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-}
