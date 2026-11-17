@@ -375,11 +375,17 @@ function Constellation({ centerKey, onSelect }) {
 // fila de acción. Sin categoría ni verso (Carlos, 28 oct 2026: «Simplifiqué el
 // bloque, quitando la ceja y los tres versos»). Nada queda suelto entre la
 // constelación y el bloque; la línea de la forma va arriba de él.
-function BloqueDeForma({ entry, chip = null, abierto = false, children }) {
+function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, children }) {
   return (
     <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
       <div className="bloque-forma__cabecera">
-        <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
+        {/* La ceja va arriba, con el nombre de la forma en su color; el renglón
+            de abajo queda solo para «Al entrar en escena…» (Carlos, 15 nov
+            2026, noche). */}
+        <div className="min-w-0">
+          {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
+          <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
+        </div>
         {chip}
       </div>
       {children}
@@ -471,6 +477,11 @@ function HolograficoPanel({
   const hasL2 = progress.l2Done;
   const hasL3 = progress.l3Done;
   const hasBitacora = progress.bitacoraDone;
+
+  // El acordeón «Al entrar en escena…» de otra forma: se cierra al cambiar la
+  // forma del centro.
+  const [alEntrarAbierto, setAlEntrarAbierto] = useState(false);
+  useEffect(() => { setAlEntrarAbierto(false); }, [centerKey]);
 
   const homeProgress = readResonanceProgress(homeKey);
   const homeL2 = homeProgress.l2Done;
@@ -606,14 +617,21 @@ function HolograficoPanel({
              con acordeón para mostrar la información de "Al entrar en
              escena..."»; «no me gustó tener una tarjeta dentro de otra»). */
           <div className="flex flex-col gap-4">
-            <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
-            <BloqueDeForma entry={entry}>
+            {/* En pantallas chicas la línea se retira mientras el acordeón
+                está desplegado, para que el bloque no aplaste la constelación;
+                al cerrarlo, vuelve (Carlos, 15 nov 2026, noche). */}
+            <div className={alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
+              <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
+            </div>
+            <BloqueDeForma entry={entry} ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}>
               {showcaseDefinitions[entry.showcase]?.iaProfile ? (
                 <IAInsightCard
                   {...showcaseDefinitions[entry.showcase].iaProfile}
                   compact
                   onRequireLogin={onRequireLogin}
-                  travelEyebrow={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
+                  travelEyebrow={null}
+                  isOpen={alEntrarAbierto}
+                  onToggle={() => setAlEntrarAbierto((v) => !v)}
                   travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                   travelFormLabel={entry.form ?? entry.name}
                   onTravel={() => onOpenVideo(entry.showcase)}

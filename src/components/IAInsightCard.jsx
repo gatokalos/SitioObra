@@ -108,7 +108,7 @@ const IAInsightCard = ({
       <>
         <button type="button" onClick={toggleOpen} aria-expanded={isOpen} className="huella-puerta" data-al-entrar>
           <span className="huella-puerta__texto">
-            <span className="huella-puerta__eyebrow">{travelEyebrow}</span>
+            {travelEyebrow ? <span className="huella-puerta__eyebrow">{travelEyebrow}</span> : null}
             <span className="huella-puerta__titulo">Al entrar en escena…</span>
           </span>
           <ChevronDown size={17} className="huella-puerta__flecha" style={isOpen ? { transform: 'rotate(180deg)' } : undefined} aria-hidden="true" />
