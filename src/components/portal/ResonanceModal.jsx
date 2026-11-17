@@ -2393,12 +2393,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                          instrucción y solo lo que falte pedir. Si el número ya
                          se dejó en la tarjeta, aquí no se vuelve a pedir; si el
                          recuerdo ya se bajó, no se vuelve a ofrecer. */
-                      avisoDeEspera={enPantallaChica && !bitacoraAvailable && !bitacoraCompleted ? {
+                      /* En escritorio el bloque es el mismo (Carlos, 17 nov
+                         2026: «en el escritorio también necesitamos ver la
+                         homogeneidad»; «repartir la información del copy para
+                         que no se repita lo que hay en el bloque morado y en el
+                         globo del gato»). Allá el gato dice lo que viene —los
+                         tres días y el aviso— y el bloque guarda lo de la
+                         forma: cómo quedó la escena y el recuerdo. */
+                      avisoDeEspera={!bitacoraAvailable && !bitacoraCompleted ? {
+                        conElGato: !enPantallaChica,
                         titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
                         instruccion: bitacoraConsented
                           ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
                           : dramaturgy.bambalinasCajaTexto,
-                        telefono: bitacoraConsented ? null : {
+                        telefono: bitacoraConsented || !enPantallaChica ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
                           onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
@@ -2881,7 +2889,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 {instrumentoDeRespuesta}
               </div>
             ) : null}
-            {(holograficoOpen || regresoEnEscritorio) && l3Rec?.step3 ? (
+            {/* Durante la espera el recuerdo ya no va al pie de la cabina: vive
+                en el bloque morado, del lado de la constelación (Carlos, 17 nov
+                2026). Aquí queda para el regreso y para el pozo. */}
+            {(holograficoOpen || regresoEnEscritorio) && l3Rec?.step3 && (bitacoraAvailable || bitacoraCompleted) ? (
               <div className={`absolute inset-x-5 bottom-5 z-20 space-y-2${enElPozo ? ' recuerdo-en-el-pozo' : ''}`}>
                 <button
                   type="button"
@@ -2996,8 +3007,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 calla y la cabina vuelve a la penumbra. */}
             {globoDeEspera && (
               <div className="cabina-bubble cabina-bubble--escritorio" data-globo="espera">
-                <p className="cabina-bubble__preludio">Entre bambalinas</p>
-                <p className="cabina-bubble__texto">{dramaturgy.closingLine} En tres días, una nueva pregunta volverá a buscarte.</p>
+                {/* «Entre bambalinas» y «La obra sigue en ti…» ya están en el
+                    bloque morado, a la izquierda: el gato solo dice lo que
+                    viene (Carlos, 17 nov 2026: «que no se repita»). */}
+                <p className="cabina-bubble__texto">En tres días, una nueva pregunta volverá a buscarte.</p>
                 {bitacoraConsented ? (
                   <p className="cabina-bubble__instruccion">{avisoDoneHint}</p>
                 ) : (
@@ -3033,7 +3046,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
               </div>
             )}
-            <div aria-hidden="true" className="panel-a-oscuras" style={{ opacity: panelEnOscuro ? 1 : 0 }} />
+            {/* El oscuro no es un negro: es la misma cabina con la luz apagada
+                (Carlos, 17 nov 2026: «el oscuro no queda 100% oscuro, es la
+                misma cabina del gato, pero con opacidad para que pareciera que
+                la luz está apagada»). */}
+            <div aria-hidden="true" className="panel-a-oscuras" style={{ opacity: panelEnOscuro ? 1 : 0 }}>
+              <img src={CAT_CABINA_URL} alt="" className="panel-a-oscuras__cabina" />
+            </div>
           </div>
           {/* Mientras se contesta el regreso en teléfono, las imágenes de la
               caída se van trayendo. */}

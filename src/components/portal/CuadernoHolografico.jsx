@@ -583,7 +583,13 @@ function HolograficoPanel({
                   </button>
                   {alEntrarAbierto ? (
                     <div className="bloque-forma__abierto" data-espera-desplegada>
-                      <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>
+                      {/* En escritorio la instrucción y el aviso los da el
+                          gato en su globo; el bloque guarda cómo quedó la
+                          escena (Carlos, 17 nov 2026: «repartir la información
+                          del copy»). */}
+                      {avisoDeEspera.conElGato
+                        ? <FraseDeMemoria portal={homeKey} enEscena={false} />
+                        : <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>}
                       {avisoDeEspera.telefono ? (
                         <form
                           className="caja-de-bambalinas__aviso"
