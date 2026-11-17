@@ -88,7 +88,11 @@ const registroDelPaso = (paso, forma) => {
     l3_recommendation: {
       step1: 'Tu recorrido de prueba ya tiene suficiente información para continuar.',
       step2: 'La siguiente forma puede ayudarte a contrastar lo que apareció aquí.',
-      step3: 'Vista previa completada. Este resultado solo existe en tu navegador.',
+      // La frase oracular de ensayo es el ejemplo que la instrucción le da a
+      // la servidora (routes/resonance.js), con su eslabón: así el recuadro y
+      // el recuerdo se ensayan con algo parecido a lo que ve un visitante real
+      // (17 nov 2026; antes decía «Vista previa completada…» y confundía).
+      step3: 'Por si quieres seguir: Lo íntimo cambia de naturaleza después del tercer eco.',
       forma: 'otro miniverso',
       recommended_format_id: forma.key === 'obra' ? 'literatura' : 'obra',
     },
