@@ -92,8 +92,8 @@ const IAInsightCard = ({
     // mismo, en vez de mandar a buscarla (Carlos, 18 sep 2026).
     toast({
       description: travelFormLabel
-        ? `Para cruzar a ${travelFormLabel} necesitas iniciar sesión. Tu recorrido y tu GAT se guardan contigo.`
-        : 'Para cruzar a otra forma necesitas iniciar sesión. Tu recorrido y tu GAT se guardan contigo.',
+        ? `Para cruzar a ${travelFormLabel} necesitas iniciar sesión.`
+        : 'Para cruzar a otra forma necesitas iniciar sesión.',
       action: (
         <ToastAction altText="Iniciar sesión" onClick={pedirSesion}>
           Iniciar sesión
@@ -127,9 +127,9 @@ const IAInsightCard = ({
                 <button type="button" onClick={handleTravelClick} className="ultima-pregunta__salida" data-cruzar>
                   {travelLabel}
                 </button>
-                {!user ? (
-                  <p className="text-xs text-slate-400">Necesitas iniciar sesión para continuar.</p>
-                ) : null}
+                {/* Sin el aviso «Necesitas iniciar sesión para continuar»
+                    (Carlos, 16 nov 2026): si hace falta, lo dice el botón al
+                    tocarlo. */}
               </>
             ) : null}
           </div>

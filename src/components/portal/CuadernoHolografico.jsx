@@ -516,13 +516,21 @@ function HolograficoPanel({
           ) : (
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
             <div className="flex flex-col gap-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
-                <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
-                  {entry.form ?? entry.name}
-                </h2>
-                <FraseDeMemoria portal={homeKey} enEscena={false} />
-              </div>
+              {/* Con el bloque morado de la espera (teléfono), el nombre de la
+                  forma vive dentro del bloque, igual que cuando hay otra forma
+                  al centro: aquí arriba ya no se repite y la constelación gana
+                  ese espacio (Carlos, 16 nov 2026: «homogeneizar el bloque
+                  morado que sale en la forma que está esperando entre
+                  bambalinas»). */}
+              {avisoDeEspera ? null : (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+                  <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
+                    {entry.form ?? entry.name}
+                  </h2>
+                  <FraseDeMemoria portal={homeKey} enEscena={false} />
+                </div>
+              )}
               <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
               {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo
                   dice el gato en su globo (Carlos, 14 nov 2026). La pregunta y
@@ -546,7 +554,15 @@ function HolograficoPanel({
                   gato en escritorio. */}
               {avisoDeEspera ? (
                 <section className="bloque-forma bloque-forma--espera" data-aviso-de-espera aria-label={avisoDeEspera.texto}>
-                  <p className="huella-puerta__eyebrow">Entre bambalinas</p>
+                  {/* Mismo patrón que el bloque de otra forma: arriba la ceja y
+                      el nombre de la forma en su color; abajo, lo que toca. */}
+                  <div className="bloque-forma__cabecera">
+                    <div className="min-w-0">
+                      <p className="huella-puerta__eyebrow" data-ceja-del-bloque>Entre bambalinas</p>
+                      <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
+                    </div>
+                  </div>
+                  <div className="bloque-forma__espera">
                   {/* Sin la descripción (Carlos, 15 nov 2026, noche): «si no,
                       el bloque morado es muy ancho y aplasta la constelación
                       en pantallas chicas». El plazo ya lo dice la línea de
@@ -592,6 +608,7 @@ function HolograficoPanel({
                       {avisoDeEspera.recuerdo.titulo}
                     </button>
                   ) : null}
+                  </div>
                 </section>
               ) : null}
             </div>
