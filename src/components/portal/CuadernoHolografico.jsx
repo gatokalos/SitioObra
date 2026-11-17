@@ -380,8 +380,8 @@ function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, child
     <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
       <div className="bloque-forma__cabecera">
         {/* La ceja va arriba, con el nombre de la forma en su color; el renglón
-            de abajo queda solo para «Al entrar en escena…» (Carlos, 15 nov
-            2026, noche). */}
+            de abajo queda solo para «Al entrar en escena…» (Carlos, 16 nov
+            2026). */}
         <div className="min-w-0">
           {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
           <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
@@ -619,7 +619,7 @@ function HolograficoPanel({
           <div className="flex flex-col gap-4">
             {/* En pantallas chicas la línea se retira mientras el acordeón
                 está desplegado, para que el bloque no aplaste la constelación;
-                al cerrarlo, vuelve (Carlos, 15 nov 2026, noche). */}
+                al cerrarlo, vuelve (Carlos, 16 nov 2026). */}
             <div className={alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
               <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
             </div>
