@@ -57,7 +57,7 @@ const PASOS = [
   { id: 'preparacion', titulo: 'Preparación', nota: 'Ya contestó; elige qué busca.' },
   { id: 'habitar', titulo: 'Habitar la forma', nota: 'Ya eligió; falta entrar al artefacto.' },
   { id: 'sin-gesto', titulo: 'Salió sin gesto', nota: 'Entró y salió antes de terminar.' },
-  { id: 'foco', titulo: 'En el foco', nota: 'Terminó la escena; el autor entra a cuadro.' },
+  { id: 'foco', titulo: 'El foco cambia', nota: 'Terminó la escena; el autor entra a cuadro.' },
   { id: 'bambalinas', titulo: 'Entre bambalinas', nota: 'Ya vio el video; las tres filas.' },
   { id: 'ficha', titulo: 'Ficha revelada', nota: 'Tocó «Mientras tanto»; la tarjeta abre la ficha y el método, el libreto.' },
   { id: 'regreso', titulo: 'El día del regreso', nota: 'La pregunta ya volvió.' },

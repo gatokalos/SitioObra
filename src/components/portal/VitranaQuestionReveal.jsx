@@ -118,7 +118,7 @@ const VitranaQuestionReveal = ({
       frase: registro.l2_acknowledgment ?? buildL2Acknowledgment(portal, registro.l2_option),
     },
     l3Done && {
-      id: 'chispas', Icono: Sparkles, rotulo: 'En el foco, visto', retraso: 0.34,
+      id: 'chispas', Icono: Sparkles, rotulo: 'El foco cambia, visto', retraso: 0.34,
       ceja: RESONANCE_SHARED_DRAMATURGY.phase3Eyebrow,
       frase: oracularPhrase,
     },

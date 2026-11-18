@@ -6,7 +6,11 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // es palabra para el visitante (Carlos, 14 nov 2026). La ceja sigue la serie
   // de las otras dos: «Antes de entrar», «Sentir la escena».
   phase3Eyebrow: 'Al salir de escena',
-  phase3Title: 'En el foco',
+  // El título decía «En el foco». Leído junto a la ceja ponía al visitante bajo
+  // la luz justo cuando sale. «El foco cambia» es de Carlos (18 nov 2026): la
+  // luz se mueve, y este momento solo sugiere una continuidad posible. En el
+  // registro y en la tesis el momento se sigue llamando En el foco (D-42).
+  phase3Title: 'El foco cambia',
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
   phase3Description: 'Este recorrido ha concluido. Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.',
   returnLead: 'Esto no termina aquí.',

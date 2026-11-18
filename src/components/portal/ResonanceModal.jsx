@@ -300,7 +300,7 @@ const LEVELS = [
   {
     num: 3,
     eyebrow: 'Días después',
-    title: 'En el foco',
+    title: 'El foco cambia',
     pendingDesc: 'La obra continúa fuera de escena. Vuelve en unos días para reconocer qué siguió resonando en ti.',
     icon: Sparkles,
   },
