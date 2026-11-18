@@ -29,7 +29,8 @@ const PORTAL_GRADIENT = {
 // lugar. Propuestas de Claude que Carlos aceptó.
 const CEJA_DEL_MOMENTO = {
   espera: 'Entre bambalinas',
-  regreso: 'En escena',
+  // «El Regreso» desde el 18 nov 2026, igual que en la línea (decía «En escena»).
+  regreso: 'El Regreso',
   memoria: 'Memoria',
 };
 // La frase del libro documenta una continuidad que sí ocurrió; la de las

@@ -38,6 +38,13 @@ export { CATALOG };
 // en las insignias de la vitrina —chispas para En el foco, libro para Memoria—
 // y En escena recibe uno propio, la burbuja de la cabina, donde ocurre. Antes
 // el ojo era el de Primera intuición y la llama la de Sentir la escena.
+// 18 nov 2026 (Carlos): la línea es «el paréntesis entre el tercer momento y»
+// lo que sigue; Entre bambalinas y el regreso son estados de la línea temporal,
+// no fases adicionales. Dos rótulos cambian y nada más: el primer nodo decía
+// «En el foco» (título que ese día pasó a «El foco cambia») y ahora lleva la
+// ceja del tercer momento, «Al salir de escena»; el aro decía «En escena»,
+// que nombraba un lugar y no decía que algo vuelve, y ahora dice «El Regreso»
+// (palabra de Carlos). Los props conservan sus nombres de antes.
 const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;
@@ -45,16 +52,17 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
     <div
       className="flex items-start justify-between gap-1 py-3"
       role="img"
+      data-linea-de-la-forma
       aria-label={
         enEscena
-          ? 'En el foco y En escena ya ocurrieron; estás en la Memoria'
+          ? 'Al salir de escena y El Regreso ya ocurrieron; estás en la Memoria'
           : focoCompleto
-            ? 'En el foco completo. En escena sigue abierta'
-            : enFoco ? 'En el foco, en curso' : 'Sin empezar'
+            ? 'Al salir de escena, completo. El Regreso sigue abierto'
+            : enFoco ? 'Recorrido en curso' : 'Sin empezar'
       }
     >
-      {/* En el foco — el detonante */}
-      <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
+      {/* Al salir de escena — el detonante (En el foco, en D-42) */}
+      <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
         <span className="flex h-12 items-center">
           <span
             className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
@@ -68,7 +76,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
             <Sparkles size={14} className={focoCompleto ? 'text-white' : enFoco ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
-        <span className={rotulo(enFoco)}>En el foco</span>
+        <span className={`${rotulo(enFoco)} text-center leading-tight`}>Al salir de escena</span>
       </div>
 
       {/* Entre bambalinas — la retención: tres días en los que no pasa nada */}
@@ -82,7 +90,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
         </span>
       </div>
 
-      {/* En escena — el clímax. Si no ocurrió queda vacía, no apagada. Encendido
+      {/* El Regreso — el clímax (En escena, en D-42). Si no ocurrió queda vacía, no apagada. Encendido
           lo que está pasando, no lo que ya pasó (Carlos, 23 oct 2026): cuando el
           regreso ya ocurrió, En escena queda cerrada y el punto vivo es Memoria. */}
       <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
@@ -99,7 +107,7 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
             <MessageCircle size={enEscena ? 15 : 20} className={enEscena ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
-        <span className={`${rotulo(enEscena || focoCompleto)} ${enEscena ? '' : 'font-semibold'}`}>En escena</span>
+        <span className={`${rotulo(enEscena || focoCompleto)} whitespace-nowrap ${enEscena ? '' : 'font-semibold'}`}>El Regreso</span>
       </div>
 
       <span className="flex h-12 w-5 shrink-0 items-center">
