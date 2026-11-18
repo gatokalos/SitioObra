@@ -32,7 +32,13 @@ const CEJA_DEL_MOMENTO = {
   regreso: 'En escena',
   memoria: 'Memoria',
 };
-const FRASE_DE_LA_MEMORIA = 'Volviste días después y la respondiste. Esto es lo que quedó.';
+// La frase del libro documenta una continuidad que sí ocurrió; la de las
+// chispas solo sugiere una posible (Carlos, 17 nov 2026). Repite, ya cumplida,
+// la promesa de la espera («una nueva pregunta volverá a buscarte»): la que
+// vuelve es la pregunta, no la persona (regla del 10 sep 2026). Decía «Volviste
+// días después y la respondiste. Esto es lo que quedó.»; Carlos eligió esta
+// entre tres el 18 nov 2026.
+const FRASE_DE_LA_MEMORIA = 'La pregunta volvió a buscarte, y la respondiste.';
 const FRASE_DEL_MOMENTO = {
   espera: `${RESONANCE_SHARED_DRAMATURGY.closingLine} En tres días, una nueva pregunta volverá a buscarte.`,
   regreso: `${RESONANCE_SHARED_DRAMATURGY.returnBackNow}. ${RESONANCE_SHARED_DRAMATURGY.returnBackNowHint}`,
