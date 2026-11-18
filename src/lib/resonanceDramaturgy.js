@@ -31,7 +31,7 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // El aviso ya concedido no desaparece: se queda con el mismo gesto de
   // confirmación que el recuerdo entregado (Carlos, 18 sep 2026).
   returnDone: 'La pregunta volverá',
-  returnDoneHint: 'Te buscaré por WhatsApp cuando llegue el momento.',
+  returnDoneHint: 'Te contactaré por WhatsApp cuando llegue el momento.',
   // Fase 2 (3 nov 2026): el aviso también llega por correo, al de la cuenta.
   returnDoneHintCorreo: 'Te buscaré en tu correo cuando llegue el momento.',
   returnDoneHintGenerico: 'Te buscaré cuando llegue el momento.',
