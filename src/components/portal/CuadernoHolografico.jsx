@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, ChevronDown } from 'lucide-react';
@@ -11,6 +11,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
 import { acomodarEnOndas } from '@/lib/constelacionEnOndas';
+import { trazarGarabato } from '@/lib/constelacionGarabato';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
@@ -300,25 +301,51 @@ const BRAZOS = [
 // tres intentos con figuras dibujadas para teléfono —una serpentina que se
 // leía como un 8, una espiral y esta misma figura volteada y estirada—; la
 // volteada no servía en pantallas chicas, donde el marco no alcanza la altura.
-function Constellation({ centerKey, onSelect, enOndas = null }) {
+// Al abrir, la figura de siempre: la del render en escritorio, las ondas en
+// teléfono. Con cada clic en otra forma, un garabato nuevo
+// (constelacionGarabato.js; Carlos, 18 nov 2026: «siempre diferentes maneras
+// de hacer las conexiones»). El hilo nuevo se dibuja de punta a punta.
+// Los dos botones de ensayo, solo en local: en escritorio llevan texto y son más anchos.
+const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320 : 96) : 0);
+
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
-  // Cada cambio de forma cuenta: el hilo se enrosca distinto con cada clic.
+  // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
+  // que tampoco se repite la serie de figuras.
   const cambios = useRef(0);
   const formaPrevia = useRef(centerKey);
+  const semillaBase = useRef(1 + Math.floor(Math.random() * 100000));
   if (formaPrevia.current !== centerKey) {
     formaPrevia.current = centerKey;
     cambios.current += 1;
   }
-  const ondas = enOndas ? acomodarEnOndas(enOndas.ancho, enOndas.alto, cambios.current, N - 1, import.meta.env.DEV ? 96 : 0) : null;
-  const trazos = ondas
-    // El cierre va tenue, como la hebra exterior que cierra la figura de escritorio.
-    ? [{ d: ondas.hilo }, { d: ondas.cierre, tenue: true }].filter((t) => t.d)
-    : BRAZOS.map((d, i) => ({ d, tenue: i === 2 }));
+  const W = marco?.ancho ?? 0;
+  const H = marco?.alto ?? 0;
+  const vuelta = cambios.current;
+  const ondas = useMemo(
+    () => (enOndas && W > 0 && H > 0 ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null),
+    [enOndas, W, H, N],
+  );
+  const garabato = useMemo(() => {
+    if (vuelta === 0 || !(W > 0) || !(H > 0)) return null;
+    // Las esferas conservan el tamaño que tenían en la figura de siempre.
+    const D = ondas ? ondas.ancla.d : Math.round(0.21 * W);
+    const d = ondas ? ondas.lugares[0].d : Math.max(44, Math.round(0.115 * W));
+    return trazarGarabato(W, H, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W) });
+  }, [vuelta, W, H, ondas, N]);
+  const enPixeles = garabato ?? ondas;
+  const figura = garabato ? 'garabato' : ondas ? 'en-ondas' : 'acostada';
+  const trazos = garabato
+    ? [{ d: garabato.hilo }]
+    : ondas
+      // El cierre va tenue, como la hebra exterior que cierra la figura de escritorio.
+      ? [{ d: ondas.hilo }, { d: ondas.cierre, tenue: true }].filter((t) => t.d)
+      : BRAZOS.map((d, i) => ({ d, tenue: i === 2 }));
 
   return (
     <div className="relative w-full h-full">
-      <svg data-figura={ondas ? 'en-ondas' : 'acostada'} viewBox={ondas ? `0 0 ${enOndas.ancho} ${enOndas.alto}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
+      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -334,19 +361,25 @@ function Constellation({ centerKey, onSelect, enOndas = null }) {
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
         </defs>
-        {trazos.map(({ d, tenue }, i) => (
-          <g key={i} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={tenue ? 0.45 : 1}>
-            <path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" />
-            <path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" />
-            <path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" />
-            <path d={d} stroke="rgba(255,230,180,0.55)" strokeWidth="0.6" />
-          </g>
-        ))}
+        {trazos.map(({ d, tenue }, i) => {
+          // El garabato se dibuja de punta a punta mientras las esferas viajan.
+          const dibujo = garabato
+            ? { initial: { pathLength: 0 }, animate: { pathLength: 1 }, transition: { duration: 1.3, ease: [0.45, 0, 0.2, 1] } }
+            : { initial: false };
+          return (
+            <g key={`${figura}-${vuelta}-${i}`} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={tenue ? 0.45 : 1}>
+              <motion.path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" {...dibujo} />
+              <motion.path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" {...dibujo} />
+              <motion.path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" {...dibujo} />
+              <motion.path d={d} stroke="rgba(255,230,180,0.55)" strokeWidth="0.6" {...dibujo} />
+            </g>
+          );
+        })}
       </svg>
 
       {CATALOG.map((forma, i) => {
         const turno = (i - i0 + N) % N;
-        const lugar = ondas ? (turno === 0 ? ondas.ancla : ondas.lugares[turno - 1]) : LUGARES[turno];
+        const lugar = enPixeles ? (turno === 0 ? enPixeles.ancla : enPixeles.lugares[turno - 1]) : LUGARES[turno];
         if (!lugar) return null;
         const alFrente = forma.key === centerKey;
         const avance = readResonanceProgress(forma.key);
@@ -359,13 +392,13 @@ function Constellation({ centerKey, onSelect, enOndas = null }) {
             aria-current={alFrente ? 'true' : undefined}
             style={{
               position: 'absolute',
-              left: ondas ? `${lugar.x}px` : `${lugar.x}%`,
-              top: ondas ? `${lugar.y}px` : `${lugar.y}%`,
+              left: enPixeles ? `${lugar.x}px` : `${lugar.x}%`,
+              top: enPixeles ? `${lugar.y}px` : `${lugar.y}%`,
               transform: 'translate(-50%, -50%)',
-              width: ondas ? `${lugar.d}px` : `${lugar.d}%`,
+              width: enPixeles ? `${lugar.d}px` : `${lugar.d}%`,
               // En la figura dibujada las esferas chicas no bajan del tamaño
               // de un dedo; en ondas, la regla ya lo cuida.
-              minWidth: ondas || alFrente ? undefined : '2.75rem',
+              minWidth: enPixeles || alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
               zIndex: alFrente ? 4 : 3,
               cursor: alFrente ? 'default' : 'pointer',
@@ -854,7 +887,8 @@ const CuadernoHolografico = ({
           <Constellation
             centerKey={centerKey}
             onSelect={handleSelect}
-            enOndas={enOndas && lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
+            marco={lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
+            enOndas={enOndas}
           />
         </div>
       </div>
