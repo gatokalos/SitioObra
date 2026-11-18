@@ -10,6 +10,7 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
+import { acomodarEnOndas } from '@/lib/constelacionEnOndas';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
@@ -293,47 +294,31 @@ const BRAZOS = [
   'M340,238 C318,236 306,218 316,206 C324,197 338,202 336,212 C335,218 328,219 326,214',
 ];
 
-// La figura de pie (Carlos, 18 nov 2026: «en móviles todavía se ve pequeño
-// […] algo más inteligente, vertical, que aprovechara más el espacio»). En
-// teléfono el marco es más alto que ancho y la figura acostada dejaba medio
-// marco vacío. Es la misma figura, no otra: Carlos pidió girarla como las
-// manecillas del reloj y ponerle un espejo «para que el ancla siguiera donde
-// debe estar». Girar un cuarto de vuelta y reflejar equivale a cambiar la x
-// por la y, así que los lugares y los brazos salen de los de la acostada y el
-// primer plano sigue abajo a la derecha. Los diámetros se multiplican por 4/3
-// porque se miden contra el ancho de la caja, que ahora es el lado corto.
-// Antes hubo dos dibujos nuevos de Claude, descartados ese mismo día: una
-// serpentina que se leía como un 8 y una espiral.
-// Estirada «orgánicamente» (Carlos, 18 nov 2026): la figura volteada dejaba
-// libres dos esquinas, arriba a la derecha y abajo a la izquierda. En vez de
-// agrandarla pareja, cada punto se empuja hacia la esquina libre que le queda
-// más cerca, más fuerte en el centro de la caja y nada en los bordes, para que
-// los brazos se abran sin romperse y nada se salga. El primer plano no se
-// mueve: es el ancla. x, y van de 0 a 1 en la caja de pie.
-const estirarHaciaLasEsquinas = (x, y) => {
-  const haciaLaEsquina = (x - 0.5) - (y - 0.5);          // + arriba a la derecha, − abajo a la izquierda
-  const lejosDelBorde = 16 * x * (1 - x) * y * (1 - y);  // 1 en el centro, 0 en los bordes
-  const empuje = 0.55 * haciaLaEsquina * lejosDelBorde;
-  return [x + 0.55 * empuje, y - empuje];                // la caja es más alta que ancha: se abre más a lo alto
-};
-const LUGARES_DE_PIE = LUGARES.map(({ x, y, d }, i) => {
-  const [u, v] = i === 0 ? [y / 100, x / 100] : estirarHaciaLasEsquinas(y / 100, x / 100);
-  return { x: Math.round(u * 1000) / 10, y: Math.round(v * 1000) / 10, d: Math.round(d * (4 / 3) * 10) / 10 };
-});
-const BRAZOS_DE_PIE = BRAZOS.map((trazo) => trazo.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, (_, enX, enY) => {
-  const [u, v] = estirarHaciaLasEsquinas(Number(enY) / 300, Number(enX) / 400);
-  return `${(u * 300).toFixed(1)},${(v * 400).toFixed(1)}`;
-}));
-
-function Constellation({ centerKey, onSelect, dePie = false }) {
+// En pantallas angostas la figura no es este dibujo: las esferas se acomodan
+// por regla en el marco que haya y el hilo se traza por donde quedaron
+// (constelacionEnOndas.js; Carlos, 18 nov 2026). Antes, ese mismo día, hubo
+// tres intentos con figuras dibujadas para teléfono —una serpentina que se
+// leía como un 8, una espiral y esta misma figura volteada y estirada—; la
+// volteada no servía en pantallas chicas, donde el marco no alcanza la altura.
+function Constellation({ centerKey, onSelect, enOndas = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
-  const lugares = dePie ? LUGARES_DE_PIE : LUGARES;
-  const brazos = dePie ? BRAZOS_DE_PIE : BRAZOS;
+  // Cada cambio de forma cuenta: el hilo se enrosca distinto con cada clic.
+  const cambios = useRef(0);
+  const formaPrevia = useRef(centerKey);
+  if (formaPrevia.current !== centerKey) {
+    formaPrevia.current = centerKey;
+    cambios.current += 1;
+  }
+  const ondas = enOndas ? acomodarEnOndas(enOndas.ancho, enOndas.alto, cambios.current, N - 1, import.meta.env.DEV ? 96 : 0) : null;
+  const trazos = ondas
+    // El cierre va tenue, como la hebra exterior que cierra la figura de escritorio.
+    ? [{ d: ondas.hilo }, { d: ondas.cierre, tenue: true }].filter((t) => t.d)
+    : BRAZOS.map((d, i) => ({ d, tenue: i === 2 }));
 
   return (
     <div className="relative w-full h-full">
-      <svg data-figura={dePie ? 'de-pie' : 'acostada'} viewBox={dePie ? '0 0 300 400' : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
+      <svg data-figura={ondas ? 'en-ondas' : 'acostada'} viewBox={ondas ? `0 0 ${enOndas.ancho} ${enOndas.alto}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -349,8 +334,8 @@ function Constellation({ centerKey, onSelect, dePie = false }) {
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
         </defs>
-        {brazos.map((d, i) => (
-          <g key={i} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={i === 2 ? 0.45 : 1}>
+        {trazos.map(({ d, tenue }, i) => (
+          <g key={i} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={tenue ? 0.45 : 1}>
             <path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" />
             <path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" />
             <path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" />
@@ -360,7 +345,9 @@ function Constellation({ centerKey, onSelect, dePie = false }) {
       </svg>
 
       {CATALOG.map((forma, i) => {
-        const lugar = lugares[(i - i0 + N) % N];
+        const turno = (i - i0 + N) % N;
+        const lugar = ondas ? (turno === 0 ? ondas.ancla : ondas.lugares[turno - 1]) : LUGARES[turno];
+        if (!lugar) return null;
         const alFrente = forma.key === centerKey;
         const avance = readResonanceProgress(forma.key);
         const icono = PORTAL_APP_ICON_URL[forma.key];
@@ -372,12 +359,13 @@ function Constellation({ centerKey, onSelect, dePie = false }) {
             aria-current={alFrente ? 'true' : undefined}
             style={{
               position: 'absolute',
-              left: `${lugar.x}%`,
-              top: `${lugar.y}%`,
+              left: ondas ? `${lugar.x}px` : `${lugar.x}%`,
+              top: ondas ? `${lugar.y}px` : `${lugar.y}%`,
               transform: 'translate(-50%, -50%)',
-              width: `${lugar.d}%`,
-              // En teléfono las esferas chicas no bajan del tamaño de un dedo.
-              minWidth: alFrente ? undefined : '2.75rem',
+              width: ondas ? `${lugar.d}px` : `${lugar.d}%`,
+              // En la figura dibujada las esferas chicas no bajan del tamaño
+              // de un dedo; en ondas, la regla ya lo cuida.
+              minWidth: ondas || alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
               zIndex: alFrente ? 4 : 3,
               cursor: alFrente ? 'default' : 'pointer',
@@ -787,7 +775,7 @@ const CuadernoHolografico = ({
   const marcoRef = useRef(null);
   const [lado, setLado] = useState(0);
   const [alto, setAlto] = useState(0);
-  const [dePie, setDePie] = useState(false);
+  const [enOndas, setEnOndas] = useState(false);
   useEffect(() => {
     const el = marcoRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
@@ -796,18 +784,15 @@ const CuadernoHolografico = ({
       if (!caja) return;
       // La figura es 4:3 y se deja achatar hasta 2:1 cuando el bloque se abre
       // y le quita altura: así las esferas no se encogen (14 nov 2026).
-      // En pantallas angostas, si el marco es claramente más alto que ancho,
-      // la figura se pone de pie (3:4, y se deja estirar un poco) para usar
-      // el alto; con el bloque abierto el marco pierde altura y vuelve la
-      // acostada (18 nov 2026).
-      if (caja.width < 560 && caja.height >= caja.width * 1.3) {
-        const anchoDePie = Math.max(0, Math.floor(Math.min(caja.width, caja.height / 1.3)));
-        setDePie(true);
-        setLado(anchoDePie);
-        setAlto(Math.max(0, Math.floor(Math.min(caja.height, anchoDePie * 1.6))));
+      // En pantallas angostas las esferas se acomodan por regla en todo el
+      // marco, tenga la proporción que tenga (18 nov 2026).
+      if (caja.width < 560) {
+        setEnOndas(true);
+        setLado(Math.max(0, Math.floor(caja.width)));
+        setAlto(Math.max(0, Math.floor(caja.height)));
         return;
       }
-      setDePie(false);
+      setEnOndas(false);
       const ancho = Math.max(0, Math.floor(Math.min(caja.width, caja.height * 2)));
       setLado(ancho);
       setAlto(Math.max(0, Math.floor(Math.min(caja.height, ancho * 3 / 4))));
@@ -869,7 +854,7 @@ const CuadernoHolografico = ({
           <Constellation
             centerKey={centerKey}
             onSelect={handleSelect}
-            dePie={dePie}
+            enOndas={enOndas && lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
           />
         </div>
       </div>
