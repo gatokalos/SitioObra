@@ -304,8 +304,26 @@ const BRAZOS = [
 // porque se miden contra el ancho de la caja, que ahora es el lado corto.
 // Antes hubo dos dibujos nuevos de Claude, descartados ese mismo día: una
 // serpentina que se leía como un 8 y una espiral.
-const LUGARES_DE_PIE = LUGARES.map(({ x, y, d }) => ({ x: y, y: x, d: Math.round(d * (4 / 3) * 10) / 10 }));
-const BRAZOS_DE_PIE = BRAZOS.map((trazo) => trazo.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, '$2,$1'));
+// Estirada «orgánicamente» (Carlos, 18 nov 2026): la figura volteada dejaba
+// libres dos esquinas, arriba a la derecha y abajo a la izquierda. En vez de
+// agrandarla pareja, cada punto se empuja hacia la esquina libre que le queda
+// más cerca, más fuerte en el centro de la caja y nada en los bordes, para que
+// los brazos se abran sin romperse y nada se salga. El primer plano no se
+// mueve: es el ancla. x, y van de 0 a 1 en la caja de pie.
+const estirarHaciaLasEsquinas = (x, y) => {
+  const haciaLaEsquina = (x - 0.5) - (y - 0.5);          // + arriba a la derecha, − abajo a la izquierda
+  const lejosDelBorde = 16 * x * (1 - x) * y * (1 - y);  // 1 en el centro, 0 en los bordes
+  const empuje = 0.55 * haciaLaEsquina * lejosDelBorde;
+  return [x + 0.55 * empuje, y - empuje];                // la caja es más alta que ancha: se abre más a lo alto
+};
+const LUGARES_DE_PIE = LUGARES.map(({ x, y, d }, i) => {
+  const [u, v] = i === 0 ? [y / 100, x / 100] : estirarHaciaLasEsquinas(y / 100, x / 100);
+  return { x: Math.round(u * 1000) / 10, y: Math.round(v * 1000) / 10, d: Math.round(d * (4 / 3) * 10) / 10 };
+});
+const BRAZOS_DE_PIE = BRAZOS.map((trazo) => trazo.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, (_, enX, enY) => {
+  const [u, v] = estirarHaciaLasEsquinas(Number(enY) / 300, Number(enX) / 400);
+  return `${(u * 300).toFixed(1)},${(v * 400).toFixed(1)}`;
+}));
 
 function Constellation({ centerKey, onSelect, dePie = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
@@ -786,7 +804,7 @@ const CuadernoHolografico = ({
         const anchoDePie = Math.max(0, Math.floor(Math.min(caja.width, caja.height / 1.3)));
         setDePie(true);
         setLado(anchoDePie);
-        setAlto(Math.max(0, Math.floor(Math.min(caja.height, anchoDePie * 1.45))));
+        setAlto(Math.max(0, Math.floor(Math.min(caja.height, anchoDePie * 1.6))));
         return;
       }
       setDePie(false);
