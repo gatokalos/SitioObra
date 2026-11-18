@@ -296,32 +296,16 @@ const BRAZOS = [
 // La figura de pie (Carlos, 18 nov 2026: «en móviles todavía se ve pequeño
 // […] algo más inteligente, vertical, que aprovechara más el espacio»). En
 // teléfono el marco es más alto que ancho y la figura acostada dejaba medio
-// marco vacío. Esta es la misma idea —dos brazos que se enroscan, el primer
-// plano abajo a la derecha, que es el ancla— dibujada en una caja 3:4, con las
-// esferas más grandes. Los lugares siguen el mismo orden que en la acostada:
-// del 1 al 4 por el brazo de abajo, del 5 al 8 por el de arriba. Dibujo de
-// Claude, a prueba; los porcentajes son de la caja de pie.
-const LUGARES_DE_PIE = [
-  { x: 79, y: 86, d: 30 },    // primer plano (el ancla)
-  { x: 47, y: 88, d: 17 },
-  { x: 22, y: 78, d: 17 },
-  { x: 14, y: 61, d: 17 },
-  { x: 27, y: 46, d: 17 },
-  { x: 66, y: 43, d: 17 },
-  { x: 80, y: 24, d: 17 },
-  { x: 52, y: 13, d: 17 },
-  { x: 20, y: 15.5, d: 20 },
-];
-const BRAZOS_DE_PIE = [
-  // brazo de arriba: del fondo al primer plano
-  'M60,62 C96,80 122,40 156,52 S214,58 240,96 C262,132 232,152 198,172 C160,196 236,214 262,240 C282,262 262,306 237,344',
-  // brazo de abajo
-  'M81,184 C52,200 34,222 42,244 S44,292 66,312 S108,348 141,352 S200,356 237,344',
-  // hebra exterior
-  'M60,62 C14,92 20,150 81,184',
-  // el rizo junto al primer plano
-  'M237,344 C215,342 203,324 213,312 C221,303 235,308 233,318 C232,324 225,325 223,320',
-];
+// marco vacío. Es la misma figura, no otra: Carlos pidió girarla como las
+// manecillas del reloj y ponerle un espejo «para que el ancla siguiera donde
+// debe estar». Girar un cuarto de vuelta y reflejar equivale a cambiar la x
+// por la y, así que los lugares y los brazos salen de los de la acostada y el
+// primer plano sigue abajo a la derecha. Los diámetros se multiplican por 4/3
+// porque se miden contra el ancho de la caja, que ahora es el lado corto.
+// Antes hubo dos dibujos nuevos de Claude, descartados ese mismo día: una
+// serpentina que se leía como un 8 y una espiral.
+const LUGARES_DE_PIE = LUGARES.map(({ x, y, d }) => ({ x: y, y: x, d: Math.round(d * (4 / 3) * 10) / 10 }));
+const BRAZOS_DE_PIE = BRAZOS.map((trazo) => trazo.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, '$2,$1'));
 
 function Constellation({ centerKey, onSelect, dePie = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
@@ -348,7 +332,7 @@ function Constellation({ centerKey, onSelect, dePie = false }) {
           </filter>
         </defs>
         {brazos.map((d, i) => (
-          <g key={i} fill="none" strokeLinecap="round" opacity={i === 2 ? 0.45 : 1}>
+          <g key={i} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={i === 2 ? 0.45 : 1}>
             <path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" />
             <path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" />
             <path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" />
@@ -798,8 +782,8 @@ const CuadernoHolografico = ({
       // la figura se pone de pie (3:4, y se deja estirar un poco) para usar
       // el alto; con el bloque abierto el marco pierde altura y vuelve la
       // acostada (18 nov 2026).
-      if (caja.width < 560 && caja.height >= caja.width * 1.2) {
-        const anchoDePie = Math.max(0, Math.floor(Math.min(caja.width, caja.height / 1.2)));
+      if (caja.width < 560 && caja.height >= caja.width * 1.3) {
+        const anchoDePie = Math.max(0, Math.floor(Math.min(caja.width, caja.height / 1.3)));
         setDePie(true);
         setLado(anchoDePie);
         setAlto(Math.max(0, Math.floor(Math.min(caja.height, anchoDePie * 1.45))));
