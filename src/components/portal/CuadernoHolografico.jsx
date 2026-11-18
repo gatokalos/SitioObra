@@ -293,13 +293,45 @@ const BRAZOS = [
   'M340,238 C318,236 306,218 316,206 C324,197 338,202 336,212 C335,218 328,219 326,214',
 ];
 
-function Constellation({ centerKey, onSelect }) {
+// La figura de pie (Carlos, 18 nov 2026: «en móviles todavía se ve pequeño
+// […] algo más inteligente, vertical, que aprovechara más el espacio»). En
+// teléfono el marco es más alto que ancho y la figura acostada dejaba medio
+// marco vacío. Esta es la misma idea —dos brazos que se enroscan, el primer
+// plano abajo a la derecha, que es el ancla— dibujada en una caja 3:4, con las
+// esferas más grandes. Los lugares siguen el mismo orden que en la acostada:
+// del 1 al 4 por el brazo de abajo, del 5 al 8 por el de arriba. Dibujo de
+// Claude, a prueba; los porcentajes son de la caja de pie.
+const LUGARES_DE_PIE = [
+  { x: 79, y: 86, d: 30 },    // primer plano (el ancla)
+  { x: 47, y: 88, d: 17 },
+  { x: 22, y: 78, d: 17 },
+  { x: 14, y: 61, d: 17 },
+  { x: 27, y: 46, d: 17 },
+  { x: 66, y: 43, d: 17 },
+  { x: 80, y: 24, d: 17 },
+  { x: 52, y: 13, d: 17 },
+  { x: 20, y: 15.5, d: 20 },
+];
+const BRAZOS_DE_PIE = [
+  // brazo de arriba: del fondo al primer plano
+  'M60,62 C96,80 122,40 156,52 S214,58 240,96 C262,132 232,152 198,172 C160,196 236,214 262,240 C282,262 262,306 237,344',
+  // brazo de abajo
+  'M81,184 C52,200 34,222 42,244 S44,292 66,312 S108,348 141,352 S200,356 237,344',
+  // hebra exterior
+  'M60,62 C14,92 20,150 81,184',
+  // el rizo junto al primer plano
+  'M237,344 C215,342 203,324 213,312 C221,303 235,308 233,318 C232,324 225,325 223,320',
+];
+
+function Constellation({ centerKey, onSelect, dePie = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
+  const lugares = dePie ? LUGARES_DE_PIE : LUGARES;
+  const brazos = dePie ? BRAZOS_DE_PIE : BRAZOS;
 
   return (
     <div className="relative w-full h-full">
-      <svg viewBox="0 0 400 300" preserveAspectRatio="none" className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
+      <svg data-figura={dePie ? 'de-pie' : 'acostada'} viewBox={dePie ? '0 0 300 400' : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -315,7 +347,7 @@ function Constellation({ centerKey, onSelect }) {
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
         </defs>
-        {BRAZOS.map((d, i) => (
+        {brazos.map((d, i) => (
           <g key={i} fill="none" strokeLinecap="round" opacity={i === 2 ? 0.45 : 1}>
             <path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" />
             <path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" />
@@ -326,7 +358,7 @@ function Constellation({ centerKey, onSelect }) {
       </svg>
 
       {CATALOG.map((forma, i) => {
-        const lugar = LUGARES[(i - i0 + N) % N];
+        const lugar = lugares[(i - i0 + N) % N];
         const alFrente = forma.key === centerKey;
         const avance = readResonanceProgress(forma.key);
         const icono = PORTAL_APP_ICON_URL[forma.key];
@@ -753,6 +785,7 @@ const CuadernoHolografico = ({
   const marcoRef = useRef(null);
   const [lado, setLado] = useState(0);
   const [alto, setAlto] = useState(0);
+  const [dePie, setDePie] = useState(false);
   useEffect(() => {
     const el = marcoRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
@@ -761,6 +794,18 @@ const CuadernoHolografico = ({
       if (!caja) return;
       // La figura es 4:3 y se deja achatar hasta 2:1 cuando el bloque se abre
       // y le quita altura: así las esferas no se encogen (14 nov 2026).
+      // En pantallas angostas, si el marco es claramente más alto que ancho,
+      // la figura se pone de pie (3:4, y se deja estirar un poco) para usar
+      // el alto; con el bloque abierto el marco pierde altura y vuelve la
+      // acostada (18 nov 2026).
+      if (caja.width < 560 && caja.height >= caja.width * 1.2) {
+        const anchoDePie = Math.max(0, Math.floor(Math.min(caja.width, caja.height / 1.2)));
+        setDePie(true);
+        setLado(anchoDePie);
+        setAlto(Math.max(0, Math.floor(Math.min(caja.height, anchoDePie * 1.45))));
+        return;
+      }
+      setDePie(false);
       const ancho = Math.max(0, Math.floor(Math.min(caja.width, caja.height * 2)));
       setLado(ancho);
       setAlto(Math.max(0, Math.floor(Math.min(caja.height, ancho * 3 / 4))));
@@ -822,6 +867,7 @@ const CuadernoHolografico = ({
           <Constellation
             centerKey={centerKey}
             onSelect={handleSelect}
+            dePie={dePie}
           />
         </div>
       </div>
