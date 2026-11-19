@@ -12,6 +12,7 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress, momentoDeLaForma } from '@/lib/bitacoraShared';
 import { acomodarEnOndas } from '@/lib/constelacionEnOndas';
 import { trazarGarabato } from '@/lib/constelacionGarabato';
+import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
@@ -575,6 +576,26 @@ function HolograficoPanel({
   const [alEntrarAbierto, setAlEntrarAbierto] = useState(false);
   useEffect(() => { setAlEntrarAbierto(false); }, [centerKey]);
 
+  // La invitación a la cuenta (Carlos, 18 nov 2026: «el momento donde un
+  // usuario se puede dar cuenta de lo que se trata este método es justo
+  // cuando está viendo la constelación e interactúa con ella. En ese momento
+  // se puede aprovechar para dar este aviso, en vez de que salga un toast»).
+  // Sin sesión, tocar «Interpretar…» en otra forma ya no avisa con un toast:
+  // el bloque morado de esa forma se vuelve la invitación. Elegir la forma y
+  // entrar quedan en un mismo gesto; al entrar, la continuación lleva a ella
+  // y deja anotado desde dónde llegó la persona a su cuenta.
+  const [invitacion, setInvitacion] = useState(false);
+  useEffect(() => { setInvitacion(false); }, [centerKey]);
+  const entrarConCorreo = () => {
+    writePendingContinuation({
+      source: 'constelacion-de-la-memoria',
+      showcaseId: entry?.showcase,
+      forma: entry?.form ?? entry?.name ?? null,
+      presentation: 'narrative-video',
+    });
+    onRequireLogin?.();
+  };
+
   const homeProgress = readResonanceProgress(homeKey);
   const homeL2 = homeProgress.l2Done;
   const homeL3 = homeProgress.l3Done;
@@ -757,11 +778,34 @@ function HolograficoPanel({
             {/* En pantallas chicas la línea se retira mientras el acordeón
                 está desplegado, para que el bloque no aplaste la constelación;
                 al cerrarlo, vuelve (Carlos, 16 nov 2026). */}
-            <div className={alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
+            <div className={alEntrarAbierto || invitacion ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
               <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
             </div>
             <BloqueDeForma entry={entry} ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}>
-              {showcaseDefinitions[entry.showcase]?.iaProfile ? (
+              {invitacion ? (
+                /* Textos de Claude, por revisar con Carlos. */
+                <div className="bloque-forma__abierto" data-invitacion-a-la-cuenta>
+                  {/* Sin .memoria-descripcion: su alto mínimo de tres renglones
+                      separaba de más los dos párrafos y el botón. */}
+                  <p className="text-sm leading-relaxed text-slate-200/90">
+                    Cada forma te pregunta a su manera. Si sigues, tus réplicas se juntan y puedes armar con ellas un texto tuyo. Compartirlo o no, lo decides tú.
+                  </p>
+                  <p className="-mt-1 text-xs leading-relaxed text-slate-400/80">
+                    Para entrar hace falta tu correo: ahí se guarda lo tuyo.
+                  </p>
+                  <button type="button" onClick={entrarConCorreo} className="ultima-pregunta__salida" data-entrar-con-correo>
+                    Entrar a {entry.form ?? entry.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitacion(false)}
+                    className="self-start text-xs text-slate-400 underline-offset-4 transition hover:text-white hover:underline"
+                    data-ahora-no
+                  >
+                    Ahora no
+                  </button>
+                </div>
+              ) : showcaseDefinitions[entry.showcase]?.iaProfile ? (
                 <IAInsightCard
                   {...showcaseDefinitions[entry.showcase].iaProfile}
                   compact
@@ -772,6 +816,7 @@ function HolograficoPanel({
                   travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                   travelFormLabel={entry.form ?? entry.name}
                   onTravel={() => onOpenVideo(entry.showcase)}
+                  onSinSesion={() => { setAlEntrarAbierto(false); setInvitacion(true); }}
                   enBloque
                 />
               ) : null}

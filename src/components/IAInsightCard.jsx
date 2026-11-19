@@ -60,6 +60,10 @@ const IAInsightCard = ({
   // hacia la obra destacada en la ficha (Carlos, 15 nov 2026: «acomoda el
   // botón adentro. No por fuera»).
   footer = null,
+  // Sin sesión, quien monta la tarjeta puede responder con algo suyo en vez
+  // del aviso pequeño: en la constelación de la Memoria, el bloque morado se
+  // vuelve la invitación a la cuenta (Carlos, 18 nov 2026).
+  onSinSesion = null,
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -86,6 +90,10 @@ const IAInsightCard = ({
   const handleTravelClick = () => {
     if (user) {
       onTravel?.();
+      return;
+    }
+    if (onSinSesion) {
+      onSinSesion();
       return;
     }
     // Sin sesión no se cruza: el aviso dice a dónde iba y ofrece la puerta ahí
