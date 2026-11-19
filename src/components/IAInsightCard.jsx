@@ -112,15 +112,10 @@ const IAInsightCard = ({
 
   if (enBloque) {
     if (!hasNotes && !isTravelMode) return null;
+    // Sin el renglón «Al entrar en escena…» (Carlos, 18 nov 2026): lo
+    // despliega la cabecera del bloque, con la ceja y el nombre de la forma.
     return (
       <>
-        <button type="button" onClick={toggleOpen} aria-expanded={isOpen} className="huella-puerta" data-al-entrar>
-          <span className="huella-puerta__texto">
-            {travelEyebrow ? <span className="huella-puerta__eyebrow">{travelEyebrow}</span> : null}
-            <span className="huella-puerta__titulo">Al entrar en escena…</span>
-          </span>
-          <ChevronDown size={17} className="huella-puerta__flecha" style={isOpen ? { transform: 'rotate(180deg)' } : undefined} aria-hidden="true" />
-        </button>
         {isOpen ? (
           <div className="bloque-forma__abierto">
             {hasNotes ? (

@@ -462,19 +462,31 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
 // fila de acción. Sin categoría ni verso (Carlos, 28 oct 2026: «Simplifiqué el
 // bloque, quitando la ceja y los tres versos»). Nada queda suelto entre la
 // constelación y el bloque; la línea de la forma va arriba de él.
-function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, children }) {
+// Desde el 18 nov 2026 (Carlos: «necesito que el chevron esté en el renglón
+// de arriba, donde está la ceja y el título. Y luego borras el mensaje de al
+// entrar en escena… Y ya así, ya los dos son iguales») la cabecera misma es
+// el renglón que despliega: un solo renglón cerrado, para no apretar la
+// constelación en pantallas chicas. Igual en el bloque de la espera.
+function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, children }) {
+  const contenido = (
+    <div className="min-w-0">
+      {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
+      <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
+    </div>
+  );
   return (
     <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
-      <div className="bloque-forma__cabecera">
-        {/* La ceja va arriba, con el nombre de la forma en su color; el renglón
-            de abajo queda solo para «Al entrar en escena…» (Carlos, 16 nov
-            2026). */}
-        <div className="min-w-0">
-          {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
-          <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
+      {onToggle ? (
+        <button type="button" onClick={onToggle} aria-expanded={abierto} className="bloque-forma__cabecera bloque-forma__cabecera--plegable" data-al-entrar>
+          {contenido}
+          <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
+        </button>
+      ) : (
+        <div className="bloque-forma__cabecera">
+          {contenido}
+          {chip}
         </div>
-        {chip}
-      </div>
+      )}
       {children}
     </section>
   );
@@ -681,10 +693,17 @@ function HolograficoPanel({
               {avisoDeEspera ? (
                 <section className={`bloque-forma${alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
                   {/* Mismo patrón que el bloque de otra forma (Carlos, 16 nov
-                      2026): arriba la ceja y el nombre de la forma en su
-                      color; abajo un renglón que se despliega con la
-                      instrucción y lo que falte pedir. */}
-                  <div className="bloque-forma__cabecera">
+                      2026): la ceja y el nombre de la forma en su color. Desde
+                      el 18 nov ese mismo renglón despliega la instrucción y lo
+                      que falte pedir; el renglón de abajo («La obra sigue en
+                      ti…») se fue y su frase abre lo desplegado. */}
+                  <button
+                    type="button"
+                    onClick={() => setAlEntrarAbierto((v) => !v)}
+                    aria-expanded={alEntrarAbierto}
+                    className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
+                    data-renglon-de-espera
+                  >
                     <div className="min-w-0">
                       {/* La ceja dice el momento, con la palabra de la línea:
                           esperando, «Entre bambalinas»; con la pregunta de
@@ -692,21 +711,11 @@ function HolograficoPanel({
                       <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{avisoDeEspera.regreso ? 'El Regreso' : 'Entre bambalinas'}</p>
                       <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAlEntrarAbierto((v) => !v)}
-                    aria-expanded={alEntrarAbierto}
-                    className="huella-puerta"
-                    data-renglon-de-espera
-                  >
-                    <span className="huella-puerta__texto">
-                      <span className="huella-puerta__titulo">{avisoDeEspera.titulo}</span>
-                    </span>
-                    <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
+                    <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
                   </button>
                   {alEntrarAbierto ? (
                     <div className="bloque-forma__abierto" data-espera-desplegada>
+                      <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
                       {/* En la espera, la instrucción y el aviso, en teléfono y
                           en escritorio (el globo del gato queda para el
                           regreso, 18 nov 2026). El día del regreso ya no hay
@@ -781,7 +790,15 @@ function HolograficoPanel({
             <div className={alEntrarAbierto || invitacion ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
               <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
             </div>
-            <BloqueDeForma entry={entry} ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}>
+            <BloqueDeForma
+              entry={entry}
+              ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
+              abierto={alEntrarAbierto || invitacion}
+              onToggle={showcaseDefinitions[entry.showcase]?.iaProfile ? () => {
+                if (alEntrarAbierto || invitacion) { setAlEntrarAbierto(false); setInvitacion(false); }
+                else setAlEntrarAbierto(true);
+              } : null}
+            >
               {invitacion ? (
                 /* Texto C, elegido por Carlos (18 nov 2026): la convención
                    teatral (interpretar, acto final) y lo que de verdad pasa
@@ -796,16 +813,12 @@ function HolograficoPanel({
                   <p className="-mt-1 text-xs leading-relaxed text-slate-400/80">
                     Para guardarlo, tu correo.
                   </p>
+                  {/* El mismo botón, que cambia (Carlos, 18 nov 2026: «el
+                      botón tiene que ser dinámico… a la hora de hacer clic…
+                      tiene que aparecer ahí adentro, iniciar sesión»). Al
+                      cerrar el bloque, vuelven las notas. */}
                   <button type="button" onClick={entrarConCorreo} className="ultima-pregunta__salida" data-entrar-con-correo>
-                    Interpretar {entry.form ?? entry.name}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInvitacion(false)}
-                    className="self-start text-xs text-slate-400 underline-offset-4 transition hover:text-white hover:underline"
-                    data-ahora-no
-                  >
-                    Ahora no
+                    Iniciar sesión
                   </button>
                 </div>
               ) : showcaseDefinitions[entry.showcase]?.iaProfile ? (

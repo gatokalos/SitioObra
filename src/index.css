@@ -6344,6 +6344,20 @@ body {
   justify-content: space-between;
   gap: 0.75rem;
 }
+/* 18 nov 2026: la cabecera es el renglón que despliega (sin el renglón de
+   abajo), así que lleva su propio aire al pie. */
+.bloque-forma__cabecera--plegable {
+  width: 100%;
+  padding: 0 0 0.65rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.bloque-forma__cabecera--plegable:hover .huella-puerta__flecha,
+.bloque-forma__cabecera--plegable:focus-visible .huella-puerta__flecha {
+  color: #fff;
+}
 .bloque-forma .memoria-descripcion {
   margin-top: 0;
 }
