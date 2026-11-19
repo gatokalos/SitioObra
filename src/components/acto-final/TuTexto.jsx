@@ -15,7 +15,7 @@ import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { CATALOG } from '@/lib/bitacoraShared';
 import { leerTuTexto, guardarTuTexto, traerTuTextoDelServidor, guardarTuTextoEnElServidor } from '@/lib/misReplicas';
 
-const TuTexto = ({ replicas, userId = null, onVolver, onCompartir, estadoCompartir = 'listo' }) => {
+const TuTexto = ({ replicas, userId = null, onVolver, estadoCompartir = 'listo' }) => {
   const [texto, setTexto] = useState(() => leerTuTexto()?.texto ?? replicas.map((r) => r.texto).join('\n\n'));
   const campoRef = useRef(null);
   const tocado = useRef(false);
@@ -79,19 +79,14 @@ const TuTexto = ({ replicas, userId = null, onVolver, onCompartir, estadoCompart
       <div className="tu-texto__pie">
         <p className="tu-texto__nota">
           {/* Carlos, 19 nov 2026: guardado en la cuenta, «Nadie más lo ve» ya no
-              era del todo cierto (quien administra la base podría leerlo). */}
-          {compartido ? 'Compartido. Queda en revisión, como tus réplicas.' : 'Se guarda solo. No se publica hasta que lo compartas.'}
+              era del todo cierto (quien administra la base podría leerlo). Se
+              publica sin «Compartirlo» (19 nov, 14:30): el recuadro del acto
+              final no aguanta un texto largo, y las dos salidas («Llevármelo» y
+              «Proponerlo para el blog», docs/propuesta-juntar-en-el-acto-final,
+              §7) vienen después. Mientras, la nota dice solo lo que pasa. */}
+          {compartido ? 'Compartido. Queda en revisión, como tus réplicas.' : 'Se guarda solo.'}
         </p>
-        <div className="tu-texto__botones">
-          <button
-            type="button"
-            className="ultima-pregunta__salida"
-            onClick={() => void onCompartir(texto.trim())}
-            disabled={!texto.trim() || estadoCompartir === 'enviando' || compartido}
-            data-compartir-tu-texto
-          >
-            {estadoCompartir === 'enviando' ? 'Compartiendo…' : compartido ? 'Compartido' : 'Compartirlo'}
-          </button>
+        <div className="tu-texto__botones tu-texto__botones--solo-volver">
           <button type="button" className="tu-texto__volver" onClick={onVolver} data-volver-de-tu-texto>
             Volver
           </button>

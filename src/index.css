@@ -6456,6 +6456,12 @@ body {
   .tu-texto__botones { width: 100%; }
   .tu-texto__campo { font-size: 1rem; }
 }
+/* Mientras «Tu texto» solo tiene «Volver» (19 nov 2026): a la derecha en
+   escritorio, a lo ancho en teléfono. */
+.tu-texto__botones--solo-volver { min-width: 0; justify-content: flex-end; }
+@media (max-width: 640px) {
+  .tu-texto__botones--solo-volver .tu-texto__volver { flex: 1; }
+}
 /* «Tu texto» conserva el alto de la ficha; el campo crece para llenarlo. */
 .provoca-stage-lado-texto {
   display: flex;
