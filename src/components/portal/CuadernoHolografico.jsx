@@ -323,9 +323,10 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 
 // Al fondo del pozo (Carlos, 18 nov 2026: «cuando llegue al fondo del pozo,
 // desaparezcan las constelaciones y aparezca más nítida la imagen de fondo que
-// corresponde a la forma. Y dejar ahí la esfera»), el hilo y las otras ocho
-// esferas se apagan; la de la forma se queda en su lugar.
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, soloLaForma = false }) {
+// corresponde a la forma»), el hilo y las esferas se apagan. Primero se quedó
+// la esfera de la forma; esa misma noche se fue también (Carlos: «quizás se
+// vería mejor sin el icono»).
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -362,7 +363,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sol
 
   return (
     <div className="relative w-full h-full">
-      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: soloLaForma ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
+      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: sinConstelacion ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -399,7 +400,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sol
         const lugar = enPixeles ? (turno === 0 ? enPixeles.ancla : enPixeles.lugares[turno - 1]) : LUGARES[turno];
         if (!lugar) return null;
         const alFrente = forma.key === centerKey;
-        const apagada = soloLaForma && !alFrente;
+        const apagada = sinConstelacion;
         const avance = readResonanceProgress(forma.key);
         const icono = PORTAL_APP_ICON_URL[forma.key];
         return (
@@ -938,7 +939,7 @@ const CuadernoHolografico = ({
             onSelect={handleSelect}
             marco={lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
             enOndas={enOndas}
-            soloLaForma={alFondoDelPozo}
+            sinConstelacion={alFondoDelPozo}
           />
         </div>
       </div>

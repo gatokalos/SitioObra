@@ -2854,29 +2854,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 en el bloque morado, del lado de la constelación (Carlos, 17 nov
                 2026). Desde el 18 nov tampoco el día del regreso («del lado de
                 la cabina del gato sigue estando el botón viejo para
-                descargar»): aquí queda solo para el pozo. */}
-            {enElPozo && l3Rec?.step3 ? (
-              <div className={`absolute inset-x-5 bottom-5 z-20 space-y-2${enElPozo ? ' recuerdo-en-el-pozo' : ''}`}>
-                <button
-                  type="button"
-                  onClick={() => void handleDownloadSouvenir()}
-                  disabled={isSouvenirGenerating}
-                  className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo"
-                >
-                  <span className="cabina-antesala-opcion__mirilla">
-                    <Download size={17} aria-hidden="true" />
-                  </span>
-                  <span className="cabina-antesala-opcion__texto">
-                    <span className="cabina-antesala-opcion__titulo">
-                      {isSouvenirGenerating ? 'Preparando tu recuerdo…' : 'Llevarme el recuerdo'}
-                    </span>
-                    <span className="cabina-antesala-opcion__detalle">
-                      Tu consigna y la fecha en que la pregunta vuelve
-                    </span>
-                  </span>
-                </button>
-              </div>
-            ) : null}
+                descargar»), y esa misma noche tampoco en el pozo (Carlos: «hay
+                que quitar el botón de llevarme el recuerdo del lado derecho»).
+                En teléfono el pozo conserva el suyo. */}
             {/* La misma presencia permanece en escena: en penumbra mientras
                 habla el autor, revelada cuando toma la palabra. */}
             <img
