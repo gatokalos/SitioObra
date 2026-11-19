@@ -599,6 +599,10 @@ function HolograficoPanel({
   // forma del centro.
   const [alEntrarAbierto, setAlEntrarAbierto] = useState(false);
   useEffect(() => { setAlEntrarAbierto(false); }, [centerKey]);
+  // En escritorio el bloque morado va siempre desplegado y sin chevron
+  // (Carlos, 18 nov 2026): ahí sobra espacio y abrir y cerrar solo movía la
+  // constelación. El chevron queda para pantallas chicas.
+  const siempreAbierto = bloqueEnLaCabina;
 
   // La invitación a la cuenta (Carlos, 18 nov 2026: «el momento donde un
   // usuario se puede dar cuenta de lo que se trata este método es justo
@@ -703,19 +707,14 @@ function HolograficoPanel({
                   en escritorio, y el día del regreso el bloque sigue, con la
                   ceja «El Regreso». */}
               {avisoDeEspera ? (
-                <section className={`bloque-forma${alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
+                <section className={`bloque-forma${siempreAbierto || alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
                   {/* Mismo patrón que el bloque de otra forma (Carlos, 16 nov
                       2026): la ceja y el nombre de la forma en su color. Desde
                       el 18 nov ese mismo renglón despliega la instrucción y lo
                       que falte pedir; el renglón de abajo («La obra sigue en
                       ti…») se fue y su frase abre lo desplegado. */}
-                  <button
-                    type="button"
-                    onClick={() => setAlEntrarAbierto((v) => !v)}
-                    aria-expanded={alEntrarAbierto}
-                    className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
-                    data-renglon-de-espera
-                  >
+                  {(() => {
+                    const cabecera = (
                     <div className="min-w-0">
                       {/* La ceja dice el momento, con la palabra de la línea:
                           esperando, «Entre bambalinas»; con la pregunta de
@@ -723,9 +722,23 @@ function HolograficoPanel({
                       <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{avisoDeEspera.regreso ? 'El Regreso' : 'Entre bambalinas'}</p>
                       <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
                     </div>
-                    <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
-                  </button>
-                  {alEntrarAbierto ? (
+                    );
+                    return siempreAbierto ? (
+                      <div className="bloque-forma__cabecera">{cabecera}</div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAlEntrarAbierto((v) => !v)}
+                        aria-expanded={alEntrarAbierto}
+                        className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
+                        data-renglon-de-espera
+                      >
+                        {cabecera}
+                        <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
+                      </button>
+                    );
+                  })()}
+                  {siempreAbierto || alEntrarAbierto ? (
                     <div className="bloque-forma__abierto" data-espera-desplegada>
                       <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
                       {/* En la espera, la instrucción y el aviso, en teléfono y
@@ -805,8 +818,8 @@ function HolograficoPanel({
             <BloqueDeForma
               entry={entry}
               ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-              abierto={alEntrarAbierto}
-              onToggle={showcaseDefinitions[entry.showcase]?.iaProfile ? () => {
+              abierto={siempreAbierto || alEntrarAbierto}
+              onToggle={!siempreAbierto && showcaseDefinitions[entry.showcase]?.iaProfile ? () => {
                 if (alEntrarAbierto) { setAlEntrarAbierto(false); setInvitacion(false); }
                 else setAlEntrarAbierto(true);
               } : null}
@@ -817,7 +830,7 @@ function HolograficoPanel({
                   compact
                   onRequireLogin={onRequireLogin}
                   travelEyebrow={null}
-                  isOpen={alEntrarAbierto}
+                  isOpen={siempreAbierto || alEntrarAbierto}
                   onToggle={() => setAlEntrarAbierto((v) => !v)}
                   travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                   travelFormLabel={entry.form ?? entry.name}
