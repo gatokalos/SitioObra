@@ -783,18 +783,21 @@ function HolograficoPanel({
             </div>
             <BloqueDeForma entry={entry} ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}>
               {invitacion ? (
-                /* Textos de Claude, por revisar con Carlos. */
+                /* Texto C, elegido por Carlos (18 nov 2026): la convención
+                   teatral (interpretar, acto final) y lo que de verdad pasa
+                   (se guarda, un texto tuyo). Antes de La Réplica no se dice
+                   «réplica»: la persona todavía no sabe qué es. */
                 <div className="bloque-forma__abierto" data-invitacion-a-la-cuenta>
                   {/* Sin .memoria-descripcion: su alto mínimo de tres renglones
                       separaba de más los dos párrafos y el botón. */}
                   <p className="text-sm leading-relaxed text-slate-200/90">
-                    Cada forma te pregunta a su manera. Si sigues, tus réplicas se juntan y puedes armar con ellas un texto tuyo. Compartirlo o no, lo decides tú.
+                    Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
                   </p>
                   <p className="-mt-1 text-xs leading-relaxed text-slate-400/80">
-                    Para entrar hace falta tu correo: ahí se guarda lo tuyo.
+                    Para guardarlo, tu correo.
                   </p>
                   <button type="button" onClick={entrarConCorreo} className="ultima-pregunta__salida" data-entrar-con-correo>
-                    Entrar a {entry.form ?? entry.name}
+                    Interpretar {entry.form ?? entry.name}
                   </button>
                   <button
                     type="button"
