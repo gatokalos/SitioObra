@@ -321,7 +321,11 @@ const BRAZOS = [
 // Los dos botones de ensayo, solo en local: en escritorio llevan texto y son más anchos.
 const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320 : 96) : 0);
 
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false }) {
+// Al fondo del pozo (Carlos, 18 nov 2026: «cuando llegue al fondo del pozo,
+// desaparezcan las constelaciones y aparezca más nítida la imagen de fondo que
+// corresponde a la forma. Y dejar ahí la esfera»), el hilo y las otras ocho
+// esferas se apagan; la de la forma se queda en su lugar.
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, soloLaForma = false }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -358,7 +362,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false }) {
 
   return (
     <div className="relative w-full h-full">
-      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true">
+      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: soloLaForma ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -395,14 +399,17 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false }) {
         const lugar = enPixeles ? (turno === 0 ? enPixeles.ancla : enPixeles.lugares[turno - 1]) : LUGARES[turno];
         if (!lugar) return null;
         const alFrente = forma.key === centerKey;
+        const apagada = soloLaForma && !alFrente;
         const avance = readResonanceProgress(forma.key);
         const icono = PORTAL_APP_ICON_URL[forma.key];
         return (
           <button
             key={forma.key}
             type="button"
-            onClick={alFrente ? undefined : () => onSelect(forma.key)}
+            onClick={alFrente || apagada ? undefined : () => onSelect(forma.key)}
             aria-current={alFrente ? 'true' : undefined}
+            aria-hidden={apagada ? 'true' : undefined}
+            tabIndex={apagada ? -1 : undefined}
             style={{
               position: 'absolute',
               left: enPixeles ? `${lugar.x}px` : `${lugar.x}%`,
@@ -414,8 +421,10 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false }) {
               minWidth: enPixeles || alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
               zIndex: alFrente ? 4 : 3,
-              cursor: alFrente ? 'default' : 'pointer',
-              transition: 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1)',
+              cursor: alFrente || apagada ? 'default' : 'pointer',
+              opacity: apagada ? 0 : 1,
+              pointerEvents: apagada ? 'none' : undefined,
+              transition: 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1), opacity 0.9s ease',
             }}
             className={`group overflow-hidden rounded-full bg-black ${alFrente
               ? 'ring-2 ring-white/30 shadow-[0_0_60px_rgba(240,190,110,0.28)]'
@@ -479,6 +488,7 @@ function CompletedScenePanel({
   ultimaPreguntaVista,
   regresoRecien = false,
   bloqueEnLaCabina = false,
+  sinLinea = false,
 }) {
   // El recuerdo comparte renglón con el nombre de la forma (Carlos, 20 sep
   // 2026). En escritorio vive al pie de la cabina.
@@ -507,7 +517,10 @@ function CompletedScenePanel({
           <FraseDeMemoria portal={portal} enEscena sinCierre />
         </div>
       ) : null}
-      <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
+      {/* Al fondo del pozo la línea se retira: de este lado quedan la ceja, el
+          nombre y la frase (Carlos, 18 nov 2026: «quitas la línea de
+          tiempo»). */}
+      {sinLinea ? null : <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />}
       {/* El bloque: su nombre y la fila «Lo que falta · Contestarle a la obra».
           Al abrirla, el gato propone la palabra dentro de la frase y «Pasar al
           acto final» lleva a la cabina. */}
@@ -545,6 +558,7 @@ function HolograficoPanel({
   avisoDeEspera = null,
   onDownloadSouvenir = null,
   souvenirGenerando = false,
+  alFondoDelPozo = false,
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
@@ -586,6 +600,7 @@ function HolograficoPanel({
               ultimaPreguntaVista={ultimaPreguntaVista}
               regresoRecien={regresoRecien}
               bloqueEnLaCabina={bloqueEnLaCabina}
+              sinLinea={alFondoDelPozo}
               recommendedFormatId={recommendedFormatId}
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
@@ -785,6 +800,7 @@ const CuadernoHolografico = ({
   readOnly = false,
   bloqueEnLaCabina = false,
   avisoDeEspera = null,
+  alFondoDelPozo = false,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -795,6 +811,14 @@ const CuadernoHolografico = ({
   const scrollContainerRef = useRef(null);
 
   useEffect(() => { onPosterChange?.(portal); }, []);
+
+  // Al fondo del pozo solo queda la esfera propia: si otra forma estaba al
+  // frente, vuelve la de la persona (y su fondo).
+  useEffect(() => {
+    if (!alFondoDelPozo) return;
+    setCenterKey(portal);
+    onPosterChange?.(portal);
+  }, [alFondoDelPozo, portal]);
 
   const handleSelect = (key) => {
     setCenterKey(key);
@@ -914,6 +938,7 @@ const CuadernoHolografico = ({
             onSelect={handleSelect}
             marco={lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
             enOndas={enOndas}
+            soloLaForma={alFondoDelPozo}
           />
         </div>
       </div>
@@ -940,6 +965,7 @@ const CuadernoHolografico = ({
           readOnly={readOnly}
           bloqueEnLaCabina={bloqueEnLaCabina}
           avisoDeEspera={avisoDeEspera}
+          alFondoDelPozo={alFondoDelPozo}
         />
       </div>
 

@@ -2139,15 +2139,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             />
             {/* Desktop conserva dos columnas: el póster vive detrás del
                 formulario izquierdo, con el mismo oscurecimiento progresivo
-                que protege la lectura en móvil. */}
+                que protege la lectura en móvil. Al fondo del pozo la
+                constelación se apaga y el póster de la forma sube (Carlos,
+                18 nov 2026: «aparezca más nítida la imagen de fondo que
+                corresponde a la forma»). */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 hidden lg:block transition-opacity duration-500"
+              className="absolute inset-0 hidden lg:block transition-opacity duration-1000"
+              data-poster-del-pozo={enElPozo ? 'nitido' : undefined}
               style={{
                 backgroundImage: `url(${holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster})`,
                 backgroundPosition: 'center top',
                 backgroundSize: 'cover',
-                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.08 : 0.42,
+                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.08 : enElPozo ? 0.92 : 0.42,
               }}
             />
             <div
@@ -2157,8 +2161,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             />
             <div
               aria-hidden="true"
-              className="absolute inset-0 hidden lg:block"
-              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
+              className="absolute inset-0 hidden lg:block transition-opacity duration-1000"
+              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)', opacity: enElPozo ? 0 : 1 }}
+            />
+            {/* Al fondo del pozo, un velo más ligero: arriba deja ver el
+                póster y abajo oscurece lo justo para leer la ceja, el nombre
+                y la frase. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 hidden lg:block transition-opacity duration-1000"
+              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.04) 0%, rgba(5,3,9,0.12) 40%, rgba(5,3,9,0.62) 68%, rgba(5,3,9,0.9) 100%)', opacity: enElPozo ? 1 : 0 }}
             />
 
             <div className="relative z-10 h-full overflow-y-auto">
@@ -2325,6 +2337,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
                       bloqueEnLaCabina={!enPantallaChica}
+                      alFondoDelPozo={enElPozo}
                       /* En teléfono no hay gato a un lado que dé el aviso de
                          la espera: lo da el bloque morado, al pie de la
                          Memoria (Carlos, 15 nov 2026). */
