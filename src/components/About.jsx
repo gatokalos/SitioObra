@@ -32,6 +32,7 @@ import {
   siguienteBorradorPendiente,
   leerTuTexto,
   anotarTuTextoCompartido,
+  guardarTuTextoEnElServidor,
 } from '@/lib/misReplicas';
 import TusReplicas from '@/components/acto-final/TusReplicas';
 import TuTexto from '@/components/acto-final/TuTexto';
@@ -271,7 +272,7 @@ export const ProvocaSection = () => {
   // forma, la columna izquierda enseña «Tus réplicas», el recuadro de la
   // derecha escucha la que se toque, y la ficha entera puede darse vuelta para
   // armar «Tu texto». Propuesta en docs/propuesta-juntar-en-el-acto-final-18nov2026.md.
-  const misReplicas = useMisReplicas();
+  const misReplicas = useMisReplicas(user?.id ?? null);
   const actoFinalTransformado = misReplicas.length > 0;
   const ultimaReplica = misReplicas[misReplicas.length - 1] ?? null;
   const [replicaEnElRecuadro, setReplicaEnElRecuadro] = useState(null);
@@ -953,6 +954,7 @@ export const ProvocaSection = () => {
     anotarMiReplica({ portal: borradorPortal, texto: quote, termino: terminoFijado, perspectiveId: perspectivePublicadaId, nombre: authorName });
     setReplicaEnElRecuadro({
       id: perspectivePublicadaId || `local-${Date.now()}`,
+      perspectiveId: perspectivePublicadaId != null ? String(perspectivePublicadaId) : null,
       portal: borradorPortal,
       texto: quote,
       nombre: authorName,
@@ -1085,7 +1087,14 @@ export const ProvocaSection = () => {
       return;
     }
     const data = resultado?.data;
-    anotarTuTextoCompartido(typeof data === 'string' ? data : (data?.id ?? null));
+    const idCompartido = typeof data === 'string' ? data : (data?.id ?? null);
+    anotarTuTextoCompartido(idCompartido);
+    if (user?.id) {
+      void guardarTuTextoEnElServidor(user.id, texto, misReplicas.map((r) => r.perspectiveId).filter(Boolean), {
+        compartido_at: new Date().toISOString(),
+        perspective_id: Number.isFinite(Number(idCompartido)) ? Number(idCompartido) : null,
+      });
+    }
     setEstadoTuTexto('compartido');
   }, [misReplicas, ultimaReplica, user?.id, voiceName]);
   const iniciarSesionDesdeElActoFinal = useCallback(() => {
@@ -1240,6 +1249,7 @@ export const ProvocaSection = () => {
             >
               <TuTexto
                 replicas={misReplicas}
+                userId={user?.id ?? null}
                 onVolver={volverDeTuTexto}
                 onCompartir={compartirTuTexto}
                 estadoCompartir={estadoTuTexto}

@@ -15,6 +15,13 @@ import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { fechaCorta } from '@/lib/misReplicas';
 
 const nombreDeLaForma = (portal) => CATALOG.find((f) => f.key === portal)?.form ?? null;
+// La misma réplica puede llegar del navegador y del servidor con ids distintos.
+const normal = (t) => String(t || '').replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+const esLaMisma = (a, b) => Boolean(a && b) && (
+  a.id === b.id
+  || (a.perspectiveId && b.perspectiveId && String(a.perspectiveId) === String(b.perspectiveId))
+  || normal(a.texto) === normal(b.texto)
+);
 
 const TusReplicas = React.forwardRef(function TusReplicas({ replicas, enElRecuadro, onLlevarAlRecuadro }, ref) {
   if (!replicas.length) return null;
@@ -45,7 +52,7 @@ const TusReplicas = React.forwardRef(function TusReplicas({ replicas, enElRecuad
               onClick={encendida ? () => onLlevarAlRecuadro(suya) : undefined}
               title={forma.form}
               aria-label={encendida ? `Escuchar tu réplica de ${forma.form}` : `${forma.form}: todavía sin réplica`}
-              className={`tus-replicas__esfera${encendida ? ' tus-replicas__esfera--encendida' : ''}${suya && enElRecuadro?.id === suya.id ? ' tus-replicas__esfera--en-el-recuadro' : ''}`}
+              className={`tus-replicas__esfera${encendida ? ' tus-replicas__esfera--encendida' : ''}${suya && esLaMisma(enElRecuadro, suya) ? ' tus-replicas__esfera--en-el-recuadro' : ''}`}
             >
               <img src={PORTAL_EMBLEM_URL[forma.key]} alt="" aria-hidden="true" />
             </button>
@@ -56,7 +63,7 @@ const TusReplicas = React.forwardRef(function TusReplicas({ replicas, enElRecuad
       <ul className="tus-replicas__lista">
         {replicas.map((replica) => {
           const forma = nombreDeLaForma(replica.portal);
-          const enRecuadro = enElRecuadro?.id === replica.id;
+          const enRecuadro = esLaMisma(enElRecuadro, replica);
           return (
             <li key={replica.id}>
               <button

@@ -11,10 +11,16 @@
 //   pisaba al de la primera.
 // - Su texto: lo que arma con sus réplicas en el otro lado de la ficha.
 //
-// Sin cuenta, esto es lo que hay. Con cuenta, después se junta con lo del
-// servidor (paso 2 de la propuesta), para que siga en cualquier aparato.
+// Además se pregunta al servidor (get_mis_replicas, migración del 19 nov):
+// sin cuenta, lo que se publicó desde este navegador —también antes de que
+// existiera este registro—; con cuenta, lo de todos sus aparatos. «Tu texto»
+// se guarda en la cuenta (textos_armados). Si el servidor no contesta, queda
+// lo del navegador.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { ensureAnonId } from '@/lib/identity';
+import { CATALOG } from '@/lib/bitacoraShared';
 
 export const MIS_REPLICAS_KEY = 'gatoencerrado:mis-replicas';
 export const BORRADORES_POR_FORMA_KEY = 'gatoencerrado:provoca-drafts';
@@ -100,10 +106,71 @@ export function anotarTuTextoCompartido(perspectiveId) {
   escribirJson(TU_TEXTO_KEY, { ...guardado, compartidoAt: new Date().toISOString(), perspectiveId: perspectiveId || null });
 }
 
-export function useMisReplicas() {
-  const [replicas, setReplicas] = useState(() => (typeof window === 'undefined' ? [] : leerMisReplicas()));
+// ── Lo del servidor ─────────────────────────────────────────────────────────
+const FORMAS = new Set(CATALOG.map((f) => f.key));
+const normal = (t) => String(t || '').replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+export async function traerMisReplicasDelServidor() {
+  try {
+    const { data, error } = await supabase.rpc('get_mis_replicas', { p_anon_id: ensureAnonId() ?? null, p_limit: 60 });
+    if (error || !Array.isArray(data)) return null;
+    return data
+      .filter((r) => typeof r?.quote === 'string' && r.quote.trim())
+      .map((r) => ({
+        id: `srv-${r.id}`,
+        portal: FORMAS.has(r.miniverso_id) ? r.miniverso_id : null,
+        texto: r.quote.trim().replace(/^[“"]|[”"]$/g, ''),
+        termino: r.termino || null,
+        fecha: r.created_at,
+        perspectiveId: r.id != null ? String(r.id) : null,
+        nombre: r.author_name || null,
+        estado: r.status || null,
+      }));
+  } catch {
+    return null;
+  }
+}
+
+// Lo del servidor manda; lo del navegador que el servidor no tenga se queda.
+export function juntarReplicas(locales, delServidor) {
+  if (!delServidor) return locales;
+  const textos = new Set(delServidor.map((r) => normal(r.texto)));
+  const ids = new Set(delServidor.map((r) => r.perspectiveId).filter(Boolean));
+  const soloAqui = locales.filter((r) => !(r.perspectiveId && ids.has(String(r.perspectiveId))) && !textos.has(normal(r.texto)));
+  return [...delServidor, ...soloAqui].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+}
+
+export async function traerTuTextoDelServidor() {
+  try {
+    const { data, error } = await supabase.from('textos_armados').select('texto, fuentes, compartido_at, perspective_id, updated_at').maybeSingle();
+    if (error || !data) return null;
+    return { texto: data.texto ?? '', fuentes: data.fuentes ?? [], compartidoAt: data.compartido_at, perspectiveId: data.perspective_id, updatedAt: data.updated_at };
+  } catch {
+    return null;
+  }
+}
+
+export async function guardarTuTextoEnElServidor(userId, texto, fuentes = [], extra = {}) {
+  if (!userId) return false;
+  try {
+    const { error } = await supabase.from('textos_armados').upsert({
+      user_id: userId,
+      texto,
+      fuentes,
+      updated_at: new Date().toISOString(),
+      ...extra,
+    });
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+export function useMisReplicas(userId = null) {
+  const [locales, setLocales] = useState(() => (typeof window === 'undefined' ? [] : leerMisReplicas()));
+  const [delServidor, setDelServidor] = useState(null);
   useEffect(() => {
-    const releer = () => setReplicas(leerMisReplicas());
+    const releer = () => setLocales(leerMisReplicas());
     const alCambiarOtraPestana = (e) => { if (e.key === MIS_REPLICAS_KEY) releer(); };
     window.addEventListener(EVENTO, releer);
     window.addEventListener('storage', alCambiarOtraPestana);
@@ -112,7 +179,13 @@ export function useMisReplicas() {
       window.removeEventListener('storage', alCambiarOtraPestana);
     };
   }, []);
-  return replicas;
+  // Se vuelve a preguntar al cambiar de cuenta y cuando se anota una réplica.
+  useEffect(() => {
+    let vigente = true;
+    void traerMisReplicasDelServidor().then((lista) => { if (vigente) setDelServidor(lista); });
+    return () => { vigente = false; };
+  }, [userId, locales.length]);
+  return useMemo(() => juntarReplicas(locales, delServidor), [locales, delServidor]);
 }
 
 // «18 nov», como en el resto del sitio.

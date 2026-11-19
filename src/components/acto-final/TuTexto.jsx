@@ -13,17 +13,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { CATALOG } from '@/lib/bitacoraShared';
-import { leerTuTexto, guardarTuTexto } from '@/lib/misReplicas';
+import { leerTuTexto, guardarTuTexto, traerTuTextoDelServidor, guardarTuTextoEnElServidor } from '@/lib/misReplicas';
 
-const TuTexto = ({ replicas, onVolver, onCompartir, estadoCompartir = 'listo' }) => {
+const TuTexto = ({ replicas, userId = null, onVolver, onCompartir, estadoCompartir = 'listo' }) => {
   const [texto, setTexto] = useState(() => leerTuTexto()?.texto ?? replicas.map((r) => r.texto).join('\n\n'));
   const campoRef = useRef(null);
+  const tocado = useRef(false);
   const formas = [...new Set(replicas.map((r) => r.portal).filter(Boolean))];
 
+  // Con cuenta, el texto vive en la cuenta: si allá hay uno más reciente que
+  // el de este navegador, manda ese (19 nov 2026).
   useEffect(() => {
-    const t = window.setTimeout(() => guardarTuTexto(texto, replicas.map((r) => r.id)), 400);
+    if (!userId) return undefined;
+    let vigente = true;
+    void traerTuTextoDelServidor().then((guardado) => {
+      if (!vigente || !guardado?.texto || tocado.current) return;
+      const local = leerTuTexto();
+      if (!local || String(guardado.updatedAt) > String(local.updatedAt)) setTexto(guardado.texto);
+    });
+    return () => { vigente = false; };
+  }, [userId]);
+
+  useEffect(() => {
+    const fuentes = replicas.map((r) => r.perspectiveId ?? r.id);
+    const t = window.setTimeout(() => {
+      guardarTuTexto(texto, fuentes);
+      if (userId && tocado.current) void guardarTuTextoEnElServidor(userId, texto, fuentes);
+    }, 800);
     return () => window.clearTimeout(t);
-  }, [texto, replicas]);
+  }, [texto, replicas, userId]);
 
   useEffect(() => {
     campoRef.current?.focus({ preventScroll: true });
@@ -52,7 +70,7 @@ const TuTexto = ({ replicas, onVolver, onCompartir, estadoCompartir = 'listo' })
       <textarea
         ref={campoRef}
         value={texto}
-        onChange={(e) => setTexto(e.target.value)}
+        onChange={(e) => { tocado.current = true; setTexto(e.target.value); }}
         rows={9}
         aria-label="Tu texto"
         className="tu-texto__campo"
