@@ -585,6 +585,7 @@ function HolograficoPanel({
   onDownloadSouvenir = null,
   souvenirGenerando = false,
   alFondoDelPozo = false,
+  soloElTitulo = false,
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
@@ -657,6 +658,20 @@ function HolograficoPanel({
             />
           ) : (
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
+            soloElTitulo ? (
+              /* El día del regreso, en escritorio, de este lado solo queda el
+                 título, como al fondo del pozo pero con el póster todavía
+                 oscuro: al contestar, el póster se ilumina (Carlos, 19 nov
+                 2026: que tenga el título «igual como lo tiene» el pozo, «pero
+                 que se mantenga así oscuro para que la transición a
+                 iluminado… siga siendo la propuesta estética»). Sin
+                 constelación, sin línea y sin bloque morado. */
+              <div data-titulo-de-la-memoria data-titulo-del-regreso>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+                <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
+                <FraseDeMemoria portal={homeKey} enEscena={false} />
+              </div>
+            ) : (
             <div className="flex flex-col gap-5">
               {/* Con el bloque morado de la espera (teléfono), el nombre de la
                   forma vive dentro del bloque, igual que cuando hay otra forma
@@ -787,6 +802,7 @@ function HolograficoPanel({
                 </section>
               ) : null}
             </div>
+            )
           )
         ) : hasBitacora ? (
           <CompletedScenePanel
@@ -883,6 +899,7 @@ const CuadernoHolografico = ({
   bloqueEnLaCabina = false,
   avisoDeEspera = null,
   alFondoDelPozo = false,
+  soloElTitulo = false,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -897,10 +914,10 @@ const CuadernoHolografico = ({
   // Al fondo del pozo solo queda la esfera propia: si otra forma estaba al
   // frente, vuelve la de la persona (y su fondo).
   useEffect(() => {
-    if (!alFondoDelPozo) return;
+    if (!alFondoDelPozo && !soloElTitulo) return;
     setCenterKey(portal);
     onPosterChange?.(portal);
-  }, [alFondoDelPozo, portal]);
+  }, [alFondoDelPozo, soloElTitulo, portal]);
 
   const handleSelect = (key) => {
     setCenterKey(key);
@@ -1024,7 +1041,7 @@ const CuadernoHolografico = ({
             onSelect={handleSelect}
             marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
             enOndas={enOndas}
-            sinConstelacion={alFondoDelPozo}
+            sinConstelacion={alFondoDelPozo || soloElTitulo}
           />
         </div>
       </div>
@@ -1052,6 +1069,7 @@ const CuadernoHolografico = ({
           bloqueEnLaCabina={bloqueEnLaCabina}
           avisoDeEspera={avisoDeEspera}
           alFondoDelPozo={alFondoDelPozo}
+          soloElTitulo={soloElTitulo}
         />
       </div>
 

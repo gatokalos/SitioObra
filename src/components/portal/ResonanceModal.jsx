@@ -2340,6 +2340,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
                       bloqueEnLaCabina={!enPantallaChica}
                       alFondoDelPozo={enElPozo}
+                      /* El día del regreso, en escritorio, de este lado solo
+                         el título y el póster oscuro (Carlos, 19 nov 2026). */
+                      soloElTitulo={regresoEnEscritorio}
                       /* En teléfono no hay gato a un lado que dé el aviso de
                          la espera: lo da el bloque morado, al pie de la
                          Memoria (Carlos, 15 nov 2026). */
@@ -2991,28 +2994,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     onUltimaPregunta={pasarDelPozoAlActoFinal}
                     onGoToSite={irAlSitio}
                   />
-                  {l3Rec?.step3 ? (
-                    <div className="recuerdo-en-el-pozo">
-                      <button
-                        type="button"
-                        onClick={() => void handleDownloadSouvenir()}
-                        disabled={isSouvenirGenerating}
-                        className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo"
-                      >
-                        <span className="cabina-antesala-opcion__mirilla">
-                          <Download size={17} aria-hidden="true" />
-                        </span>
-                        <span className="cabina-antesala-opcion__texto">
-                          <span className="cabina-antesala-opcion__titulo">
-                            {isSouvenirGenerating ? 'Preparando tu recuerdo…' : 'Llevarme el recuerdo'}
-                          </span>
-                          <span className="cabina-antesala-opcion__detalle">
-                            Tu consigna y la fecha en que la pregunta vuelve
-                          </span>
-                        </span>
-                      </button>
-                    </div>
-                  ) : null}
+                  {/* El recuerdo deja el fondo del pozo también en teléfono
+                      (Carlos, 19 nov 2026: «en teléfonos se te ha olvidado
+                      quitar el botón de descargar la imagen»), como en
+                      escritorio desde el 18 nov. Se ofrece en la espera. */}
                 </div>
               ) : null}
             </div>

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import ChevronQueSigue from '@/components/ChevronQueSigue';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
@@ -61,12 +62,21 @@ const LITERATURA_ENTRY = {
   image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/ObraDestacadaLiteratura_pingpong.mp4',
 };
 
+const LITERATURA_CHIPS = ['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña'];
+const LITERATURA_CHIP_CLASS = 'rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100';
+
 function LiteraturaEntryCopy() {
   return (
     <>
       <p className="text-sm text-slate-200/90 leading-relaxed"><strong>Una novela de autoficción </strong> que se despliega entre lo real y lo imaginado, dejando que el lector complete la historia desde su propia experiencia en torno a una <em>supuesta</em> puesta en escena.</p>
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+        {/* En teléfono los chips de la forma bajan aquí, junto a «Incluye
+            artefacto…»: en el bloque «Tú en escena…» descuadraban (Carlos,
+            19 nov 2026). En escritorio siguen en su bloque. */}
+        {LITERATURA_CHIPS.map((chip) => (
+          <span key={chip} className={`${LITERATURA_CHIP_CLASS} lg:hidden`}>{chip}</span>
+        ))}
       </div>
     </>
   );
@@ -292,6 +302,12 @@ const PortalLiteratura = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {/* En teléfono el sonido y el cierre suben a la esquina de la
+                ficha, como en escritorio, donde estuvo el librito (Carlos, 19
+                nov 2026). Antes iban al final de la página. */}
+            <div className="absolute right-4 top-4 z-20 lg:hidden" data-controles-de-la-ficha>
+              <PortalHeaderActions />
+            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -308,26 +324,14 @@ const PortalLiteratura = () => {
               </div>
 
               <div className="lg:hidden px-6 sm:px-8 pb-6">
+                {/* Sin chips y sin «Conoce su gemelo»: descuadraban el bloque
+                    (Carlos, 19 nov 2026). Los chips bajan a la obra destacada;
+                    el chevron que sigue abajo dice que la ficha continúa. */}
                 <IAInsightCard
                   {...showcaseDefinitions.miniversoNovela.iaProfile}
-                  chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
-                  chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
                   title="AL ENTRAR EN ESCENA…"
                   {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
                   compact
-                  /* El botón que baja a la obra destacada va dentro de la caja
-                     (Carlos, 15 nov 2026). */
-                  footer={enPasado ? (
-                    <button
-                      type="button"
-                      className="ficha-en-pasado__boton"
-                      data-gesto-de-la-obra
-                      onClick={() => document.getElementById('obra-destacada')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                    >
-                      {enPasado.boton}
-                      <span aria-hidden="true">↓</span>
-                    </button>
-                  ) : null}
                 />
               </div>
 
@@ -376,6 +380,9 @@ const PortalLiteratura = () => {
             )}
           </div>
 
+          {/* Pegado al pie de la pantalla mientras se ve la ficha; al bajar, se
+              queda entre la ficha y la obra destacada. Solo en teléfono. */}
+          <ChevronQueSigue className="pointer-events-none sticky bottom-0 z-30 -my-5 lg:hidden" />
 
           <div id="obra-destacada" className="lg:order-2 space-y-6 scroll-mt-20">
             <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
@@ -454,9 +461,6 @@ const PortalLiteratura = () => {
           </div>
           {/* «Abrir separador inteligente» (arquitectura vieja) se retiró el 14 oct
               2026 a pedido de Carlos: la única entrada al dispositivo es la escena. */}
-          <div className="order-last flex justify-end pt-2 lg:hidden">
-            <PortalHeaderActions />
-          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
