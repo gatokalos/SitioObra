@@ -3,6 +3,8 @@
 // palabra de la obra que eligió con el gato (D-45, diseño aprobado el 22 oct
 // 2026). About.jsx lee la misma llave y el mismo evento.
 
+import { guardarBorradorDeForma } from '@/lib/misReplicas';
+
 export const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 export const PROVOCA_QUOTE_MAX_CHARS = 700;
 
@@ -48,7 +50,10 @@ export function palabraEnPrimeraPersona(texto) {
 export const FUERA_DE_LA_LISTA = 'otro';
 export const PREGUNTA_FUERA_DE_LA_LISTA = '¿Qué te provocó esta obra?';
 
-export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null }) {
+// El borrador lleva su forma (19 nov 2026): con ella, el acto final sabe de
+// qué forma salió cada réplica, y cada forma guarda su propio borrador para que
+// el de una segunda no pise al de la primera (lib/misReplicas.js).
+export function escribirBorradorDeReplica({ quote, huella, termino, borradorId = null, portal = null }) {
   const texto = typeof quote === 'string' ? palabraEnPrimeraPersona(quote).slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
   if (!texto) return;
   try {
@@ -60,10 +65,12 @@ export function escribirBorradorDeReplica({ quote, huella, termino, borradorId =
       huella,
       ...(termino ? { termino } : {}),
       ...(borradorId ? { borradorId } : {}),
+      ...(portal ? { portal } : {}),
       updatedAt: new Date().toISOString(),
     }));
   } catch {}
+  guardarBorradorDeForma(portal, { quote: texto, huella, termino, borradorId });
   try {
-    window.dispatchEvent(new CustomEvent('gatoencerrado:provoca-draft', { detail: { quote: texto, huella, termino, borradorId } }));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:provoca-draft', { detail: { quote: texto, huella, termino, borradorId, portal } }));
   } catch {}
 }

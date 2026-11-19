@@ -1346,6 +1346,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     escribirBorradorDeReplica({
       quote,
       borradorId: ultimaPregunta.borradorId ?? null,
+      portal,
       huella: {
         anonId: ultimaPregunta.anonId,
         sessionId: ultimaPregunta.sessionId,
@@ -1356,7 +1357,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     });
     setUltimaPregunta(null);
     irAlSitio('#provoca');
-  }, [ultimaPregunta, terminoElegido, irAlSitio]);
+  }, [ultimaPregunta, terminoElegido, irAlSitio, portal]);
 
   const momentoActual = ultimaPregunta?.momentos?.[momento] ?? null;
   const esUltimoMomento = ultimaPregunta ? momento >= ultimaPregunta.momentos.length - 1 : false;
@@ -1580,6 +1581,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     escribirBorradorDeReplica({
       quote: (termino && carga.respuestas?.[termino]) || carga.texto,
       borradorId: carga.borradorId ?? null,
+      portal,
       huella: { anonId: carga.anonId, sessionId: carga.sessionId, campo: carga.campo, original: carga.original },
       termino,
     });

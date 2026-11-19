@@ -25,6 +25,16 @@ import {
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import { irALaAlianza } from '@/lib/revelarAlianza';
 import { FUERA_DE_LA_LISTA, PREGUNTA_FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
+import { CATALOG } from '@/lib/bitacoraShared';
+import {
+  useMisReplicas,
+  anotarMiReplica,
+  siguienteBorradorPendiente,
+  leerTuTexto,
+  anotarTuTextoCompartido,
+} from '@/lib/misReplicas';
+import TusReplicas from '@/components/acto-final/TusReplicas';
+import TuTexto from '@/components/acto-final/TuTexto';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
@@ -253,6 +263,28 @@ export const ProvocaSection = () => {
   // El borrador que el gato propuso (replica_borradores): al publicar se guarda
   // lo publicado junto a lo propuesto (D-45: dos versiones).
   const [borradorId, setBorradorId] = useState(null);
+  // De qué forma salió el borrador que está en la caja (19 nov 2026): con eso
+  // la réplica queda anotada con su forma en «Tus réplicas».
+  const [borradorPortal, setBorradorPortal] = useState(null);
+  // El acto final después de la primera réplica (Carlos, 19 nov 2026, maqueta
+  // aprobada): el formulario se apaga hasta que llegue el borrador de otra
+  // forma, la columna izquierda enseña «Tus réplicas», el recuadro de la
+  // derecha escucha la que se toque, y la ficha entera puede darse vuelta para
+  // armar «Tu texto». Propuesta en docs/propuesta-juntar-en-el-acto-final-18nov2026.md.
+  const misReplicas = useMisReplicas();
+  const actoFinalTransformado = misReplicas.length > 0;
+  const ultimaReplica = misReplicas[misReplicas.length - 1] ?? null;
+  const [replicaEnElRecuadro, setReplicaEnElRecuadro] = useState(null);
+  // Al volver al acto final, el recuadro empieza con su última réplica; «Leer
+  // otra» pasa a las voces de los demás.
+  const [miraOtrasVoces, setMiraOtrasVoces] = useState(false);
+  const [ladoDelTexto, setLadoDelTexto] = useState(false);
+  const [volvioDelTexto, setVolvioDelTexto] = useState(false);
+  const [fichaVuelve, setFichaVuelve] = useState(false);
+  const [altoDeLaFicha, setAltoDeLaFicha] = useState(null);
+  const [estadoTuTexto, setEstadoTuTexto] = useState(() => (leerTuTexto()?.compartidoAt ? 'compartido' : 'listo'));
+  const tusReplicasRef = useRef(null);
+  const fichaRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
   const pulseDeltaTimeoutsRef = useRef({});
@@ -271,6 +303,16 @@ export const ProvocaSection = () => {
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
   const isSendVoiceDisabled = isSubmittingVoice;
   const hasVoiceDraftText = voiceDraft.trim().length > 0;
+  // Después de la primera réplica el formulario se apaga hasta que la persona
+  // traiga el borrador de otra forma: una réplica por forma (Carlos, 19 nov
+  // 2026; D-45).
+  const traeBorradorDeOtraForma = hasVoiceDraftText
+    && Boolean(borradorPortal)
+    && !misReplicas.some((r) => r.portal === borradorPortal);
+  const formularioApagado = actoFinalTransformado && !traeBorradorDeOtraForma;
+  // «Leer otra» se apaga mientras escribe su réplica: así no se contagia de las
+  // voces de los demás (Carlos, 19 nov 2026).
+  const escribiendoSuReplica = !formularioApagado && hasVoiceDraftText;
   const scrollToReplicaCard = useCallback(() => {
     const card = replicaCardRef.current;
     if (!card || card.hidden) return;
@@ -300,11 +342,12 @@ export const ProvocaSection = () => {
     media.addListener(openDesktopComposer);
     return () => media.removeListener(openDesktopComposer);
   }, []);
-  const currentProvocaTitleTerm = terminoFijado ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
+  const terminoDeLaPregunta = terminoFijado ?? (formularioApagado ? ultimaReplica?.termino ?? null : null);
+  const currentProvocaTitleTerm = terminoDeLaPregunta ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
   // Quien llega del pozo con «otra» —ninguna de las siete se acercó— no recibe
   // una palabra de la obra en la pregunta, sino la pregunta abierta (Carlos, 15
   // nov 2026).
-  const preguntaDeLaReplica = terminoFijado === FUERA_DE_LA_LISTA
+  const preguntaDeLaReplica = terminoDeLaPregunta === FUERA_DE_LA_LISTA
     ? PREGUNTA_FUERA_DE_LA_LISTA
     : `¿Qué te provoca ${currentProvocaTitleTerm}?`;
   const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
@@ -426,14 +469,14 @@ export const ProvocaSection = () => {
     if (typeof window === 'undefined') return undefined;
 
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    if (prefersReducedMotion || terminoFijado) return undefined;
+    if (prefersReducedMotion || terminoDeLaPregunta) return undefined;
 
     const intervalId = window.setInterval(() => {
       setProvocaTitleTermIndex((previous) => (previous + 1) % PROVOCA_TITLE_TERMS.length);
     }, PROVOCA_TITLE_ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [terminoFijado]);
+  }, [terminoDeLaPregunta]);
 
   useEffect(() => {
     audioDurationRef.current = silvestreAudioDuration;
@@ -536,6 +579,7 @@ export const ProvocaSection = () => {
       if (parsed?.huella) setHuellaDeOrigen(parsed.huella);
       if (parsed?.termino) setTerminoFijado(parsed.termino);
       if (parsed?.borradorId) setBorradorId(parsed.borradorId);
+      if (parsed?.portal) setBorradorPortal(parsed.portal);
       if (parsed?.name) setVoiceName(parsed.name);
       if (parsed?.role) setVoiceRole(parsed.role);
       const hasDraft = parsed?.quote || parsed?.name || parsed?.role;
@@ -556,6 +600,7 @@ export const ProvocaSection = () => {
       if (e.detail?.huella) setHuellaDeOrigen(e.detail.huella);
       if (e.detail?.termino) setTerminoFijado(e.detail.termino);
       if (e.detail?.borradorId) setBorradorId(e.detail.borradorId);
+      if (e.detail?.portal) setBorradorPortal(e.detail.portal);
       setIsVoiceInputOpen(true);
       if (isVoiceInputOpen || isProvocaDesktopViewport()) {
         window.requestAnimationFrame(() => {
@@ -576,6 +621,7 @@ export const ProvocaSection = () => {
       ...(huellaDeOrigen ? { huella: huellaDeOrigen } : {}),
       ...(terminoFijado ? { termino: terminoFijado } : {}),
       ...(borradorId ? { borradorId } : {}),
+      ...(borradorPortal ? { portal: borradorPortal } : {}),
       updatedAt: new Date().toISOString(),
     };
     if (!payload.quote && !payload.name && !payload.role) {
@@ -583,7 +629,7 @@ export const ProvocaSection = () => {
       return;
     }
     safeSetItem(PROVOCA_DRAFT_KEY, JSON.stringify(payload));
-  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen, terminoFijado, borradorId]);
+  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen, terminoFijado, borradorId, borradorPortal]);
 
   useEffect(() => {
     let cancelled = false;
@@ -687,6 +733,8 @@ export const ProvocaSection = () => {
   const handleRefreshVoices = useCallback(() => {
     if (!canRefreshVoices) return;
     stopSilvestreResponse();
+    setReplicaEnElRecuadro(null);
+    setMiraOtrasVoces(true);
     setVisibleVoiceCursor((previous) => (previous + visibleVoiceRefreshStep) % rankedVoicesPool.length);
   }, [canRefreshVoices, rankedVoicesPool.length, stopSilvestreResponse, visibleVoiceRefreshStep]);
 
@@ -900,18 +948,41 @@ export const ProvocaSection = () => {
     // aquí ya no cambia sólo lo que se publica (D-38).
     void corregirHuellaGuardada(quote);
     void registrarPublicadoEnBorrador(quote, perspectivePublicadaId);
+    // Queda en «Tus réplicas» con su forma, y en el recuadro, para escucharla
+    // con la voz de la obra (19 nov 2026).
+    anotarMiReplica({ portal: borradorPortal, texto: quote, termino: terminoFijado, perspectiveId: perspectivePublicadaId, nombre: authorName });
+    setReplicaEnElRecuadro({
+      id: perspectivePublicadaId || `local-${Date.now()}`,
+      portal: borradorPortal,
+      texto: quote,
+      nombre: authorName,
+      etiqueta: 'Solo tú ves esto · en revisión',
+    });
     setHuellaDeOrigen(null);
     setTerminoFijado(null);
     setBorradorId(null);
+    setBorradorPortal(null);
     safeRemoveItem(PROVOCA_DRAFT_KEY);
     // La ficha queda abierta para mostrar la voz recién enviada y su devolución.
     setVoiceDraft('');
     setIsVoiceInputOpen(true);
+    // Si otra forma dejó su borrador pendiente, entra ahora a la caja: cada
+    // forma guarda el suyo (19 nov 2026).
+    const pendiente = siguienteBorradorPendiente();
+    if (pendiente) {
+      setVoiceDraft(pendiente.quote);
+      setHuellaDeOrigen(pendiente.huella ?? null);
+      setTerminoFijado(pendiente.termino ?? null);
+      setBorradorId(pendiente.borradorId ?? null);
+      setBorradorPortal(pendiente.portal);
+    }
   }, [
     corregirHuellaGuardada,
     registrarPublicadoEnBorrador,
     fireProvocaConfetti,
     huellaDeOrigen,
+    borradorPortal,
+    terminoFijado,
     isSubmittingVoice,
     loadPendingPerspectives,
     user,
@@ -943,6 +1014,88 @@ export const ProvocaSection = () => {
     if (isSubmittingVoice) return;
     setIsVoiceInputOpen(true);
   }, [isSubmittingVoice]);
+
+  // La réplica que se toca en «Tus réplicas» ocupa el recuadro de la derecha,
+  // donde se escucha con la voz de la obra; el texto no se repite a la
+  // izquierda (Carlos, 19 nov 2026).
+  const nombreDeLaForma = (portal) => CATALOG.find((f) => f.key === portal)?.form ?? null;
+  const replicaMostrada = replicaEnElRecuadro ?? (actoFinalTransformado && !miraOtrasVoces ? ultimaReplica : null);
+  const vozEnElRecuadro = replicaMostrada ? {
+    id: `mia-${replicaMostrada.id}`,
+    sourceId: null,
+    quote: `“${replicaMostrada.texto}”`,
+    author: replicaMostrada.nombre || voiceName.trim() || 'Tú',
+    role: nombreDeLaForma(replicaMostrada.portal) ?? 'Desde el acto final',
+    isPending: true,
+    // Texto de Claude, por revisar: «Tu réplica · <forma>».
+    etiqueta: replicaMostrada.etiqueta
+      ?? `Tu réplica · ${nombreDeLaForma(replicaMostrada.portal) ?? 'acto final'}`,
+    displayVariant: 'large',
+  } : null;
+  const vocesEnElRecuadro = vozEnElRecuadro ? [vozEnElRecuadro] : visibleTestimonials;
+  const llevarAlRecuadro = useCallback((replica) => {
+    stopSilvestreResponse();
+    setReplicaEnElRecuadro(replica);
+  }, [stopSilvestreResponse]);
+
+  // «Armar mi texto»: la ficha entera se da vuelta (Carlos, 19 nov 2026). El
+  // otro lado conserva el alto de la ficha para que nada brinque alrededor.
+  const abrirTuTexto = useCallback(() => {
+    stopSilvestreResponse();
+    setAltoDeLaFicha(fichaRef.current?.offsetHeight ?? null);
+    setFichaVuelve(false);
+    setLadoDelTexto(true);
+    window.requestAnimationFrame(() => {
+      replicaCardRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth', block: 'start' });
+    });
+  }, [prefersReducedMotion, stopSilvestreResponse]);
+  const volverDeTuTexto = useCallback(() => {
+    setLadoDelTexto(false);
+    setFichaVuelve(true);
+    // Al volver aparece «Sostener con mi huella» (Carlos, 19 nov 2026).
+    setVolvioDelTexto(true);
+  }, []);
+  const compartirTuTexto = useCallback(async (texto) => {
+    if (!texto) return;
+    if (texto.length > 900) {
+      toast({ description: 'Tu texto es muy largo para compartirlo: el máximo es de 900 caracteres.' });
+      return;
+    }
+    setEstadoTuTexto('enviando');
+    let resultado = null;
+    try {
+      resultado = await submitAudiencePerspective({
+        quote: texto,
+        authorName: (ultimaReplica?.nombre || voiceName.trim() || 'Voz del público').slice(0, PROVOCA_NAME_MAX_CHARS),
+        authorRole: null,
+        honeypot: '',
+        metadata: {
+          source: 'texto_armado',
+          user_id: user?.id ?? null,
+          anon_id: ensureAnonId() ?? null,
+          replicas: misReplicas.map((r) => r.perspectiveId).filter(Boolean),
+        },
+      });
+    } catch (error) {
+      resultado = { error };
+    }
+    if (resultado?.error) {
+      setEstadoTuTexto('listo');
+      toast({ description: getProvocaSubmitErrorMessage(resultado.error) });
+      return;
+    }
+    const data = resultado?.data;
+    anotarTuTextoCompartido(typeof data === 'string' ? data : (data?.id ?? null));
+    setEstadoTuTexto('compartido');
+  }, [misReplicas, ultimaReplica, user?.id, voiceName]);
+  const iniciarSesionDesdeElActoFinal = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('open-login-modal'));
+  }, []);
+  // En teléfono no cabe «Tus réplicas» junto al recuadro: el enlace del pie
+  // sube a ellas (Carlos, 19 nov 2026).
+  const verTusReplicas = useCallback(() => {
+    tusReplicasRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth', block: 'center' });
+  }, [prefersReducedMotion]);
 
   const handleListenToObra = useCallback(async (voice) => {
     if (pendingSilvestreAudioUrl) {
@@ -1077,7 +1230,27 @@ export const ProvocaSection = () => {
           {confettiBursts.map((burst) => (
             <ConfettiBurst key={burst} seed={burst} />
           ))}
-          <div hidden={isObraInfoOpen} className="provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]">
+          {ladoDelTexto && !isObraInfoOpen ? (
+            <motion.div
+              className="provoca-stage-content provoca-stage-lado-texto"
+              style={{ minHeight: altoDeLaFicha ?? undefined, transformPerspective: 1200 }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, rotateY: -12 }}
+              animate={{ opacity: 1, rotateY: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.42, ease: 'easeOut' }}
+            >
+              <TuTexto
+                replicas={misReplicas}
+                onVolver={volverDeTuTexto}
+                onCompartir={compartirTuTexto}
+                estadoCompartir={estadoTuTexto}
+              />
+            </motion.div>
+          ) : null}
+          <div
+            ref={fichaRef}
+            hidden={isObraInfoOpen || ladoDelTexto}
+            className={`provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]${fichaVuelve ? ' provoca-stage-content--vuelve' : ''}`}
+          >
             <div className="min-w-0">
               <h3
                 className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
@@ -1116,20 +1289,22 @@ export const ProvocaSection = () => {
                     transition={{ duration: 0.22, ease: 'easeOut' }}
                     className="mt-4"
                   >
-                    <div className="provoca-stage-composer">
+                    <div className={`provoca-stage-composer${formularioApagado ? ' provoca-stage-composer--apagado' : ''}`}>
                       <textarea
                         ref={voiceTextareaRef}
                         aria-label="Comparte algo que cambió tu forma de mirar, sentir o recordar"
-                        value={voiceDraft}
+                        value={formularioApagado ? '' : voiceDraft}
                         onChange={(event) => setVoiceDraft(event.target.value)}
                         rows={3}
+                        disabled={formularioApagado}
                         className="form-surface w-full px-4 py-3 resize-none"
-                        placeholder="Contéstale lo que te provoca…"
+                        /* Texto de Claude, por revisar. */
+                        placeholder={formularioApagado ? 'Tu siguiente réplica llega con otra forma.' : 'Contéstale lo que te provoca…'}
                       />
                       <button
                         type="button"
                         onClick={handleSubmitVoice}
-                        disabled={!hasVoiceDraftText || isSendVoiceDisabled}
+                        disabled={formularioApagado || !hasVoiceDraftText || isSendVoiceDisabled}
                         className="cabina-escritura-accion provoca-stage-submit"
                       >
                         <Send size={15} aria-hidden="true" />
@@ -1164,7 +1339,8 @@ export const ProvocaSection = () => {
                         aria-label="Tu nombre"
                         value={voiceName}
                         onChange={(event) => setVoiceName(event.target.value)}
-                        className="form-surface w-full px-4 py-2"
+                        disabled={formularioApagado}
+                        className={`form-surface w-full px-4 py-2${formularioApagado ? ' provoca-campo--apagado' : ''}`}
                         placeholder="Tu nombre (recomendado)"
                         required
                       />
@@ -1172,7 +1348,8 @@ export const ProvocaSection = () => {
                         aria-label="Tu rol o ciudad"
                         value={voiceRole}
                         onChange={(event) => setVoiceRole(event.target.value)}
-                        className="form-surface w-full px-4 py-2"
+                        disabled={formularioApagado}
+                        className={`form-surface w-full px-4 py-2${formularioApagado ? ' provoca-campo--apagado' : ''}`}
                         placeholder="Rol, ciudad o vínculo (opcional)"
                       />
                     </div>
@@ -1228,6 +1405,16 @@ export const ProvocaSection = () => {
                   </a>
                 </div>
               </details>
+              {/* En el espacio que quedaba vacío, lo que la persona ya dejó
+                  (Carlos, 19 nov 2026). La ayuda de arriba no se apaga. */}
+              {actoFinalTransformado ? (
+                <TusReplicas
+                  ref={tusReplicasRef}
+                  replicas={misReplicas}
+                  enElRecuadro={replicaMostrada}
+                  onLlevarAlRecuadro={llevarAlRecuadro}
+                />
+              ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -1237,7 +1424,7 @@ export const ProvocaSection = () => {
               data-voice-state={isSilvestrePlaying ? 'speaking' : isSilvestreThinking ? 'thinking' : 'idle'}
             >
               <div className="provoca-stage-response__spacer flex items-center justify-between gap-3" />
-              {visibleTestimonials.map((item, index) => (
+              {vocesEnElRecuadro.map((item, index) => (
                 <div
                   key={`${item.id}-${index}-${item.displayVariant}`}
                   className={`provoca-stage-voice flex h-[230px] flex-col rounded-2xl bg-black/30 md:h-[240px] ${
@@ -1250,7 +1437,7 @@ export const ProvocaSection = () => {
                     <Quote className="text-purple-300" size={item.displayVariant === 'large' ? 30 : 24} />
                     {item.isPending ? (
                       <span className="shrink-0 rounded-full border border-amber-200/30 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-amber-100/75">
-                        Solo tú ves esto · en revisión
+                        {item.etiqueta ?? 'Solo tú ves esto · en revisión'}
                       </span>
                     ) : null}
                   </div>
@@ -1326,7 +1513,8 @@ export const ProvocaSection = () => {
                   type="button"
                   variant="outline"
                   onClick={handleRefreshVoices}
-                  disabled={!canRefreshVoices}
+                  disabled={!canRefreshVoices || escribiendoSuReplica}
+                  title={escribiendoSuReplica ? 'Mientras escribes tu réplica, las demás voces esperan.' : undefined}
                   className="ui-segmented__btn ui-segmented__btn--primary w-full justify-center gap-2 whitespace-normal text-center"
                 >
                   <RefreshCw size={14} />
@@ -1335,7 +1523,7 @@ export const ProvocaSection = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleListenToObra(visibleTestimonials[0])}
+                  onClick={() => handleListenToObra(vocesEnElRecuadro[0])}
                   disabled={isEscucharButtonDisabled || visibleTestimonials.length === 0}
                   className={`provoca-stage-listen ui-segmented__btn ui-segmented__btn--secondary w-full justify-center gap-2 text-center whitespace-normal ${
                     isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
@@ -1375,7 +1563,7 @@ export const ProvocaSection = () => {
                   compite con la réplica de la voz; espera debajo. Copy provisional:
                   el definitivo lo escribe Carlos. */}
               <AnimatePresence>
-                {acabaDePublicar ? (
+                {acabaDePublicar || actoFinalTransformado ? (
                   <motion.div
                     key="devolucion"
                     initial="oculto"
@@ -1383,39 +1571,87 @@ export const ProvocaSection = () => {
                     exit="oculto"
                     variants={{
                       oculto: {},
-                      visible: { transition: { delayChildren: 1, staggerChildren: 0.35 } },
+                      visible: { transition: { delayChildren: acabaDePublicar ? 1 : 0, staggerChildren: 0.35 } },
                     }}
                     className="mt-4 w-full space-y-4 border-t border-emerald-200/15 pt-5"
+                    data-devolucion={!user ? 'iniciar-sesion' : volvioDelTexto ? 'sostener' : 'armar'}
                   >
+                    {/* Después de la primera réplica (Carlos, 19 nov 2026): sin
+                        cuenta, la invitación a guardarlas con el correo —ya
+                        puede decir «réplica», porque acaba de dejar una—; con
+                        cuenta, «Armar mi texto», que da vuelta a la ficha; y al
+                        volver del texto, «Sostener con mi huella», como antes.
+                        Textos de Claude, por revisar, salvo el de sostener. */}
                     <motion.p
                       variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
                       className="text-[15px] leading-relaxed text-slate-100"
                     >
-                      {acabaDePublicar === 'recorrido'
-                        ? 'Entraste con una intuición, volviste días después y ahora la dejas dicha. Para que ese camino llegue a quien acompaña a jóvenes, hace falta sostener a quien lo lee.'
-                        : 'Ya dejaste tu palabra. Para que llegue a quien acompaña a jóvenes, hace falta sostener a quien la lee.'}
+                      {!user
+                        ? 'Si interpretas otra forma, tus réplicas se juntan aquí y puedes armar con ellas un texto tuyo. Compartirlo o no, lo decides tú.'
+                        : !volvioDelTexto
+                          ? 'Tus réplicas se juntan aquí. Puedes armar con ellas un texto tuyo y decidir si lo compartes.'
+                          : (acabaDePublicar === 'recorrido' || (!acabaDePublicar && misReplicas.some((r) => r.portal)))
+                            ? 'Entraste con una intuición, volviste días después y ahora la dejas dicha. Para que ese camino llegue a quien acompaña a jóvenes, hace falta sostener a quien lo lee.'
+                            : 'Ya dejaste tu palabra. Para que llegue a quien acompaña a jóvenes, hace falta sostener a quien la lee.'}
+                      {!user ? (
+                        <span className="mt-1.5 block text-[13px] text-slate-400">Para guardarlas, tu correo.</span>
+                      ) : null}
                     </motion.p>
                     <motion.div
                       variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
                     >
-                      <Button
-                        type="button"
-                        onClick={irAImpulsa}
-                        className="w-full rounded-full border border-emerald-300/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25"
-                      >
-                        <HeartHandshake size={16} className="mr-2" />
-                        Sostener con mi huella
-                      </Button>
+                      {!user ? (
+                        <button
+                          type="button"
+                          onClick={iniciarSesionDesdeElActoFinal}
+                          className="ultima-pregunta__salida ultima-pregunta__salida--cambia ultima-pregunta__salida--sesion"
+                          data-iniciar-sesion-acto-final
+                        >
+                          Iniciar sesión
+                        </button>
+                      ) : !volvioDelTexto ? (
+                        <button
+                          type="button"
+                          onClick={abrirTuTexto}
+                          className="ultima-pregunta__salida"
+                          data-armar-mi-texto
+                        >
+                          Armar mi texto
+                        </button>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={irAImpulsa}
+                          className="w-full rounded-full border border-emerald-300/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25"
+                        >
+                          <HeartHandshake size={16} className="mr-2" />
+                          Sostener con mi huella
+                        </Button>
+                      )}
                     </motion.div>
-                    <motion.button
-                      type="button"
-                      variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
-                      onClick={() => irALaAlianza('apoya')}
-                      className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
-                    >
-                      Ver cómo funciona todo esto
-                      <ArrowUpRight size={13} />
-                    </motion.button>
+                    {!user || !volvioDelTexto ? (
+                      /* En teléfono, «Tus réplicas» queda arriba: el enlace sube a ellas. */
+                      <motion.button
+                        type="button"
+                        variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
+                        onClick={verTusReplicas}
+                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white lg:hidden"
+                        data-ver-tus-replicas
+                      >
+                        Ver tus réplicas
+                        <ArrowUpRight size={13} className="-rotate-45" />
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        type="button"
+                        variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
+                        onClick={() => irALaAlianza('apoya')}
+                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
+                      >
+                        Ver cómo funciona todo esto
+                        <ArrowUpRight size={13} />
+                      </motion.button>
+                    )}
                   </motion.div>
                 ) : null}
               </AnimatePresence>

@@ -62,7 +62,17 @@ const PASOS = [
   { id: 'ficha', titulo: 'Ficha revelada', nota: 'Tocó «Mientras tanto»; la tarjeta abre la ficha y el método, el libreto.' },
   { id: 'regreso', titulo: 'El día del regreso', nota: 'La pregunta ya volvió.' },
   { id: 'memoria', titulo: 'La Memoria', nota: 'Ya contestó el regreso; falta contestarle a la obra.' },
+  // El acto final después de la primera réplica (19 nov 2026).
+  { id: 'replica', titulo: 'Después de la primera réplica', nota: 'Ya le contestó a la obra: el acto final cambia.' },
+  { id: 'dos-replicas', titulo: 'Con dos réplicas', nota: 'Dos formas contestadas: «Tus réplicas» y, con cuenta, «Armar mi texto».' },
 ];
+
+// Réplicas de ensayo para los dos últimos saltos: viven solo en este navegador.
+const REPLICAS_DE_ENSAYO = [
+  'Quizá lo que me provoca la desconexión es que escribo para que alguien me encuentre.',
+  'Quizá lo que me provoca querer estar bien es guardar lo que se rompe en lugar de tirarlo.',
+];
+const CON_REPLICAS = new Set(['replica', 'dos-replicas']);
 
 const registroDelPaso = (paso, forma) => {
   const ahora = Date.now();
@@ -107,6 +117,7 @@ const registroDelPaso = (paso, forma) => {
   // La Memoria: el regreso ya contestado, con lo que el método guarda al cerrarlo.
   return {
     ...r,
+    ...(CON_REPLICAS.has(paso) ? { ultima_pregunta_abierta: true } : {}),
     l1: ahora - 4 * 864e5,
     bitacora_completed: true,
     bitacora_completed_at: new Date(ahora).toISOString(),
@@ -158,14 +169,30 @@ const EnsayoDeVisitante = () => {
     poner('gatoencerrado:bienvenida-completed', '1');
     poner('gatoencerrado:transmedia-unlocked:v1', '1');
     poner('gatoencerrado:oraculo-recommended-showcase', forma.showcase);
+    const conReplicas = CON_REPLICAS.has(paso);
     try {
       window.sessionStorage.removeItem('gatoencerrado:dorso-cerrado-session');
-      window.sessionStorage.setItem(IR_A_LA_TARJETA_KEY, '1');
+      if (conReplicas) window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY);
+      else window.sessionStorage.setItem(IR_A_LA_TARJETA_KEY, '1');
     } catch { /* sin almacenamiento */ }
     const registro = registroDelPaso(paso, forma);
     const clave = `gatoencerrado:resonance:${forma.key}`;
     if (registro) poner(clave, JSON.stringify(registro)); else quitar(clave);
-    recargar('#transmedia');
+    // El acto final: cada salto empieza sin borradores ni texto armado; los
+    // dos últimos dejan una o dos réplicas en «Tus réplicas».
+    quitar('gatoencerrado:provoca-draft');
+    quitar('gatoencerrado:provoca-drafts');
+    quitar('gatoencerrado:tu-texto');
+    if (conReplicas) {
+      const otra = forma.key === 'artesanias' ? 'literatura' : 'artesanias';
+      const ayer = new Date(Date.now() - 864e5).toISOString();
+      const lista = [{ id: 'ensayo-1', portal: forma.key, texto: REPLICAS_DE_ENSAYO[0], termino: 'la desconexión', fecha: ayer, perspectiveId: null, nombre: null }];
+      if (paso === 'dos-replicas') lista.push({ id: 'ensayo-2', portal: otra, texto: REPLICAS_DE_ENSAYO[1], termino: 'querer estar bien', fecha: new Date().toISOString(), perspectiveId: null, nombre: null });
+      poner('gatoencerrado:mis-replicas', JSON.stringify(lista));
+    } else {
+      quitar('gatoencerrado:mis-replicas');
+    }
+    recargar(conReplicas ? '#provoca' : '#transmedia');
   };
 
   const etiqueta = modo === 'pase' ? 'visitante con pase' : modo === '1' ? 'cuenta de prueba' : 'sin ensayo';

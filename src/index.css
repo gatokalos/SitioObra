@@ -6255,6 +6255,240 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .boton-que-cambia { animation: none; }
 }
+
+/* El acto final después de la primera réplica (19 nov 2026). */
+.provoca-stage-composer--apagado,
+.provoca-campo--apagado {
+  opacity: 0.45;
+}
+.provoca-stage-composer--apagado textarea,
+.provoca-campo--apagado {
+  cursor: not-allowed;
+}
+.tus-replicas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  outline: none;
+}
+.tus-replicas__formas {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+}
+.tus-replicas__esfera {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #000;
+  opacity: 0.28;
+  filter: grayscale(1);
+  cursor: default;
+  transition: box-shadow 0.3s ease, opacity 0.3s ease;
+}
+.tus-replicas__esfera img,
+.tus-replicas__mini {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
+}
+.tus-replicas__esfera--encendida {
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 0 14px rgba(240, 190, 110, 0.22);
+}
+.tus-replicas__esfera--en-el-recuadro {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 20px rgba(240, 190, 110, 0.45);
+}
+.tus-replicas__lo-que-hizo {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(226, 232, 240, 0.9);
+}
+.tus-replicas__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tus-replicas__renglon {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.tus-replicas__mini {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.tus-replicas__mini--frio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(216, 180, 254, 0.9);
+}
+.tus-replicas__nombre {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.7);
+}
+.tus-replicas__accion {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.75);
+  transition: color 0.2s ease;
+}
+.tus-replicas__renglon--en-el-recuadro .tus-replicas__nombre {
+  color: rgba(241, 245, 249, 0.95);
+}
+.tus-replicas__renglon--en-el-recuadro .tus-replicas__accion {
+  color: rgba(220, 180, 236, 0.85);
+}
+.tus-replicas__renglon:hover .tus-replicas__accion,
+.tus-replicas__renglon:focus-visible .tus-replicas__accion {
+  color: #fff;
+}
+@media (max-width: 640px) {
+  .tus-replicas__formas { gap: 0.3rem; }
+  .tus-replicas__esfera { width: 30px; height: 30px; }
+}
+/* «Tu texto»: el otro lado de la ficha, a todo lo ancho. */
+.tu-texto {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.tu-texto__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.tu-texto__titulo {
+  margin-top: 0.35rem;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1.1;
+  color: rgba(241, 245, 249, 0.98);
+}
+.tu-texto__formas {
+  display: flex;
+  gap: 0.45rem;
+  padding-top: 0.4rem;
+}
+.tu-texto__formas img {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+.tu-texto__campo {
+  width: 100%;
+  min-height: 14rem;
+  resize: vertical;
+  padding: 1.2rem 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(10, 8, 18, 0.55);
+  font-size: 1.08rem;
+  line-height: 1.75;
+  color: rgba(241, 245, 249, 0.96);
+}
+.tu-texto__campo:focus {
+  outline: none;
+  border-color: rgba(194, 152, 211, 0.6);
+}
+.tu-texto__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.tu-texto__nota {
+  font-size: 0.82rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+.tu-texto__botones {
+  display: flex;
+  gap: 0.6rem;
+  min-width: min(26rem, 100%);
+}
+.tu-texto__botones .ultima-pregunta__salida {
+  flex: 1;
+  width: auto;
+}
+.tu-texto__volver {
+  flex-shrink: 0;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.9);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.tu-texto__volver:hover,
+.tu-texto__volver:focus-visible {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+@media (max-width: 640px) {
+  .tu-texto__botones { width: 100%; }
+  .tu-texto__campo { font-size: 1rem; }
+}
+/* «Tu texto» conserva el alto de la ficha; el campo crece para llenarlo. */
+.provoca-stage-lado-texto {
+  display: flex;
+  flex-direction: column;
+}
+.provoca-stage-lado-texto .tu-texto { flex: 1; }
+.provoca-stage-lado-texto .tu-texto__campo { flex: 1; }
+/* En escritorio el lado escondido conserva el alto del marco (como con «¿Qué
+   es la voz que responde?»): «Tu texto» se pone encima, en ese mismo marco, y
+   la ficha no cambia de tamaño al darse vuelta. */
+@media (min-width: 1024px) {
+  .provoca-stage-shell > .provoca-stage-lado-texto {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    min-height: 0 !important;
+    padding: clamp(2rem, 4vw, 3.5rem) var(--provoca-stage-gutter);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .provoca-stage-lado-texto .tu-texto { height: 100%; }
+  .provoca-stage-lado-texto .tu-texto__campo { flex: 1; min-height: 10rem; }
+}
+.provoca-stage-content--vuelve {
+  animation: ficha-vuelve 0.42s ease-out;
+}
+@keyframes ficha-vuelve {
+  from { opacity: 0; transform: perspective(1200px) rotateY(12deg); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .provoca-stage-content--vuelve { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .huella-puerta--late .huella-puerta__esfera,
   .emblema-late {
