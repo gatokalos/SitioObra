@@ -1495,12 +1495,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       setBitacoraOpen(true);
     }
   }, [open, enPantallaChica, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
-  // Mientras el gato da el aviso de la espera, la cabina también se enciende
-  // (Carlos, 15 nov 2026: el globo «no se ve bien si está sobre una cabina
-  // oscurecida. Tendría que estar encendida»). Antes hablaba desde la penumbra.
-  const globoDeEspera = holograficoOpen && !bitacoraOpen && !ultimaPreguntaOpen
-    && !bitacoraCompleted && !bitacoraAvailable && holograficoPoster === portal;
-  const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen || globoDeEspera;
+  // El globo del gato se reserva para el día del regreso (Carlos, 18 nov 2026:
+  // «reservar el globo de texto del gato para el día de regreso y poner la
+  // cabina del gato en oscuridad porque se pelea con el bloque morado»).
+  // Durante la espera la cabina vuelve a la penumbra y el aviso lo da el bloque
+  // morado, como en teléfono. (Del 15 al 18 nov el gato daba el aviso en su
+  // globo, con la cabina encendida.)
+  const cabinaEncendida = bitacoraOpen || ultimaPreguntaOpen;
 
   // ── La Memoria en escritorio, al fondo del pozo (Carlos, 14 nov 2026) ──
   // «Adaptemos el bloque morado en el panel de la derecha, pero ahora usemos
@@ -2340,13 +2341,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                          globo del gato»). Allá el gato dice lo que viene —los
                          tres días y el aviso— y el bloque guarda lo de la
                          forma: cómo quedó la escena y el recuerdo. */
-                      avisoDeEspera={!bitacoraAvailable && !bitacoraCompleted ? {
-                        conElGato: !enPantallaChica,
+                      /* 18 nov 2026 (Carlos): el globo queda para el día del
+                         regreso, así que en escritorio el bloque vuelve a ser
+                         el de teléfono —la instrucción, el número y el
+                         recuerdo—. Y el día del regreso el bloque sigue ahí,
+                         con la ceja «El Regreso»: el nombre de la forma ya no
+                         queda suelto fuera de él, y el recuerdo deja el pie de
+                         la cabina para vivir en el bloque, como en la espera. */
+                      avisoDeEspera={!bitacoraCompleted ? {
+                        regreso: !!bitacoraAvailable,
                         titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
-                        instruccion: bitacoraConsented
+                        instruccion: bitacoraAvailable ? null : bitacoraConsented
                           ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
                           : dramaturgy.bambalinasCajaTexto,
-                        telefono: bitacoraConsented || !enPantallaChica ? null : {
+                        telefono: bitacoraConsented || bitacoraAvailable ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
                           onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
@@ -2825,14 +2833,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 pie de la cabina y con el mismo zócalo del stack, está siempre
                 que la Memoria esté abierta. */}
             {regresoEnEscritorio ? (
-              <div className="absolute inset-x-5 bottom-[6.75rem] z-20" data-respuesta-en-la-cabina>
+              <div className="absolute inset-x-5 bottom-6 z-20" data-respuesta-en-la-cabina>
                 {instrumentoDeRespuesta}
               </div>
             ) : null}
             {/* Durante la espera el recuerdo ya no va al pie de la cabina: vive
                 en el bloque morado, del lado de la constelación (Carlos, 17 nov
-                2026). Aquí queda para el regreso y para el pozo. */}
-            {(holograficoOpen || regresoEnEscritorio) && l3Rec?.step3 && (bitacoraAvailable || bitacoraCompleted) ? (
+                2026). Desde el 18 nov tampoco el día del regreso («del lado de
+                la cabina del gato sigue estando el botón viejo para
+                descargar»): aquí queda solo para el pozo. */}
+            {enElPozo && l3Rec?.step3 ? (
               <div className={`absolute inset-x-5 bottom-5 z-20 space-y-2${enElPozo ? ' recuerdo-en-el-pozo' : ''}`}>
                 <button
                   type="button"
@@ -2939,44 +2949,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
               </div>
             )}
-            {/* Antes del regreso, el gato dice qué pasa y ofrece el aviso en su
-                globo (Carlos, 14 nov 2026: «le falta un mensaje en el globo del
-                gato para que le diga al visitante qué pasa»; el aviso «puede ir
-                en el globo de texto del gato»). Habla con la cabina encendida
-                (15 nov 2026). Con otra forma al centro de la constelación,
-                calla y la cabina vuelve a la penumbra. */}
-            {globoDeEspera && (
-              <div className="cabina-bubble cabina-bubble--escritorio" data-globo="espera">
-                {/* «Entre bambalinas» y «La obra sigue en ti…» ya están en el
-                    bloque morado, a la izquierda: el gato solo dice lo que
-                    viene (Carlos, 17 nov 2026: «que no se repita»). */}
-                <p className="cabina-bubble__texto">En tres días, una nueva pregunta volverá a buscarte.</p>
-                {bitacoraConsented ? (
-                  <p className="cabina-bubble__instruccion">{avisoDoneHint}</p>
-                ) : (
-                  <form
-                    className="globo-aviso"
-                    data-aviso-en-el-globo
-                    onSubmit={(e) => { e.preventDefault(); if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); }}
-                  >
-                    <input
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      value={phoneInput}
-                      onChange={(e) => setPhoneInput(e.target.value)}
-                      placeholder={dramaturgy.bambalinasCajaPlaceholder}
-                      aria-label={dramaturgy.bambalinasCajaPlaceholder}
-                      className="globo-aviso__campo"
-                    />
-                    <button type="submit" disabled={phoneInput.trim().length < 8} className="cabina-escritura-accion disabled:opacity-40">
-                      {dramaturgy.bambalinasCajaAvisar}
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
+            {/* Durante la espera el gato ya no habla: su globo queda para el
+                día del regreso (Carlos, 18 nov 2026). El aviso y los tres días
+                los dice el bloque morado, a la izquierda. */}
             {bitacoraOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
                 <p className="cabina-bubble__preludio">La cabina te escucha</p>

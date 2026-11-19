@@ -4983,6 +4983,32 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
                         </div>
                       </div>
+                      {/* En escritorio el sonido y el cierre suben a la esquina
+                          donde estuvo el librito, junto al título (Carlos, 18
+                          nov 2026). Antes iban al fondo de la ficha, al final
+                          del scroll. En teléfono siguen arriba, fuera de la
+                          tarjeta. */}
+                      <div className="hidden shrink-0 items-center gap-2 lg:flex" data-controles-de-la-ficha>
+                        <button
+                          onClick={handleToggleShowcaseAmbient}
+                          aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                          title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                            isShowcaseAmbientAudible
+                              ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                              : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                          }`}
+                        >
+                          {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                        </button>
+                        <button
+                          onClick={handleCloseShowcase}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                          aria-label="Cerrar vitrina"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     </div>
                     <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                       {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}
@@ -5436,28 +5462,6 @@ const renderDramaFeaturedWork = () => (
                   />
                 </div>
               ) : null}
-              {/* Botones de control — solo desktop, al fondo del contenido scrollable */}
-              <div className="hidden lg:flex items-center justify-end gap-2 mt-6 pt-3">
-                <button
-                  onClick={handleToggleShowcaseAmbient}
-                  aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                  title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                    isShowcaseAmbientAudible
-                      ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                      : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                  }`}
-                >
-                  {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                </button>
-                <button
-                  onClick={handleCloseShowcase}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                  aria-label="Cerrar vitrina"
-                >
-                  <X size={14} />
-                </button>
-              </div>
               </div>
             </motion.div>
           </motion.div>

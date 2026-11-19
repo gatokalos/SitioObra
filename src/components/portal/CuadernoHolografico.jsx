@@ -9,7 +9,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
+import { CATALOG, readResonanceProgress, momentoDeLaForma } from '@/lib/bitacoraShared';
 import { acomodarEnOndas } from '@/lib/constelacionEnOndas';
 import { trazarGarabato } from '@/lib/constelacionGarabato';
 import { ensureAnonId } from '@/lib/identity';
@@ -47,20 +47,28 @@ export { CATALOG };
 // ceja del tercer momento, «Al salir de escena»; el aro decía «En escena»,
 // que nombraba un lugar y no decía que algo vuelve, y ahora dice «El Regreso»
 // (palabra de Carlos). Los props conservan sus nombres de antes.
-const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
+// El día del regreso el aro se enciende (Carlos, 18 nov 2026: «en el timeline
+// sigue estando llamativo al salir de escena en vez de el regreso»): pesa como
+// pesa la Memoria cuando la persona está en ella. La regla del 23 oct se
+// cumple también aquí: encendido lo que está pasando.
+const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena, regresoAbierto = false }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;
+  const regresoVivo = regresoAbierto && !enEscena;
   return (
     <div
       className="flex items-start justify-between gap-1 py-3"
       role="img"
       data-linea-de-la-forma
+      data-regreso-vivo={regresoVivo ? '' : undefined}
       aria-label={
         enEscena
           ? 'Al salir de escena y El Regreso ya ocurrieron; estás en la Memoria'
-          : focoCompleto
-            ? 'Al salir de escena, completo. El Regreso sigue abierto'
-            : enFoco ? 'Recorrido en curso' : 'Sin empezar'
+          : regresoVivo
+            ? 'Al salir de escena, completo. La pregunta volvió: estás en El Regreso'
+            : focoCompleto
+              ? 'Al salir de escena, completo. El Regreso sigue abierto'
+              : enFoco ? 'Recorrido en curso' : 'Sin empezar'
       }
     >
       {/* Al salir de escena — el detonante (En el foco, en D-42) */}
@@ -97,19 +105,24 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
           regreso ya ocurrió, En escena queda cerrada y el punto vivo es Memoria. */}
       <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
         <span className="relative flex h-12 w-12 items-center justify-center">
+          {regresoVivo ? (
+            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+          ) : null}
           <span
             className={`relative flex items-center justify-center rounded-full transition ${
               enEscena
                 ? `h-9 w-9 bg-gradient-to-br ${gradient} shadow-[0_4px_14px_rgba(0,0,0,0.4)]`
-                : focoCompleto
-                  ? 'h-12 w-12 border-2 border-white/40 bg-transparent'
-                  : 'h-12 w-12 border border-dashed border-white/15 bg-white/[0.03]'
+                : regresoVivo
+                  ? `h-12 w-12 bg-gradient-to-br ${gradient} shadow-[0_6px_22px_rgba(0,0,0,0.45)]`
+                  : focoCompleto
+                    ? 'h-12 w-12 border-2 border-white/40 bg-transparent'
+                    : 'h-12 w-12 border border-dashed border-white/15 bg-white/[0.03]'
             }`}
           >
-            <MessageCircle size={enEscena ? 15 : 20} className={enEscena ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
+            <MessageCircle size={enEscena ? 15 : 20} className={enEscena || regresoVivo ? 'text-white' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
           </span>
         </span>
-        <span className={`${rotulo(enEscena || focoCompleto)} whitespace-nowrap ${enEscena ? '' : 'font-semibold'}`}>El Regreso</span>
+        <span className={`${regresoVivo ? 'text-[0.6rem] uppercase tracking-wide text-slate-100' : rotulo(enEscena || focoCompleto)} whitespace-nowrap ${enEscena ? '' : 'font-semibold'}`}>El Regreso</span>
       </div>
 
       <span className="flex h-12 w-5 shrink-0 items-center">
@@ -598,11 +611,18 @@ function HolograficoPanel({
               {/* Con el renglón de la espera desplegado, la línea se retira en
                   pantallas chicas, igual que con otra forma al centro. */}
               <div className={avisoDeEspera && alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-la-espera>
-                <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
+                <LineaDeLaForma
+                  portal={homeKey}
+                  enFoco
+                  focoCompleto={homeL3}
+                  enEscena={false}
+                  regresoAbierto={!!avisoDeEspera?.regreso || momentoDeLaForma(homeKey) === 'regreso'}
+                />
               </div>
               {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo
-                  dice el gato en su globo (Carlos, 14 nov 2026). La pregunta y
-                  «Es tu turno» aparecen cuando la pregunta ya volvió. */}
+                  dice el bloque morado (hasta el 18 nov 2026, el gato en su
+                  globo). La pregunta y «Es tu turno» aparecen cuando la
+                  pregunta ya volvió. */}
               {readOnly ? null : <VitranaQuestionReveal
                 question={HOLISTIC_QUESTION}
                 portal={homeKey}
@@ -618,8 +638,9 @@ function HolograficoPanel({
               {/* En teléfono el aviso de la espera va aquí, en el bloque
                   morado, sin gato (Carlos, 15 nov 2026: «vamos a usar el
                   bloque morado, que está instalado en la parte abajo de la
-                  memoria, para darle el aviso»). El texto es el del globo del
-                  gato en escritorio. */}
+                  memoria, para darle el aviso»). Desde el 18 nov 2026 también
+                  en escritorio, y el día del regreso el bloque sigue, con la
+                  ceja «El Regreso». */}
               {avisoDeEspera ? (
                 <section className={`bloque-forma${alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
                   {/* Mismo patrón que el bloque de otra forma (Carlos, 16 nov
@@ -628,7 +649,10 @@ function HolograficoPanel({
                       instrucción y lo que falte pedir. */}
                   <div className="bloque-forma__cabecera">
                     <div className="min-w-0">
-                      <p className="huella-puerta__eyebrow" data-ceja-del-bloque>Entre bambalinas</p>
+                      {/* La ceja dice el momento, con la palabra de la línea:
+                          esperando, «Entre bambalinas»; con la pregunta de
+                          vuelta, «El Regreso» (18 nov 2026). */}
+                      <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{avisoDeEspera.regreso ? 'El Regreso' : 'Entre bambalinas'}</p>
                       <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
                     </div>
                   </div>
@@ -646,13 +670,14 @@ function HolograficoPanel({
                   </button>
                   {alEntrarAbierto ? (
                     <div className="bloque-forma__abierto" data-espera-desplegada>
-                      {/* En escritorio la instrucción y el aviso los da el
-                          gato en su globo; el bloque guarda cómo quedó la
-                          escena (Carlos, 17 nov 2026: «repartir la información
-                          del copy»). */}
-                      {avisoDeEspera.conElGato
-                        ? <FraseDeMemoria portal={homeKey} enEscena={false} />
-                        : <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>}
+                      {/* En la espera, la instrucción y el aviso, en teléfono y
+                          en escritorio (el globo del gato queda para el
+                          regreso, 18 nov 2026). El día del regreso ya no hay
+                          nada que anunciar: el bloque guarda cómo quedó la
+                          escena, como antes en escritorio. */}
+                      {avisoDeEspera.instruccion
+                        ? <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>
+                        : <FraseDeMemoria portal={homeKey} enEscena={false} />}
                       {avisoDeEspera.telefono ? (
                         <form
                           className="caja-de-bambalinas__aviso"
@@ -717,7 +742,7 @@ function HolograficoPanel({
                 está desplegado, para que el bloque no aplaste la constelación;
                 al cerrarlo, vuelve (Carlos, 16 nov 2026). */}
             <div className={alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
-              <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
+              <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
             </div>
             <BloqueDeForma entry={entry} ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}>
               {showcaseDefinitions[entry.showcase]?.iaProfile ? (
