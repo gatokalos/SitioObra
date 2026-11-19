@@ -78,7 +78,9 @@ const TuTexto = ({ replicas, userId = null, onVolver, onCompartir, estadoCompart
       />
       <div className="tu-texto__pie">
         <p className="tu-texto__nota">
-          {compartido ? 'Compartido. Queda en revisión, como tus réplicas.' : 'Se guarda solo. Nadie más lo ve.'}
+          {/* Carlos, 19 nov 2026: guardado en la cuenta, «Nadie más lo ve» ya no
+              era del todo cierto (quien administra la base podría leerlo). */}
+          {compartido ? 'Compartido. Queda en revisión, como tus réplicas.' : 'Se guarda solo. No se publica hasta que lo compartas.'}
         </p>
         <div className="tu-texto__botones">
           <button
