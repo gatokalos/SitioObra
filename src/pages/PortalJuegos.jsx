@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import ChevronQueSigue from '@/components/ChevronQueSigue';
 import IAInsightCard from '@/components/IAInsightCard';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
@@ -79,6 +80,11 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
     buttonLabel="¡Déjanos un pulso!"
   />
 );
+
+// Los chips de la forma van en la obra destacada, en lugar de «Incluye
+// artefacto…» (Carlos, 19 nov 2026). Ya no van en «Al entrar en escena…».
+const CHIPS_DE_LA_FORMA = JUEGOS_DEFINITION.chips ?? [];
+const CHIP_DE_LA_FORMA = JUEGOS_DEFINITION.chipClassName;
 
 const PortalJuegos = () => {
   const { user, session } = useAuth();
@@ -453,6 +459,12 @@ const PortalJuegos = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {/* En teléfono el cierre sube a la esquina de la ficha, como en
+                escritorio, donde estuvo el librito (Carlos, 19 nov 2026). Antes
+                iba al final de la página. */}
+            <div className="absolute right-4 top-4 z-20 lg:hidden" data-controles-de-la-ficha>
+              <PortalHeaderActions />
+            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -471,8 +483,6 @@ const PortalJuegos = () => {
                 <div className="lg:hidden px-6 sm:px-8 pb-6">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
-                    chips={JUEGOS_DEFINITION.chips}
-                    chipClassName={JUEGOS_DEFINITION.chipClassName}
                     title="AL ENTRAR EN ESCENA…"
                     compact
                   />
@@ -524,6 +534,11 @@ const PortalJuegos = () => {
             )}
           </div>
 
+          {/* Pegado al pie de la pantalla mientras se ve la ficha; al bajar, se
+              queda entre la ficha y lo que sigue. Solo en teléfono (Carlos, 19
+              nov 2026: «para que el usuario no se vaya con la finta»). */}
+          <ChevronQueSigue className="pointer-events-none sticky bottom-0 z-30 -my-5 lg:hidden" />
+
           <div className="lg:order-2 rounded-3xl border border-emerald-200/20 overflow-hidden">
             <div className="relative min-h-[26rem] overflow-hidden sm:min-h-[30rem]">
               {/* El librito, en la esquina de la obra destacada (Carlos, 15 nov
@@ -561,7 +576,7 @@ const PortalJuegos = () => {
               <div className="absolute bottom-0 inset-x-0 p-5">
                 <p className="text-sm text-slate-200/90 leading-relaxed">Aquí, en cambio, algo depende de ti y no sabes bien qué.</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-emerald-400/30 bg-emerald-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-emerald-100">Incluye artefacto interactivo</span>
+                  {CHIPS_DE_LA_FORMA.map((chip) => <span key={chip} className={CHIP_DE_LA_FORMA} data-chip-de-la-forma>{chip}</span>)}
                 </div>
                 {!JUEGOS_DEFINITION.videoUrl ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.3em] text-emerald-200/60">Video pendiente</p>
@@ -681,8 +696,6 @@ const PortalJuegos = () => {
             <div className="order-4 hidden lg:block">
               <IAInsightCard
                 {...JUEGOS_DEFINITION.iaProfile}
-                chips={JUEGOS_DEFINITION.chips}
-                chipClassName={JUEGOS_DEFINITION.chipClassName}
                 title="AL ENTRAR EN ESCENA…"
                 compact
               />
@@ -700,9 +713,6 @@ const PortalJuegos = () => {
               </a>
             </div>
           ) : null}
-          <div className="order-last flex justify-end pt-2 lg:hidden">
-            <PortalHeaderActions />
-          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

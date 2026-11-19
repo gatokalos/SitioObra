@@ -3,6 +3,7 @@ import {
   getTransmediaSectionAudio,
   pauseTransmediaAmbient,
   readTransmediaAudioPreference,
+  transmediaDetenidaPorVideoDelAutor,
   TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
   TRANSMEDIA_AMBIENT_MIN_AUDIBLE_VOLUME,
   TRANSMEDIA_AMBIENT_DUCK_VOLUME,
@@ -44,6 +45,8 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     console.log('[TransmediaAudio] attemptPlay()', { hasAudio: !!audio, pref: readTransmediaAudioPreference(), paused: audio?.paused, volume: audio?.volume, src: audio?.src, readyState: audio?.readyState });
     if (!audio) return;
     if (readTransmediaAudioPreference() === false) return;
+    // Después del video del autor la música no vuelve sola (19 nov 2026).
+    if (transmediaDetenidaPorVideoDelAutor()) return;
     // Cancelar cualquier fade-to-0 en curso para evitar que pause el audio
     // justo después de que play() lo haya arrancado (race condition con RAF).
     if (fadeRafRef.current) {
@@ -108,6 +111,19 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     observer.observe(section);
     return () => observer.disconnect();
   }, [attemptPlay, fadeTo]);
+
+  // El video del autor detiene la música: se cancela cualquier fundido en
+  // curso para que no la vuelva a subir (19 nov 2026).
+  useEffect(() => {
+    const alVideoDelAutor = () => {
+      if (fadeRafRef.current) {
+        cancelAnimationFrame(fadeRafRef.current);
+        fadeRafRef.current = null;
+      }
+    };
+    window.addEventListener('gatoencerrado:video-del-autor', alVideoDelAutor);
+    return () => window.removeEventListener('gatoencerrado:video-del-autor', alVideoDelAutor);
+  }, []);
 
   // Duck / unduck when Silvestre speaks
   useEffect(() => {

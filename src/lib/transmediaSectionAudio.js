@@ -1,3 +1,5 @@
+import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
+
 const TRANSMEDIA_SECTION_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/RecurringDream.mp3';
 
@@ -119,6 +121,26 @@ export const setTransmediaAmbientMuted = (nextMuted) => {
     void audio.play().catch(() => {});
   }
   emit();
+};
+
+// El video del autor detiene la música (Carlos, 19 nov 2026: «la música de
+// esa sección es para acompañar al usuario para que conteste todas las fases
+// del método, pero […] cuando llega el video del autor, se empalman. Entonces
+// el video del autor debería de ser detiene la música»). Se detiene y no
+// vuelve sola en esta visita: el reintento automático y el regreso a la
+// sección respetan la bandera. No toca la preferencia guardada, así que en la
+// siguiente visita la música vuelve. También calla la pista del Hero, que es
+// la que puede seguir sonando en las páginas de cada forma.
+let detenidaPorVideoDelAutor = false;
+export const transmediaDetenidaPorVideoDelAutor = () => detenidaPorVideoDelAutor;
+export const detenerMusicaPorVideoDelAutor = () => {
+  detenidaPorVideoDelAutor = true;
+  if (sharedAudio && !sharedAudio.paused) sharedAudio.pause();
+  pauseHeroAmbient();
+  emit();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('gatoencerrado:video-del-autor'));
+  }
 };
 
 export const toggleTransmediaAmbientMuted = () => {

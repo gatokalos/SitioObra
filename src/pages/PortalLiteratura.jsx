@@ -70,12 +70,13 @@ function LiteraturaEntryCopy() {
     <>
       <p className="text-sm text-slate-200/90 leading-relaxed"><strong>Una novela de autoficción </strong> que se despliega entre lo real y lo imaginado, dejando que el lector complete la historia desde su propia experiencia en torno a una <em>supuesta</em> puesta en escena.</p>
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
-        {/* En teléfono los chips de la forma bajan aquí, junto a «Incluye
-            artefacto…»: en el bloque «Tú en escena…» descuadraban (Carlos,
-            19 nov 2026). En escritorio siguen en su bloque. */}
+        {/* Los chips de la forma van aquí, en lugar de «Incluye artefacto
+            interactivo», en teléfono y en escritorio: en el bloque «Tú en
+            escena…» descuadraban (Carlos, 19 nov 2026: «hay que borrar el chip
+            que dice incluye artefacto interactivo tanto de móviles como de
+            escritorio. Y en su lugar dejar los chips»). */}
         {LITERATURA_CHIPS.map((chip) => (
-          <span key={chip} className={`${LITERATURA_CHIP_CLASS} lg:hidden`}>{chip}</span>
+          <span key={chip} className={LITERATURA_CHIP_CLASS} data-chip-de-la-forma>{chip}</span>
         ))}
       </div>
     </>
@@ -452,8 +453,6 @@ const PortalLiteratura = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoNovela.iaProfile}
-              chips={['Autoficción expandida', 'Fragmentos y voces', 'Escritura que acompaña']}
-              chipClassName="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100"
               title="AL ENTRAR EN ESCENA…"
               {...(enPasado ? { title: enPasado.title, notes: enPasado.notes } : {})}
               compact

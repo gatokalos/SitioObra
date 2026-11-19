@@ -5,6 +5,7 @@ import {
   AUTHOR_VIDEO_PLACEHOLDER_URL,
   AUTHOR_VIDEO_PLACEHOLDER_ENABLED,
 } from '@/lib/authorVideo';
+import { detenerMusicaPorVideoDelAutor } from '@/lib/transmediaSectionAudio';
 
 // Panel embebido (no pantalla completa) para el video casero de despedida.
 // Sin autoplay a propósito: arranca solo con un tap explícito. Si el archivo
@@ -50,7 +51,12 @@ const FarewellVideoPanel = ({
     : AUTHOR_VIDEO_PLACEHOLDER_URL;
   const isUnavailable = stage >= etapaSinVideo;
 
-  const handlePlay = () => setPlaying(true);
+  // Al arrancar, el autor se queda solo: la música de la sección se detiene
+  // y no vuelve sola (Carlos, 19 nov 2026).
+  const handlePlay = () => {
+    setPlaying(true);
+    detenerMusicaPorVideoDelAutor();
+  };
 
   // Aquí, y sólo aquí, el recorrido continúa.
   const handleEnded = () => {

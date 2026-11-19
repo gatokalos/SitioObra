@@ -1,18 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { Volume2, VolumeX, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import {
-  getHeroAmbientAudio,
-  getHeroAmbientState,
-  subscribeHeroAmbient,
-  toggleHeroAmbientMuted,
-  HERO_AMBIENT_DEFAULT_VOLUME,
-  HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
-  resumeHeroAmbientPlayback,
-} from '@/lib/heroAmbientAudio';
 import { resolvePortalReturnTarget } from '@/lib/portalNavigation';
 import GATChip from '@/components/portal/GATChip';
 
@@ -31,14 +22,8 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     return () => window.clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const ambientState = useSyncExternalStore(
-    subscribeHeroAmbient,
-    getHeroAmbientState,
-    getHeroAmbientState
-  );
-  // Estas páginas de portal no tienen #transmedia en el DOM, así que la pista
-  // de Transmedia nunca suena aquí — solo importa isPlaying de Hero.
-  const isAmbientAudible = !ambientState.isMuted && ambientState.isPlaying;
+  // Sin bocina desde el 19 nov 2026 (Carlos: «Ya no creo que tenga caso
+  // conservar el botón de la bocina»): la ficha solo lleva el cierre.
   const { portalReturnUrl, portalReturnScrollY, portalReturnShowcaseId, restoreToken } = useMemo(
     () => resolvePortalReturnTarget(location.state, returnUrl),
     [location.state, returnUrl]
@@ -114,22 +99,6 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     }
   }, []);
 
-  const handleToggleAmbientAudio = useCallback(() => {
-    // El control de audio ambient es una preferencia de UI, no un recurso con
-    // GAT detrás — también debe funcionar para invitados sin cuenta.
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-
-    if (!ambientState.isMuted && audio.paused) {
-      audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
-      if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
-        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-      }
-      return;
-    }
-
-    toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-  }, [ambientState.isMuted]);
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -147,19 +116,6 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
           </motion.span>
         )}
       </AnimatePresence>
-      <button
-        type="button"
-        onClick={handleToggleAmbientAudio}
-        aria-label={isAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-        title={isAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-          isAmbientAudible
-            ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-            : 'border-white/15 bg-slate-950/70 text-slate-300 hover:border-purple-300/50 hover:bg-slate-900/80 hover:text-white'
-        }`}
-      >
-        {isAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
-      </button>
       <button
         type="button"
         onClick={handleBackToSite}

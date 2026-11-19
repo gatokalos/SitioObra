@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import ChevronQueSigue from '@/components/ChevronQueSigue';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
@@ -262,6 +263,11 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   />
 );
 
+// Los chips de la forma van en la obra destacada, en lugar de «Incluye
+// artefacto…» (Carlos, 19 nov 2026). Ya no van en «Al entrar en escena…».
+const CHIPS_DE_LA_FORMA = ['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad'];
+const CHIP_DE_LA_FORMA = 'rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100';
+
 const PortalMovimiento = () => {
   const { user } = useAuth();
   usePortalTracking('movimiento');
@@ -496,6 +502,12 @@ const PortalMovimiento = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {/* En teléfono el cierre sube a la esquina de la ficha, como en
+                escritorio, donde estuvo el librito (Carlos, 19 nov 2026). Antes
+                iba al final de la página. */}
+            <div className="absolute right-4 top-4 z-20 lg:hidden" data-controles-de-la-ficha>
+              <PortalHeaderActions />
+            </div>
             <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
@@ -513,8 +525,6 @@ const PortalMovimiento = () => {
               <div className="lg:hidden px-6 sm:px-8 pb-6">
                 <IAInsightCard
                   {...showcaseDefinitions.miniversoMovimiento.iaProfile}
-                  chips={['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad']}
-                  chipClassName="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100"
                   title="AL ENTRAR EN ESCENA…"
                   compact
                 />
@@ -564,6 +574,11 @@ const PortalMovimiento = () => {
               />
             )}
           </div>
+
+          {/* Pegado al pie de la pantalla mientras se ve la ficha; al bajar, se
+              queda entre la ficha y lo que sigue. Solo en teléfono (Carlos, 19
+              nov 2026: «para que el usuario no se vaya con la finta»). */}
+          <ChevronQueSigue className="pointer-events-none sticky bottom-0 z-30 -my-5 lg:hidden" />
 
           {(() => {
             const total = MOVEMENT_DIOSAS_GALLERY.length;
@@ -636,6 +651,8 @@ const PortalMovimiento = () => {
                     degradado de arriba, así no se percibe como un bloque
                     distinto — solo la continuación natural del mismo negro. */}
                 <div className="bg-black p-5 pt-3">
+                  {/* Los chips de la forma, como en las otras ocho (19 nov 2026). */}
+                  <div className="mb-3 flex flex-wrap gap-2">{CHIPS_DE_LA_FORMA.map((chip) => <span key={chip} className={CHIP_DE_LA_FORMA} data-chip-de-la-forma>{chip}</span>)}</div>
                   <div className="flex flex-wrap gap-1.5">
                     {MOVEMENT_DIOSAS_GALLERY.map((diosa, idx) => (
                       <span
@@ -823,8 +840,6 @@ const PortalMovimiento = () => {
           <div className="hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoMovimiento.iaProfile}
-              chips={['Cuerpo en tránsito', 'Ritual coreográfico', 'Ruta por ciudad']}
-              chipClassName="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100"
               title="AL ENTRAR EN ESCENA…"
               compact
             />
@@ -842,9 +857,6 @@ const PortalMovimiento = () => {
               </button>
             ) : null
           */}
-          <div className="order-last flex justify-end pt-2 lg:hidden">
-            <PortalHeaderActions />
-          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

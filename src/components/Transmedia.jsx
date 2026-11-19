@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -35,8 +35,6 @@ import {
   X,
   PawPrint,
   QrCode,
-  Volume2,
-  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -119,17 +117,6 @@ const LiteraturaAppOverlay = lazy(() => import('@/components/novela/LiteraturaAp
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
 const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
-import {
-  getHeroAmbientState,
-  subscribeHeroAmbient,
-  setHeroAmbientMuted,
-  HERO_AMBIENT_DEFAULT_VOLUME,
-} from '@/lib/heroAmbientAudio';
-import {
-  getTransmediaSectionState,
-  subscribeTransmediaAmbient,
-  setTransmediaAmbientMuted,
-} from '@/lib/transmediaSectionAudio';
 import {
   GAT_COSTS,
   SHOWCASE_REQUIRED_GAT,
@@ -327,30 +314,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return () => query.removeEventListener('change', handleChange);
   }, []);
   const { user, session, isDevAuth } = useAuth();
-  const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
-  const transmediaAmbientState = useSyncExternalStore(
-    subscribeTransmediaAmbient,
-    getTransmediaSectionState,
-    getTransmediaSectionState
-  );
-  // El ícono de bocina refleja si REALMENTE suena algo (isPlaying), no solo
-  // la preferencia de mute — si el navegador pausó el audio por su cuenta
-  // (ver useTransmediaSectionAudio), el ícono debe mostrarlo como silenciado.
-  const isShowcaseAmbientAudible =
-    !ambientState.isMuted && (ambientState.isPlaying || transmediaAmbientState.isPlaying);
-  const handleToggleShowcaseAmbient = useCallback(() => {
-    // El control de audio ambient es una preferencia de UI, no un recurso con
-    // GAT detrás — también debe funcionar para invitados sin cuenta.
-    // Este botón vive dentro de #transmedia, donde el Hero está pausado a
-    // propósito (hold, ver useTransmediaSectionAudio/onExternalAmbientHold en
-    // Hero.jsx) — la pista que debe sonar/callar aquí es la de Transmedia.
-    // La preferencia de Hero se actualiza para cuando el usuario vuelva a su
-    // sección, pero con targetVolume 0 para NO forzar su reproducción ahora:
-    // hacerlo (como antes) traslapaba las dos pistas sonando a la vez.
-    const nextMuted = isShowcaseAmbientAudible;
-    setHeroAmbientMuted(nextMuted, { targetVolume: nextMuted ? HERO_AMBIENT_DEFAULT_VOLUME : 0 });
-    setTransmediaAmbientMuted(nextMuted);
-  }, [isShowcaseAmbientAudible]);
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
@@ -2406,6 +2369,20 @@ const rendernotaAutoral = () => {
   );
 };
 
+// Los chips de la forma van en la obra destacada, donde estaba «Incluye
+// artefacto interactivo» (Carlos, 19 nov 2026: «hay que borrar el chip que
+// dice incluye artefacto interactivo tanto de móviles como de escritorio. Y en
+// su lugar dejar los chips»). Ya no van en el bloque «Al entrar en escena…».
+const renderChipsDeLaForma = () => (activeDefinition?.chips ?? []).map((chip) => (
+  <span
+    key={chip}
+    className={activeDefinition.chipClassName ?? 'rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-slate-100'}
+    data-chip-de-la-forma
+  >
+    {chip}
+  </span>
+));
+
 const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionControl = null) => {
   if (!activeDefinition?.iaProfile) return null;
   // En la ficha el bloque se lee después de haber entrado en escena: con el
@@ -2415,8 +2392,6 @@ const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionCont
     <div className="hidden lg:block">
       <IAInsightCard
         {...activeDefinition.iaProfile}
-        chips={activeDefinition.chips}
-        chipClassName={activeDefinition.chipClassName}
         title={enPasado?.title ?? title}
         {...(enPasado ? { notes: enPasado.notes } : {})}
         compact
@@ -2488,7 +2463,7 @@ const renderDramaFeaturedWork = () => (
           para confrontar el miedo, la desconexión y la rabia reprimida.
         </p>
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100">Incluye artefacto interactivo</span>
+          {renderChipsDeLaForma()}
         </div>
       </div>
     </div>
@@ -2671,7 +2646,7 @@ const renderDramaFeaturedWork = () => (
                         Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El # ha sido medida, número,tecla y código; en México también fue gato mucho antes de convertirse en una forma de conectar conversaciones por todo el mundo.
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye artefacto interactivo</span>
+                        {renderChipsDeLaForma()}
                       </div>
                     </div>
                   </div>
@@ -2844,7 +2819,7 @@ const renderDramaFeaturedWork = () => (
                 <div className="absolute bottom-0 inset-x-0 p-5">
                   <p className="text-sm text-slate-200/90 leading-relaxed">Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera.</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-cyan-400/30 bg-cyan-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-100">Incluye artefacto interactivo</span>
+                    {renderChipsDeLaForma()}
                   </div>
                 </div>
               </motion.div>
@@ -2929,7 +2904,7 @@ const renderDramaFeaturedWork = () => (
                 <div className="absolute bottom-0 inset-x-0 p-5">
                   <p className="text-sm text-slate-200/90 leading-relaxed">El teatro necesita público para ser cierto. Aquí no hay nadie mirando más que tú: aprendes a observar al observador.</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+                    {renderChipsDeLaForma()}
                   </div>
                   {!activeDefinition.videoUrl ? (
                     <p className="mt-2 text-xs uppercase tracking-[0.3em] text-violet-200/60">Video pendiente</p>
@@ -3566,7 +3541,7 @@ const renderDramaFeaturedWork = () => (
                           {entry.richDescription ?? entry.description}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-fuchsia-100">Incluye artefacto interactivo</span>
+                          {renderChipsDeLaForma()}
                         </div>
                       </div>
                     </div>
@@ -3741,6 +3716,8 @@ const renderDramaFeaturedWork = () => (
                         <p className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-200/60">{currentDiosa.location}</p>
                       ) : null}
                       <p className="mt-2 text-sm text-slate-300/80 leading-relaxed">{movementFeaturedSharedCopy}</p>
+                      {/* Los chips de la forma, como en las otras ocho (19 nov 2026). */}
+                      <div className="mt-3 flex flex-wrap gap-2">{renderChipsDeLaForma()}</div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {activeDefinition.diosasGallery.map((diosa, idx) => (
                           <span
@@ -3890,7 +3867,7 @@ const renderDramaFeaturedWork = () => (
               <div className="absolute bottom-0 inset-x-0 p-5">
                 <p className="text-sm text-slate-200/90 leading-relaxed">Aquí, en cambio, algo depende de ti y no sabes bien qué.</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-emerald-400/30 bg-emerald-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-emerald-100">Incluye artefacto interactivo</span>
+                  {renderChipsDeLaForma()}
                 </div>
                 {!activeDefinition.videoUrl ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.3em] text-emerald-200/60">Video pendiente</p>
@@ -4140,7 +4117,7 @@ const renderDramaFeaturedWork = () => (
                 ) : null}
                 {showArtefactoChip ? (
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-sky-400/30 bg-sky-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-sky-100">Incluye artefacto interactivo</span>
+                    {renderChipsDeLaForma()}
                   </div>
                 ) : null}
                 {tags.length ? (
@@ -4574,7 +4551,7 @@ const renderDramaFeaturedWork = () => (
                             ) : null)}
                             {entry.eyebrow === 'Obra destacada' ? (
                               <div className="flex flex-wrap gap-2">
-                                <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+                                {renderChipsDeLaForma()}
                               </div>
                             ) : null}
                             {entry.snippet ? (
@@ -4952,18 +4929,9 @@ const renderDramaFeaturedWork = () => (
                     </motion.span>
                   )}
                 </AnimatePresence>
-                <button
-                  onClick={handleToggleShowcaseAmbient}
-                  aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                  title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                  className={`lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                    isShowcaseAmbientAudible
-                      ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                      : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                  }`}
-                >
-                  {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                </button>
+                {/* Sin bocina desde el 19 nov 2026 (Carlos: «Ya no creo que
+                    tenga caso conservar el botón de la bocina»); la música la
+                    detiene el video del autor. */}
                 <button
                   onClick={handleCloseShowcase}
                   className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
@@ -4983,24 +4951,12 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
                         </div>
                       </div>
-                      {/* En escritorio el sonido y el cierre suben a la esquina
-                          donde estuvo el librito, junto al título (Carlos, 18
-                          nov 2026). Antes iban al fondo de la ficha, al final
-                          del scroll. En teléfono siguen arriba, fuera de la
-                          tarjeta. */}
+                      {/* En escritorio el cierre sube a la esquina donde estuvo
+                          el librito, junto al título (Carlos, 18 nov 2026).
+                          Antes iba al fondo de la ficha, al final del scroll.
+                          En teléfono sigue arriba, fuera de la tarjeta. La
+                          bocina se quitó el 19 nov 2026. */}
                       <div className="hidden shrink-0 items-center gap-2 lg:flex" data-controles-de-la-ficha>
-                        <button
-                          onClick={handleToggleShowcaseAmbient}
-                          aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                          title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
-                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                            isShowcaseAmbientAudible
-                              ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                              : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                          }`}
-                        >
-                          {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                        </button>
                         <button
                           onClick={handleCloseShowcase}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
@@ -5456,8 +5412,6 @@ const renderDramaFeaturedWork = () => (
                   <IAInsightCard
                     {...activeDefinition.iaProfile}
                     {...(() => { const p = fichaEnPasado(SHOWCASE_TO_PORTAL[activeShowcase]); return p ? { title: p.title, notes: p.notes } : {}; })()}
-                    chips={activeDefinition.chips}
-                    chipClassName={activeDefinition.chipClassName}
                     compact
                   />
                 </div>
