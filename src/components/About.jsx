@@ -24,7 +24,7 @@ import {
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import { irALaAlianza } from '@/lib/revelarAlianza';
-import { FUERA_DE_LA_LISTA, PREGUNTA_FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
+import { FUERA_DE_LA_LISTA, PREGUNTA_FUERA_DE_LA_LISTA, palabraEnPrimeraPersona } from '@/lib/provocaDraft';
 import { CATALOG } from '@/lib/bitacoraShared';
 import {
   useMisReplicas,
@@ -343,7 +343,11 @@ export const ProvocaSection = () => {
     media.addListener(openDesktopComposer);
     return () => media.removeListener(openDesktopComposer);
   }, []);
-  const terminoDeLaPregunta = terminoFijado ?? (formularioApagado ? ultimaReplica?.termino ?? null : null);
+  // La pregunta solo se detiene cuando llega un borrador con su palabra. Del
+  // 19 nov al mediodía se detenía también en la palabra de la última réplica;
+  // Carlos: «Me sacó de onda que la pregunta ya no se rotara». Ahora lo que
+  // cambia con cada forma es el recuadro, desde las esferas de arriba.
+  const terminoDeLaPregunta = terminoFijado;
   const currentProvocaTitleTerm = terminoDeLaPregunta ?? PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
   // Quien llega del pozo con «otra» —ninguna de las siete se acercó— no recibe
   // una palabra de la obra en la pregunta, sino la pregunta abierta (Carlos, 15
@@ -860,7 +864,8 @@ export const ProvocaSection = () => {
     const rawName = voiceName.trim();
     const rawRole = voiceRole.trim();
 
-    const quote = rawQuote.replace(/[\u0000-\u001F\u007F]/g, '');
+    // La palabra de la obra va en primera persona en la réplica (19 nov 2026).
+    const quote = palabraEnPrimeraPersona(rawQuote.replace(/[\u0000-\u001F\u007F]/g, ''));
     const authorName = (rawName || 'Voz del público').replace(/[\u0000-\u001F\u007F]/g, '');
     const authorRole = rawRole ? rawRole.replace(/[\u0000-\u001F\u007F]/g, '') : '';
 
@@ -1262,6 +1267,16 @@ export const ProvocaSection = () => {
             className={`provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]${fichaVuelve ? ' provoca-stage-content--vuelve' : ''}`}
           >
             <div className="min-w-0">
+              {/* Las esferas de sus réplicas, encima de la pregunta (Carlos, 19
+                  nov 2026). Abajo ya no queda nada de esto. */}
+              {actoFinalTransformado ? (
+                <TusReplicas
+                  ref={tusReplicasRef}
+                  replicas={misReplicas}
+                  enElRecuadro={replicaMostrada}
+                  onLlevarAlRecuadro={llevarAlRecuadro}
+                />
+              ) : null}
               <h3
                 className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
                 aria-label={preguntaDeLaReplica}
@@ -1415,16 +1430,6 @@ export const ProvocaSection = () => {
                   </a>
                 </div>
               </details>
-              {/* En el espacio que quedaba vacío, lo que la persona ya dejó
-                  (Carlos, 19 nov 2026). La ayuda de arriba no se apaga. */}
-              {actoFinalTransformado ? (
-                <TusReplicas
-                  ref={tusReplicasRef}
-                  replicas={misReplicas}
-                  enElRecuadro={replicaMostrada}
-                  onLlevarAlRecuadro={llevarAlRecuadro}
-                />
-              ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -1652,15 +1657,31 @@ export const ProvocaSection = () => {
                         <ArrowUpRight size={13} className="-rotate-45" />
                       </motion.button>
                     ) : (
-                      <motion.button
-                        type="button"
+                      /* Al volver del texto, «Sostener» toma el lugar de «Armar
+                         mi texto»; el texto sigue a un toque (Carlos, 19 nov
+                         2026: «al cerrar el texto ya no vuelvo a abrirlo»).
+                         «Volver a mi texto»: texto de Claude, por revisar. */
+                      <motion.div
                         variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
-                        onClick={() => irALaAlianza('apoya')}
-                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
+                        className="flex flex-wrap items-center gap-x-5 gap-y-2"
                       >
-                        Ver cómo funciona todo esto
-                        <ArrowUpRight size={13} />
-                      </motion.button>
+                        <button
+                          type="button"
+                          onClick={abrirTuTexto}
+                          className="inline-flex items-center gap-1 text-[13px] text-slate-300 transition hover:text-white"
+                          data-volver-a-tu-texto
+                        >
+                          Volver a mi texto
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => irALaAlianza('apoya')}
+                          className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
+                        >
+                          Ver cómo funciona todo esto
+                          <ArrowUpRight size={13} />
+                        </button>
+                      </motion.div>
                     )}
                   </motion.div>
                 ) : null}

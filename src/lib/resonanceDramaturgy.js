@@ -45,7 +45,10 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   bambalinasCajaPlaceholder: 'Tu número de WhatsApp',
   bambalinasCajaAvisar: 'Avísame',
   // La salida no nombra al gemelo (Carlos: «no vamos a poner conoce su gemelo ahí»).
-  bambalinasCta: 'Continuar',
+  // Dice a dónde lleva: la ficha es el miniverso, donde se explica la forma y
+  // la obra de la que nace (Carlos, 19 nov 2026, con una captura: «Explorar
+  // miniverso»; antes «Continuar»).
+  bambalinasCta: 'Explorar miniverso',
   bambalinasCtaPista: 'Elige al menos una para seguir.',
   avisoCorreoConCuentaHint: 'El de tu cuenta. Un solo correo.',
   avisoWhatsAppTitle: 'Por WhatsApp',

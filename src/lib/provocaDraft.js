@@ -27,15 +27,17 @@ export const PALABRAS_DE_LA_OBRA = [
 // Solo una de las siete lleva verbo conjugado. El servidor hace lo mismo al
 // escribir la respuesta tentativa; aquí se repite para lo que ya estaba
 // guardado en este navegador.
+// 19 nov 2026: Carlos encontró otra vez «me provoca una emoción que no
+// entiendes del todo» en una réplica publicada. La comparación era exacta y
+// basta una mayúscula o un espacio distinto («Una emoción…») para que no
+// cambie; ahora no distingue mayúsculas ni espacios, y se aplica también al
+// publicar (About.jsx), no solo al escribir el borrador.
 const EN_PRIMERA_PERSONA = [
-  ['una emoción que no entiendes del todo', 'una emoción que no entiendo del todo'],
+  [/(me\s+provoca\s+una\s+emoci[oó]n\s+que\s+no\s+)entiendes(\s+del\s+todo)/gi, '$1entiendo$2'],
 ];
 export function palabraEnPrimeraPersona(texto) {
   if (typeof texto !== 'string') return texto;
-  return EN_PRIMERA_PERSONA.reduce(
-    (t, [deTu, deYo]) => t.replace(`lo que me provoca ${deTu}`, `lo que me provoca ${deYo}`),
-    texto,
-  );
+  return EN_PRIMERA_PERSONA.reduce((t, [deTu, deYo]) => t.replace(deTu, deYo), texto);
 }
 
 // «otra»: ninguna de las siete se acerca (Carlos, 15 nov 2026: «lo más honesto
