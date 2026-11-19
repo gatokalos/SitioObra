@@ -64,6 +64,11 @@ const IAInsightCard = ({
   // del aviso pequeño: en la constelación de la Memoria, el bloque morado se
   // vuelve la invitación a la cuenta (Carlos, 18 nov 2026).
   onSinSesion = null,
+  // El texto que aparece en su lugar, si está activo, y el botón que lo
+  // acompaña ({ label, onClick }).
+  alterno = null,
+  alternoActivo = false,
+  alternoBoton = null,
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -112,32 +117,58 @@ const IAInsightCard = ({
 
   if (enBloque) {
     if (!hasNotes && !isTravelMode) return null;
+    if (!isOpen) return null;
     // Sin el renglón «Al entrar en escena…» (Carlos, 18 nov 2026): lo
     // despliega la cabecera del bloque, con la ceja y el nombre de la forma.
+    // Sin sesión, el bloque guarda también el texto que sustituye al toast
+    // (`alterno`). Los dos viven en la misma celda: el bloque mide lo del más
+    // alto y no cambia de tamaño al pasar de uno a otro, así que nada brinca
+    // alrededor; pasan con un fundido. El botón es uno solo y cambia de
+    // palabra y de color (Carlos, 18 nov 2026: «debería mantenerse el mismo
+    // tamaño y a la hora de hacer el clic debe haber una animación suave… el
+    // botón debe de cambiar de color»).
+    const conAlterno = Boolean(alterno) && !user;
+    const enAlterno = conAlterno && alternoActivo;
+    const capa = (visible) => ({
+      gridArea: '1 / 1',
+      opacity: visible ? 1 : 0,
+      visibility: visible ? 'visible' : 'hidden',
+      transition: 'opacity 0.35s ease, visibility 0.35s',
+    });
     return (
-      <>
-        {isOpen ? (
-          <div className="bloque-forma__abierto">
+      <div className="bloque-forma__abierto">
+        <div className="grid">
+          <div style={capa(!enAlterno)} aria-hidden={enAlterno || undefined}>
             {hasNotes ? (
-              <ul className="memoria-descripcion space-y-1.5 text-sm leading-relaxed text-slate-300/80">
+              <ul className="space-y-1.5 text-sm leading-relaxed text-slate-300/80">
                 {notes.map((note, index) => (
                   <li key={index}>{note}</li>
                 ))}
               </ul>
             ) : null}
-            {isTravelMode ? (
-              <>
-                <button type="button" onClick={handleTravelClick} className="ultima-pregunta__salida" data-cruzar>
-                  {travelLabel}
-                </button>
-                {/* Sin el aviso «Necesitas iniciar sesión para continuar»
-                    (Carlos, 16 nov 2026): si hace falta, lo dice el botón al
-                    tocarlo. */}
-              </>
-            ) : null}
           </div>
+          {conAlterno ? (
+            <div style={capa(enAlterno)} aria-hidden={!enAlterno || undefined} data-invitacion-a-la-cuenta={enAlterno ? '' : undefined}>
+              {alterno}
+            </div>
+          ) : null}
+        </div>
+        {isTravelMode ? (
+          <button
+            type="button"
+            onClick={enAlterno ? alternoBoton?.onClick : handleTravelClick}
+            className={`ultima-pregunta__salida ultima-pregunta__salida--cambia${enAlterno ? ' ultima-pregunta__salida--sesion' : ''}`}
+            data-cruzar={enAlterno ? undefined : ''}
+            data-entrar-con-correo={enAlterno ? '' : undefined}
+          >
+            <span key={enAlterno ? 'sesion' : 'cruzar'} className="boton-que-cambia">
+              {enAlterno ? alternoBoton?.label : travelLabel}
+            </span>
+          </button>
         ) : null}
-      </>
+        {/* Sin el aviso «Necesitas iniciar sesión para continuar» (Carlos, 16
+            nov 2026): si hace falta, lo dice el botón al tocarlo. */}
+      </div>
     );
   }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, ChevronDown } from 'lucide-react';
@@ -342,18 +342,29 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
   const W = marco?.ancho ?? 0;
   const H = marco?.alto ?? 0;
   const vuelta = cambios.current;
-  const ondas = useMemo(
-    () => (enOndas && W > 0 && H > 0 ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null),
-    [enOndas, W, H, N],
-  );
-  const garabato = useMemo(() => {
-    if (vuelta === 0 || !(W > 0) || !(H > 0)) return null;
-    // Las esferas conservan el tamaño que tenían en la figura de siempre.
-    const D = ondas ? ondas.ancla.d : Math.round(0.21 * W);
-    const d = ondas ? ondas.lugares[0].d : Math.max(44, Math.round(0.115 * W));
-    return trazarGarabato(W, H, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W) });
-  }, [vuelta, W, H, ondas, N]);
+  // La figura se traza una vez por forma elegida y por ancho de pantalla. Si
+  // solo cambia el alto —el bloque morado que se abre o se cierra—, la misma
+  // figura se estira o se encoge, sin volver a trazarse (Carlos, 18 nov 2026:
+  // «todo se reacomoda y eso es molesto. Se pierde la atención lo que
+  // sucedió»). Hasta ese día, abrir el bloque sembraba otro garabato.
+  const disposicion = useRef({ clave: null });
+  const clave = `${enOndas ? 'ondas' : 'acostada'}|${vuelta}|${marco?.clave ?? W}`;
+  if (W > 0 && H > 0 && disposicion.current.clave !== clave) {
+    const ondasNuevas = enOndas ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null;
+    let garabatoNuevo = null;
+    if (vuelta > 0) {
+      // Las esferas conservan el tamaño que tenían en la figura de siempre.
+      const D = ondasNuevas ? ondasNuevas.ancla.d : Math.round(0.21 * W);
+      const d = ondasNuevas ? ondasNuevas.lugares[0].d : Math.max(44, Math.round(0.115 * W));
+      garabatoNuevo = trazarGarabato(W, H, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W) });
+    }
+    disposicion.current = { clave, ondas: ondasNuevas, garabato: garabatoNuevo, W0: W, H0: H };
+  }
+  const { ondas = null, garabato = null, W0 = W, H0 = H } = disposicion.current;
   const enPixeles = garabato ?? ondas;
+  // Los lugares van en proporción del marco en que se trazaron; si el marco
+  // se achica, las esferas se achican en la misma medida y no se enciman.
+  const escala = W0 > 0 && H0 > 0 ? Math.min(1, W / W0, H / H0) : 1;
   const figura = garabato ? 'garabato' : ondas ? 'en-ondas' : 'acostada';
   const trazos = garabato
     ? [{ d: garabato.hilo }]
@@ -364,7 +375,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
 
   return (
     <div className="relative w-full h-full">
-      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W} ${H}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: sinConstelacion ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
+      <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W0} ${H0}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: sinConstelacion ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="ruido" />
@@ -387,10 +398,11 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
             : { initial: false };
           return (
             <g key={`${figura}-${vuelta}-${i}`} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={tenue ? 0.45 : 1}>
-              <motion.path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" {...dibujo} />
-              <motion.path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" {...dibujo} />
-              <motion.path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" {...dibujo} />
-              <motion.path d={d} stroke="rgba(255,230,180,0.55)" strokeWidth="0.6" {...dibujo} />
+              {/* Sin engrosarse ni adelgazarse cuando la figura se estira. */}
+              <motion.path d={d} stroke="rgba(214,150,70,0.42)" strokeWidth="13" filter="url(#chHalo)" vectorEffect={enPixeles ? 'non-scaling-stroke' : undefined} {...dibujo} />
+              <motion.path d={d} stroke="rgba(236,180,100,0.45)" strokeWidth="4" filter="url(#chHebra)" vectorEffect={enPixeles ? 'non-scaling-stroke' : undefined} {...dibujo} />
+              <motion.path d={d} stroke="rgba(240,190,110,0.55)" strokeWidth="2" filter="url(#chBrillo)" vectorEffect={enPixeles ? 'non-scaling-stroke' : undefined} {...dibujo} />
+              <motion.path d={d} stroke="rgba(255,230,180,0.55)" strokeWidth="0.6" vectorEffect={enPixeles ? 'non-scaling-stroke' : undefined} {...dibujo} />
             </g>
           );
         })}
@@ -414,10 +426,10 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
             tabIndex={apagada ? -1 : undefined}
             style={{
               position: 'absolute',
-              left: enPixeles ? `${lugar.x}px` : `${lugar.x}%`,
-              top: enPixeles ? `${lugar.y}px` : `${lugar.y}%`,
+              left: enPixeles ? `${(lugar.x / W0) * 100}%` : `${lugar.x}%`,
+              top: enPixeles ? `${(lugar.y / H0) * 100}%` : `${lugar.y}%`,
               transform: 'translate(-50%, -50%)',
-              width: enPixeles ? `${lugar.d}px` : `${lugar.d}%`,
+              width: enPixeles ? `${lugar.d * escala}px` : `${lugar.d}%`,
               // En la figura dibujada las esferas chicas no bajan del tamaño
               // de un dedo; en ondas, la regla ya lo cuida.
               minWidth: enPixeles || alFrente ? undefined : '2.75rem',
@@ -793,35 +805,13 @@ function HolograficoPanel({
             <BloqueDeForma
               entry={entry}
               ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-              abierto={alEntrarAbierto || invitacion}
+              abierto={alEntrarAbierto}
               onToggle={showcaseDefinitions[entry.showcase]?.iaProfile ? () => {
-                if (alEntrarAbierto || invitacion) { setAlEntrarAbierto(false); setInvitacion(false); }
+                if (alEntrarAbierto) { setAlEntrarAbierto(false); setInvitacion(false); }
                 else setAlEntrarAbierto(true);
               } : null}
             >
-              {invitacion ? (
-                /* Texto C, elegido por Carlos (18 nov 2026): la convención
-                   teatral (interpretar, acto final) y lo que de verdad pasa
-                   (se guarda, un texto tuyo). Antes de La Réplica no se dice
-                   «réplica»: la persona todavía no sabe qué es. */
-                <div className="bloque-forma__abierto" data-invitacion-a-la-cuenta>
-                  {/* Sin .memoria-descripcion: su alto mínimo de tres renglones
-                      separaba de más los dos párrafos y el botón. */}
-                  <p className="text-sm leading-relaxed text-slate-200/90">
-                    Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
-                  </p>
-                  <p className="-mt-1 text-xs leading-relaxed text-slate-400/80">
-                    Para guardarlo, tu correo.
-                  </p>
-                  {/* El mismo botón, que cambia (Carlos, 18 nov 2026: «el
-                      botón tiene que ser dinámico… a la hora de hacer clic…
-                      tiene que aparecer ahí adentro, iniciar sesión»). Al
-                      cerrar el bloque, vuelven las notas. */}
-                  <button type="button" onClick={entrarConCorreo} className="ultima-pregunta__salida" data-entrar-con-correo>
-                    Iniciar sesión
-                  </button>
-                </div>
-              ) : showcaseDefinitions[entry.showcase]?.iaProfile ? (
+              {showcaseDefinitions[entry.showcase]?.iaProfile ? (
                 <IAInsightCard
                   {...showcaseDefinitions[entry.showcase].iaProfile}
                   compact
@@ -832,7 +822,24 @@ function HolograficoPanel({
                   travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                   travelFormLabel={entry.form ?? entry.name}
                   onTravel={() => onOpenVideo(entry.showcase)}
-                  onSinSesion={() => { setAlEntrarAbierto(false); setInvitacion(true); }}
+                  onSinSesion={() => setInvitacion(true)}
+                  /* Texto C, elegido por Carlos (18 nov 2026): la convención
+                     teatral (interpretar, acto final) y lo que de verdad pasa
+                     (se guarda, un texto tuyo). Antes de La Réplica no se dice
+                     «réplica»: la persona todavía no sabe qué es. */
+                  alterno={(
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm leading-relaxed text-slate-200/90">
+                        Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
+                      </p>
+                      <p className="text-xs leading-relaxed text-slate-400/80">Para guardarlo, tu correo.</p>
+                    </div>
+                  )}
+                  alternoActivo={invitacion}
+                  /* El mismo botón, que cambia (Carlos, 18 nov 2026: «el botón
+                     tiene que ser dinámico… tiene que aparecer ahí adentro,
+                     iniciar sesión»). Al cerrar el bloque, vuelven las notas. */
+                  alternoBoton={{ label: 'Iniciar sesión', onClick: entrarConCorreo }}
                   enBloque
                 />
               ) : null}
@@ -920,12 +927,16 @@ const CuadernoHolografico = ({
   const [lado, setLado] = useState(0);
   const [alto, setAlto] = useState(0);
   const [enOndas, setEnOndas] = useState(false);
+  // El ancho de la caja decide cuándo se vuelve a trazar la figura; el alto,
+  // no (18 nov 2026).
+  const [anchoDeLaCaja, setAnchoDeLaCaja] = useState(0);
   useEffect(() => {
     const el = marcoRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver((entries) => {
       const caja = entries[0]?.contentRect;
       if (!caja) return;
+      setAnchoDeLaCaja(Math.floor(caja.width));
       // La figura es 4:3 y se deja achatar hasta 2:1 cuando el bloque se abre
       // y le quita altura: así las esferas no se encogen (14 nov 2026).
       // En pantallas angostas las esferas se acomodan por regla en todo el
@@ -998,7 +1009,7 @@ const CuadernoHolografico = ({
           <Constellation
             centerKey={centerKey}
             onSelect={handleSelect}
-            marco={lado > 0 && alto > 0 ? { ancho: lado, alto } : null}
+            marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
             enOndas={enOndas}
             sinConstelacion={alFondoDelPozo}
           />
