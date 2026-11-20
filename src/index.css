@@ -6469,6 +6469,17 @@ body {
   color: rgba(226, 232, 240, 0.9);
   transition: border-color 0.2s ease, color 0.2s ease;
 }
+.tu-texto__volver[data-otra-version] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.tu-texto__mano {
+  font-size: 1.1em;
+  line-height: 1;
+  filter: grayscale(1) brightness(1.5) contrast(1.1);
+}
 .tu-texto__volver:hover,
 .tu-texto__volver:focus-visible {
   border-color: rgba(255, 255, 255, 0.4);

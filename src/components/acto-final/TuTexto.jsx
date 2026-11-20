@@ -131,10 +131,15 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
     setSigue(marco.scrollHeight - marco.clientHeight - marco.scrollTop > 24);
   }, []);
   const medirCampos = useCallback(() => {
+    // Se mide desde cero y sin crecer con el marco: medida sobre su propio
+    // alto, la caja sumaba dos puntos en cada vuelta y llegaba a desbordar.
     for (const el of [campoRef.current, replicaRef.current]) {
       if (!el) continue;
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight + 2}px`;
+      el.style.flex = '0 0 auto';
+      el.style.height = '0px';
+      const alto = el.scrollHeight + 2;
+      el.style.flex = '';
+      el.style.height = `${alto}px`;
     }
     medirMarco();
   }, [medirMarco]);
@@ -434,7 +439,12 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
           <div className="tu-texto__acciones tu-texto__acciones--texto">
             <button type="button" className="tu-texto__volver" onClick={() => setEtapa('replicas')} data-volver-a-mis-replicas>Volver a mis réplicas</button>
             {conIA ? (
-              <button type="button" className="tu-texto__volver" onClick={() => (sinMasVersiones ? setPanelAgotadas(true) : void hilar())} data-otra-version>Otra versión</button>
+              <button type="button" className="tu-texto__volver" onClick={() => (sinMasVersiones ? setPanelAgotadas(true) : void hilar())} data-otra-version>
+                {/* Carlos, 20 nov 2026: «Otro género» con una mano escribiendo, para
+                    que se note que es otra forma de escribirlo y no otra versión
+                    cualquiera. Lucide no trae la mano: es el emoji en gris. */}
+                <span className="tu-texto__mano" aria-hidden="true">✍️</span>Otro género
+              </button>
             ) : null}
             <button type="button" className="tu-texto__volver" onClick={() => void llevarmelo()} disabled={!largo} data-llevarmelo>
               <Download size={15} aria-hidden="true" />
