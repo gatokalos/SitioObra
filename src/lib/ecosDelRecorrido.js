@@ -27,16 +27,20 @@ export const buildL1Acknowledgment = (portal, answer) => {
     .replace(/^la extraño$/i, 'la extrañas')
     .replace(/^los extraño$/i, 'los extrañas')
     .replace(/^las extraño$/i, 'las extrañas');
+  // Cada plantilla repite su pregunta madre y termina con las palabras de la
+  // persona (Carlos, 20 nov 2026: «Me sirven esas nueve frases, por ahora»).
+  // Las anteriores eran de preguntas que ya no están. Copia en la servidora:
+  // lib/ecoIntuicion.js (PLANTILLAS_ECO); si cambian aquí, cambian allá.
   const templates = {
-    obra:        `Para ti, exponerse frente a otros empieza por ${a}.`,
-    literatura:  `Una historia deja de ser ajena cuando te devuelve ${a}.`,
+    obra:        `Para ti, habitar una emoción delante de otros significa ${a}.`,
+    literatura:  `Cuando una experiencia personal se convierte en relato, en ti cambia ${a}.`,
     artesanias:  `Un objeto deja de ser para ti solo un objeto cuando ${objectAnswer}.`,
-    grafico:     `Una imagen deja de ser superficie cuando en ella reconoces ${a}.`,
-    cine:        `Mirar una historia de frente también significa encontrarte con ${a}.`,
-    sonoridades: `Un sonido permanece cuando vuelve a ti como ${a}.`,
-    movimiento:  `Tu cuerpo empieza a responder antes que las palabras cuando ${a}.`,
-    juegos:      `Una decisión cambia la historia cuando tu primer impulso es ${a}.`,
-    oraculo:     `Una pregunta permanece contigo cuando decides ${a}.`,
+    grafico:     `Cuando alguien más interpreta tu apariencia, te ocurre ${a}.`,
+    cine:        `Al verte fallar desde afuera, descubres ${a}.`,
+    sonoridades: `Cuando ya no queda nada que mirar, en ti sigue sonando ${a}.`,
+    movimiento:  `Antes de que el pensamiento alcance a nombrarlo, tu cuerpo sabe ${a}.`,
+    juegos:      `Cuando una decisión tuya cambia el rumbo de una historia, en ti cambia ${a}.`,
+    oraculo:     `Reconoces en otros una experiencia que creías solo tuya cuando ${a}.`,
   };
   return templates[portal] ?? null;
 };

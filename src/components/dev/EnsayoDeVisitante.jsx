@@ -28,16 +28,19 @@ const RECORRIDO_EN_TARJETA = new Set(['miniversoNovela']);
 // que ajuste el eco (el que cambia «de mí» por «de ti»): se ve el eco crudo,
 // que pega la respuesta tal cual en la frase de cada forma. Por eso el relleno
 // va sin primera persona, para que el eco se lea bien (Carlos, 14 nov 2026).
+// Respuestas cortas que encajan crudas en la frase del eco de cada pregunta
+// madre (las plantillas del 20 nov 2026, en lib/ecosDelRecorrido.js). Solo las
+// ve el ensayo local.
 const RESPUESTA_DE_ENSAYO = {
   obra: 'dejar de fingir',
-  literatura: 'un recuerdo que estaba dormido',
+  literatura: 'el peso de lo que pasó',
   artesanias: 'guarda una historia',
-  grafico: 'una mirada conocida',
+  grafico: 'una incomodidad difícil de nombrar',
   cine: 'la torpeza de siempre',
-  sonoridades: 'un eco lejano',
-  movimiento: 'algo aprieta en el pecho',
-  juegos: 'dudar',
-  oraculo: 'no contestarla de inmediato',
+  sonoridades: 'una canción de la infancia',
+  movimiento: 'cuándo algo no está bien',
+  juegos: 'el miedo a equivocarse',
+  oraculo: 'alguien cuenta algo parecido en voz alta',
 };
 
 const leer = (k) => { try { return window.localStorage.getItem(k); } catch { return null; } };
