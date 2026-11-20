@@ -96,8 +96,10 @@ export function leerTuTexto() {
   return guardado && typeof guardado.texto === 'string' ? guardado : null;
 }
 
-export function guardarTuTexto(texto, fuentes = []) {
-  escribirJson(TU_TEXTO_KEY, { texto, fuentes, updatedAt: new Date().toISOString() });
+// Desde el 19 nov 2026 (noche) guarda también el título, el género, si vino
+// de la IA, la versión y lo que ella cambió en cada réplica.
+export function guardarTuTexto(texto, fuentes = [], extra = {}) {
+  escribirJson(TU_TEXTO_KEY, { texto, fuentes, ...extra, updatedAt: new Date().toISOString() });
 }
 
 export function anotarTuTextoCompartido(perspectiveId) {

@@ -30,9 +30,6 @@ import {
   useMisReplicas,
   anotarMiReplica,
   siguienteBorradorPendiente,
-  leerTuTexto,
-  anotarTuTextoCompartido,
-  guardarTuTextoEnElServidor,
 } from '@/lib/misReplicas';
 import TuTexto from '@/components/acto-final/TuTexto';
 
@@ -282,7 +279,6 @@ export const ProvocaSection = () => {
   const [volvioDelTexto, setVolvioDelTexto] = useState(false);
   const [fichaVuelve, setFichaVuelve] = useState(false);
   const [altoDeLaFicha, setAltoDeLaFicha] = useState(null);
-  const [estadoTuTexto, setEstadoTuTexto] = useState(() => (leerTuTexto()?.compartidoAt ? 'compartido' : 'listo'));
   const fichaRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
@@ -1071,46 +1067,8 @@ export const ProvocaSection = () => {
     // Al volver aparece «Sostener con mi huella» (Carlos, 19 nov 2026).
     setVolvioDelTexto(true);
   }, []);
-  const compartirTuTexto = useCallback(async (texto) => {
-    if (!texto) return;
-    if (texto.length > 900) {
-      toast({ description: 'Tu texto es muy largo para compartirlo: el máximo es de 900 caracteres.' });
-      return;
-    }
-    setEstadoTuTexto('enviando');
-    let resultado = null;
-    try {
-      resultado = await submitAudiencePerspective({
-        quote: texto,
-        authorName: (ultimaReplica?.nombre || voiceName.trim() || 'Voz del público').slice(0, PROVOCA_NAME_MAX_CHARS),
-        authorRole: null,
-        honeypot: '',
-        metadata: {
-          source: 'texto_armado',
-          user_id: user?.id ?? null,
-          anon_id: ensureAnonId() ?? null,
-          replicas: misReplicas.map((r) => r.perspectiveId).filter(Boolean),
-        },
-      });
-    } catch (error) {
-      resultado = { error };
-    }
-    if (resultado?.error) {
-      setEstadoTuTexto('listo');
-      toast({ description: getProvocaSubmitErrorMessage(resultado.error) });
-      return;
-    }
-    const data = resultado?.data;
-    const idCompartido = typeof data === 'string' ? data : (data?.id ?? null);
-    anotarTuTextoCompartido(idCompartido);
-    if (user?.id) {
-      void guardarTuTextoEnElServidor(user.id, texto, misReplicas.map((r) => r.perspectiveId).filter(Boolean), {
-        compartido_at: new Date().toISOString(),
-        perspective_id: Number.isFinite(Number(idCompartido)) ? Number(idCompartido) : null,
-      });
-    }
-    setEstadoTuTexto('compartido');
-  }, [misReplicas, ultimaReplica, user?.id, voiceName]);
+  // «Compartirlo» se fue el 19 nov 2026: las dos salidas («Llevármelo» y
+  // «Proponerlo para el blog») viven dentro de «Tu texto».
   const iniciarSesionDesdeElActoFinal = useCallback(() => {
     window.dispatchEvent(new CustomEvent('open-login-modal'));
   }, []);
@@ -1214,7 +1172,7 @@ export const ProvocaSection = () => {
               <span aria-hidden="true">LA RÉPLICA</span>
             </h2>
             <p className="provoca-stage-description">
-              Ninguna obra termina en el acto final. Hasta aquí habló ella.
+              Lo que traes también forma parte. Una emoción, una pregunta, algo que todavía no sabes nombrar.
               <span className="hidden lg:inline"><br /><em>Ahora te toca</em>.</span>
             </p>
           </header>
@@ -1260,10 +1218,9 @@ export const ProvocaSection = () => {
             >
               <TuTexto
                 replicas={misReplicas}
-                userId={user?.id ?? null}
+                user={user ?? null}
                 onVolver={volverDeTuTexto}
-                onCompartir={compartirTuTexto}
-                estadoCompartir={estadoTuTexto}
+                onSostener={irAImpulsa}
               />
             </motion.div>
           ) : null}

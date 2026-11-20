@@ -6481,6 +6481,210 @@ body {
 @media (max-width: 640px) {
   .tu-texto__botones--solo-volver .tu-texto__volver { flex: 1; }
 }
+/* «Tu texto», segunda versión (19 nov 2026, noche): las esferas adentro, la
+   IA de #GatoEncerrado y las dos salidas. */
+.tu-texto__cabecera--esferas {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.9rem;
+}
+.tu-texto__esferas {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+}
+.tu-texto__etiqueta {
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.75);
+}
+.tu-texto__replica,
+.tu-texto__propuesta {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.tu-texto__replica .tu-texto__campo { flex: 1; min-height: 7rem; }
+.tu-texto__propuesta .tu-texto__campo { flex: 1; min-height: 8rem; }
+.tu-texto__titulo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.tu-texto__genero {
+  border: 1px solid rgba(216, 180, 254, 0.35);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(233, 213, 255, 0.9);
+}
+.tu-texto__titulo-propio {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  padding: 0.2rem 0 0.5rem;
+  font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+  color: #f1f5f9;
+  outline: none;
+}
+.tu-texto__titulo-propio::placeholder { color: rgba(148, 163, 184, 0.6); }
+textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 1.25; }
+.tu-texto__cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: rgba(203, 213, 225, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+.tu-texto__cuenta--pasado { color: rgba(251, 191, 36, 0.95); }
+.tu-texto__pie-columna {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.tu-texto__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  width: 100%;
+}
+.tu-texto__acciones--izquierda { justify-content: flex-start; }
+.tu-texto__acciones-par { display: flex; gap: 0.6rem; }
+.tu-texto__acciones .tu-texto__volver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+.tu-texto__volver:disabled { opacity: 0.45; cursor: default; }
+/* Los botones miden lo que su texto, no la ficha (Carlos: «el botón
+   kilométrico», 19 nov 2026). */
+.tu-texto__boton-ia.ultima-pregunta__salida {
+  display: inline-flex;
+  width: auto;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-inline: 1.5rem;
+  white-space: nowrap;
+}
+.tu-texto__principal.ultima-pregunta__salida {
+  width: auto;
+  padding-inline: 1.4rem;
+  white-space: nowrap;
+}
+.tu-texto__huella {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid rgba(110, 231, 183, 0.4);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.15);
+  font-size: 0.95rem;
+  color: rgba(236, 253, 245, 0.98);
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+.tu-texto__huella:hover { background: rgba(52, 211, 153, 0.25); }
+.tu-texto__agotadas {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(110, 231, 183, 0.25);
+  border-radius: 16px;
+  background: rgba(6, 78, 59, 0.18);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(236, 253, 245, 0.95);
+}
+.tu-texto__consentimiento {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.tu-texto__consentimiento-texto {
+  display: flex;
+  min-width: min(22rem, 100%);
+  flex: 1;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  color: rgba(241, 245, 249, 0.95);
+}
+.tu-texto__consentimiento .tu-texto__acciones { width: auto; }
+.tu-texto__nombre {
+  max-width: 22rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(10, 8, 18, 0.6);
+  font-size: 0.95rem;
+  color: #f1f5f9;
+}
+.tu-texto__nota--hecho { color: rgba(167, 243, 208, 0.9); }
+.tu-texto__hilando {
+  display: flex;
+  flex: 1;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  text-align: center;
+}
+.tu-texto__hilo { width: min(26rem, 90%); overflow: visible; }
+.tu-texto__hilo path {
+  fill: none;
+  stroke: rgba(240, 190, 110, 0.85);
+  stroke-width: 2;
+  stroke-dasharray: 6 7;
+  animation: tu-texto-hilo 1.4s linear infinite;
+}
+.tu-texto__hilo-aro { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 2; }
+@keyframes tu-texto-hilo { to { stroke-dashoffset: -26; } }
+@media (prefers-reduced-motion: reduce) { .tu-texto__hilo path { animation: none; } }
+.tu-texto__hilando-titulo {
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  color: rgba(241, 245, 249, 0.95);
+}
+@media (max-width: 640px) {
+  .tu-texto__esferas { gap: 0.25rem; }
+  .tu-texto__esferas .tus-replicas__esfera {
+    width: calc((100% - 2.25rem) / 10);
+    max-width: 34px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .tu-texto__acciones { flex-direction: column; align-items: stretch; }
+  .tu-texto__acciones-par { width: 100%; }
+  .tu-texto__acciones-par .tu-texto__volver { flex: 1; }
+  .tu-texto__boton-ia.ultima-pregunta__salida { padding-inline: 1.1rem; font-size: 0.86rem; }
+  .tu-texto__acciones--texto { display: grid; grid-template-columns: 1fr 1fr; }
+  .tu-texto__acciones--texto .tu-texto__principal { grid-column: 1 / -1; order: -1; }
+  .tu-texto__acciones--texto [data-volver-a-mis-replicas] { grid-column: 1 / -1; order: 2; }
+  .tu-texto__consentimiento .tu-texto__acciones { width: 100%; }
+  .tu-texto__acciones--izquierda { align-items: flex-start; }
+}
 /* «Tu texto» conserva el alto de la ficha; el campo crece para llenarlo. */
 .provoca-stage-lado-texto {
   display: flex;
