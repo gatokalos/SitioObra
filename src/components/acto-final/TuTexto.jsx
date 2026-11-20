@@ -21,7 +21,8 @@
 // comparte queda solo el gesto, sin contenido (D-76). Textos de Claude, por
 // revisar, salvo la invitación de la huella.
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import ChevronQueSigue from '@/components/ChevronQueSigue';
 import { Download, HeartHandshake, PenLine, Sparkles } from 'lucide-react';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { CATALOG } from '@/lib/bitacoraShared';
@@ -63,6 +64,10 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
   const tocado = useRef(false);
   const abortRef = useRef(null);
   const tituloRef = useRef(null);
+  const campoRef = useRef(null);
+  const replicaRef = useRef(null);
+  const raizRef = useRef(null);
+  const [sigue, setSigue] = useState(false);
   const etapaAntes = useRef('replicas');
 
   // La esfera elegida: la última réplica, de entrada.
@@ -115,6 +120,34 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
   }, [texto, titulo, genero, conIA, version, vistas, ediciones, replicas, userId, estadoBlog]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  // Las cajas miden lo que su texto, para que se lea todo (Carlos, 20 nov
+  // 2026: en escritorio el último párrafo quedaba escondido sin aviso). Si en
+  // escritorio el marco de la ficha se queda corto, el marco se recorre y abajo
+  // aparece el chevron de «la sección sigue».
+  const medirMarco = useCallback(() => {
+    const marco = raizRef.current?.closest('.provoca-stage-lado-texto');
+    if (!marco) return;
+    setSigue(marco.scrollHeight - marco.clientHeight - marco.scrollTop > 24);
+  }, []);
+  const medirCampos = useCallback(() => {
+    for (const el of [campoRef.current, replicaRef.current]) {
+      if (!el) continue;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight + 2}px`;
+    }
+    medirMarco();
+  }, [medirMarco]);
+  useLayoutEffect(() => { medirCampos(); }, [texto, etapa, elegida, ediciones, panelAgotadas, estadoBlog, medirCampos]);
+  useEffect(() => {
+    const marco = raizRef.current?.closest('.provoca-stage-lado-texto');
+    marco?.addEventListener('scroll', medirMarco, { passive: true });
+    window.addEventListener('resize', medirCampos);
+    return () => {
+      marco?.removeEventListener('scroll', medirMarco);
+      window.removeEventListener('resize', medirCampos);
+    };
+  }, [medirCampos, medirMarco]);
 
   // El campo del título mide lo que su texto.
   useEffect(() => {
@@ -287,8 +320,9 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
           value={textoDe(replicaElegida)}
           onChange={(e) => { tocado.current = true; const v = e.target.value; setEdiciones((prev) => ({ ...prev, [claveDe(replicaElegida)]: v })); }}
           rows={6}
+          ref={replicaRef}
           aria-label={`Tu réplica de ${nombreDe(replicaElegida.portal) ?? 'el acto final'}`}
-          className="tu-texto__campo"
+          className="tu-texto__campo tu-texto__campo--mide"
           data-replica-de-tu-texto
         />
         <p className="tu-texto__nota">Cámbiala si quieres. La que ya publicaste se queda como está.</p>
@@ -360,8 +394,9 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
           value={texto}
           onChange={(e) => { tocado.current = true; setTexto(e.target.value); }}
           rows={9}
+          ref={campoRef}
           aria-label="Tu texto"
-          className="tu-texto__campo"
+          className="tu-texto__campo tu-texto__campo--mide"
           data-texto-de-tu-texto
         />
         <div className="tu-texto__cuenta">
@@ -428,7 +463,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
   }
 
   return (
-    <div className="tu-texto" data-tu-texto data-etapa={etapa}>
+    <div className="tu-texto" data-tu-texto data-etapa={etapa} ref={raizRef}>
       <div className="tu-texto__cabecera tu-texto__cabecera--esferas">
         <div className="min-w-0">
           <p className="huella-puerta__eyebrow">Tus réplicas, juntas</p>
@@ -438,6 +473,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
       </div>
       {cuerpo}
       <div className="tu-texto__pie">{pie}</div>
+      {sigue ? <ChevronQueSigue className="tu-texto__sigue pointer-events-none" /> : null}
     </div>
   );
 };

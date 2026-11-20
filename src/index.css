@@ -3456,7 +3456,10 @@ body {
 }
 
 .provoca-stage-voice > div:first-child > svg { display: none; }
-.provoca-stage-quote { max-height: 12rem; }
+/* La cita se lee entera: el recuadro crece con ella (Carlos, 20 nov 2026: la
+   réplica de Itzel se cortaba en «pero ya sé que» y no se notaba que había
+   más). Una réplica tiene a lo mucho 700 caracteres. */
+.provoca-stage-quote { max-height: none; overflow: visible !important; }
 .provoca-stage-quote > p {
   font-size: clamp(1rem, 1.4vw, 1.3rem);
   line-height: 1.55;
@@ -3643,7 +3646,7 @@ body {
     pointer-events: none;
   }
   .provoca-stage-shell .provoca-stage-voice { min-height: 12rem; }
-  .provoca-stage-quote { max-height: 15rem; }
+  .provoca-stage-quote { max-height: none; }
   .provoca-stage-quote > p { font-size: 1.05rem; line-height: 1.6; }
   .provoca-stage-shell .provoca-stage-actions {
     grid-auto-flow: row;
@@ -6705,8 +6708,18 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     overflow-y: auto;
     overscroll-behavior-y: contain;
   }
-  .provoca-stage-lado-texto .tu-texto { height: 100%; }
+  .provoca-stage-lado-texto .tu-texto { min-height: 100%; flex: 1 0 auto; }
   .provoca-stage-lado-texto .tu-texto__campo { flex: 1; min-height: 10rem; }
+}
+/* Las cajas que miden lo que su texto no se encogen para caber en el marco:
+   el marco se recorre. El chevron se queda pegado abajo mientras haya más. */
+.provoca-stage-lado-texto .tu-texto__campo--mide,
+.tu-texto__campo--mide { flex: 1 0 auto; overflow: hidden; resize: none; }
+.tu-texto__sigue {
+  position: sticky;
+  bottom: 0;
+  margin-top: -2.75rem;
+  z-index: 3;
 }
 .provoca-stage-content--vuelve {
   animation: ficha-vuelve 0.42s ease-out;
