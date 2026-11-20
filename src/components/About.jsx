@@ -1032,13 +1032,24 @@ export const ProvocaSection = () => {
     sourceId: null,
     quote: `“${replicaMostrada.texto}”`,
     author: replicaMostrada.nombre || voiceName.trim() || 'Tú',
-    role: nombreDeLaForma(replicaMostrada.portal) ?? 'Desde el acto final',
+    // La escrita en frío ya no dice de dónde viene (19 nov 2026).
+    role: nombreDeLaForma(replicaMostrada.portal) ?? '',
     isPending: true,
     // Texto de Claude, por revisar: «Tu réplica · <forma>».
     etiqueta: replicaMostrada.etiqueta
-      ?? `Tu réplica · ${nombreDeLaForma(replicaMostrada.portal) ?? 'acto final'}`,
+      ?? (nombreDeLaForma(replicaMostrada.portal) ? `Tu réplica · ${nombreDeLaForma(replicaMostrada.portal)}` : 'Tu réplica'),
     displayVariant: 'large',
   } : null;
+  // Las voces de los demás, ya transformado el acto final: el recuadro dice
+  // solo «Réplicas de la comunidad» (Carlos, 19 nov 2026: «que cuando se
+  // seleccione el signo de comillas… no diga tu réplica y tampoco diga de dónde
+  // viene. Simplemente "Réplicas de la comunidad"»).
+  const enComunidad = actoFinalTransformado && !vozEnElRecuadro;
+  const verComunidad = useCallback(() => {
+    stopSilvestreResponse();
+    setReplicaEnElRecuadro(null);
+    setMiraOtrasVoces(true);
+  }, [stopSilvestreResponse]);
   const vocesEnElRecuadro = vozEnElRecuadro ? [vozEnElRecuadro] : visibleTestimonials;
   const llevarAlRecuadro = useCallback((replica) => {
     stopSilvestreResponse();
@@ -1267,21 +1278,6 @@ export const ProvocaSection = () => {
             className={`provoca-stage-content grid items-start gap-8 md:grid-cols-[3fr_2fr]${fichaVuelve ? ' provoca-stage-content--vuelve' : ''}`}
           >
             <div className="min-w-0">
-              {/* Las esferas de sus réplicas, encima de la pregunta (Carlos, 19
-                  nov 2026). Abajo ya no queda nada de esto. Solo con cuenta:
-                  sin ella se interpreta una sola forma, y nueve esferas
-                  prometen lo que no puede hacer (Carlos, 19 nov 2026: «¿Cómo
-                  es posible que se muestre tus réplicas a un usuario cuando
-                  solamente puede hacer una si no está autenticado?»). Sin
-                  cuenta su réplica se queda en el recuadro. */}
-              {actoFinalTransformado && user ? (
-                <TusReplicas
-                  ref={tusReplicasRef}
-                  replicas={misReplicas}
-                  enElRecuadro={replicaMostrada}
-                  onLlevarAlRecuadro={llevarAlRecuadro}
-                />
-              ) : null}
               <h3
                 className="provoca-stage-question font-display mb-6 text-3xl italic text-slate-100"
                 aria-label={preguntaDeLaReplica}
@@ -1309,6 +1305,24 @@ export const ProvocaSection = () => {
                   </AnimatePresence>
                 </span>
               </h3>
+              {/* Las esferas de sus réplicas, debajo de la pregunta (Carlos, 19
+                  nov 2026: «en móvil y en escritorio hay que ponerlas abajo del
+                  título»). En teléfono van al pie de la columna, junto al
+                  recuadro. Solo con cuenta: sin ella se interpreta una sola
+                  forma («¿Cómo es posible que se muestre tus réplicas a un
+                  usuario cuando solamente puede hacer una si no está
+                  autenticado?»). */}
+              {actoFinalTransformado && user ? (
+                <div className="-mt-2 mb-5 hidden md:block">
+                  <TusReplicas
+                    replicas={misReplicas}
+                    enElRecuadro={replicaMostrada}
+                    onLlevarAlRecuadro={llevarAlRecuadro}
+                    enComunidad={enComunidad}
+                    onComunidad={verComunidad}
+                  />
+                </div>
+              ) : null}
              
               <AnimatePresence initial={false}>
                 {isVoiceInputOpen ? (
@@ -1435,6 +1449,20 @@ export const ProvocaSection = () => {
                   </a>
                 </div>
               </details>
+              {/* En teléfono, abajo de «Si algo se te mueve…» y arriba de la
+                  pleca, cerca del recuadro (Carlos, 19 nov 2026). */}
+              {actoFinalTransformado && user ? (
+                <div className="mt-6 md:hidden">
+                  <TusReplicas
+                    ref={tusReplicasRef}
+                    replicas={misReplicas}
+                    enElRecuadro={replicaMostrada}
+                    onLlevarAlRecuadro={llevarAlRecuadro}
+                    enComunidad={enComunidad}
+                    onComunidad={verComunidad}
+                  />
+                </div>
+              ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -1458,6 +1486,10 @@ export const ProvocaSection = () => {
                     {item.isPending ? (
                       <span className="shrink-0 rounded-full border border-amber-200/30 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-amber-100/75">
                         {item.etiqueta ?? 'Solo tú ves esto · en revisión'}
+                      </span>
+                    ) : enComunidad ? (
+                      <span className="shrink-0 rounded-full border border-purple-200/25 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-purple-100/75" data-etiqueta-comunidad>
+                        Réplicas de la comunidad
                       </span>
                     ) : null}
                   </div>
@@ -1533,7 +1565,7 @@ export const ProvocaSection = () => {
                   type="button"
                   variant="outline"
                   onClick={handleRefreshVoices}
-                  disabled={!canRefreshVoices || escribiendoSuReplica}
+                  disabled={!canRefreshVoices || escribiendoSuReplica || (actoFinalTransformado && Boolean(user) && Boolean(vozEnElRecuadro))}
                   title={escribiendoSuReplica ? 'Mientras escribes tu réplica, las demás voces esperan.' : undefined}
                   className="ui-segmented__btn ui-segmented__btn--primary w-full justify-center gap-2 whitespace-normal text-center"
                 >
@@ -1655,7 +1687,7 @@ export const ProvocaSection = () => {
                         type="button"
                         variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
                         onClick={verTusReplicas}
-                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white lg:hidden"
+                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white md:hidden"
                         data-ver-tus-replicas
                       >
                         Ver tus réplicas

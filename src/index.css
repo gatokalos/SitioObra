@@ -6309,7 +6309,6 @@ body {
 .tus-replicas--arriba {
   gap: 0.45rem;
   margin-top: 0;
-  margin-bottom: 1.1rem;
 }
 .tus-replicas__esfera--frio {
   display: inline-flex;
@@ -6379,9 +6378,16 @@ body {
 .tus-replicas__renglon:focus-visible .tus-replicas__accion {
   color: #fff;
 }
+/* En teléfono las diez (nueve formas y la de la comunidad) caben en un
+   renglón: se reparten el ancho, hasta 34 px cada una (19 nov 2026). */
 @media (max-width: 640px) {
-  .tus-replicas__formas { gap: 0.3rem; }
-  .tus-replicas__esfera { width: 30px; height: 30px; }
+  .tus-replicas__formas { gap: 0.25rem; }
+  .tus-replicas__esfera {
+    width: calc((100% - 2.25rem) / 10);
+    max-width: 34px;
+    height: auto;
+    aspect-ratio: 1;
+  }
 }
 /* «Tu texto»: el otro lado de la ficha, a todo lo ancho. */
 .tu-texto {
