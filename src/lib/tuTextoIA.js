@@ -23,7 +23,9 @@ async function tokenDeLaSesion() {
 
 // Respuesta: { ok, titulo, genero, texto, version, limite } o { ok: false,
 // agotadas, usadas, limite } o { ok: false, error }.
-export async function hilarConLaIA({ replicas, anterior = null, signal }) {
+// `anteriores`: las versiones de la IA que ya vio, [{ genero, titulo }], para que
+// la siguiente no repita ninguna.
+export async function hilarConLaIA({ replicas, anteriores = [], signal }) {
   // Sin sesión el servidor contesta 401; se manda igual para que el ensayo
   // local (?devAuth) pueda simular la respuesta.
   const token = await tokenDeLaSesion();
@@ -31,7 +33,7 @@ export async function hilarConLaIA({ replicas, anterior = null, signal }) {
     const res = await fetch(`${OBRA_API_URL}/api/tu-texto/hilar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ replicas, ...(anterior ? { anterior } : {}) }),
+      body: JSON.stringify({ replicas, ...(anteriores.length ? { anteriores } : {}) }),
       signal,
     });
     const data = await res.json().catch(() => null);

@@ -48,6 +48,9 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
   const [genero, setGenero] = useState(() => guardado?.genero ?? null);
   const [conIA, setConIA] = useState(() => Boolean(guardado?.conIA));
   const [version, setVersion] = useState(() => guardado?.version ?? null);
+  // Título y género de cada versión que ya le dio la IA: la siguiente no repite
+  // ninguno (19 nov 2026: con solo la última, la tercera repetía la primera).
+  const [vistas, setVistas] = useState(() => (Array.isArray(guardado?.vistas) ? guardado.vistas : []));
   const [limite, setLimite] = useState(3);
   const [usadas, setUsadas] = useState(null);
   const [etapa, setEtapa] = useState(() => (guardado?.texto?.trim() ? 'texto' : 'replicas'));
@@ -105,11 +108,11 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
     const ids = replicas.map((r) => r.perspectiveId ?? r.id);
     const extra = { titulo, genero, conIA, version, ediciones };
     const t = window.setTimeout(() => {
-      guardarTuTexto(texto, ids, { ...extra, ...(estadoBlog === 'propuesto' ? { compartidoAt: leerTuTexto()?.compartidoAt ?? new Date().toISOString() } : {}) });
+      guardarTuTexto(texto, ids, { ...extra, vistas, ...(estadoBlog === 'propuesto' ? { compartidoAt: leerTuTexto()?.compartidoAt ?? new Date().toISOString() } : {}) });
       if (userId && tocado.current) void guardarTuTextoEnElServidor(userId, texto, { ids, ...extra });
     }, 800);
     return () => window.clearTimeout(t);
-  }, [texto, titulo, genero, conIA, version, ediciones, replicas, userId, estadoBlog]);
+  }, [texto, titulo, genero, conIA, version, vistas, ediciones, replicas, userId, estadoBlog]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -134,7 +137,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
     void anotarGestoDeTuTexto(userId, 'juntado', { formas: formasDelMaterial, nReplicas: material.length });
   };
 
-  const hilar = useCallback(async ({ otra = false } = {}) => {
+  const hilar = useCallback(async () => {
     if (!material.length) return;
     setAviso(null);
     etapaAntes.current = etapa;
@@ -143,7 +146,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
     abortRef.current = control;
     const respuesta = await hilarConLaIA({
       replicas: material,
-      anterior: otra && genero ? { genero, titulo } : null,
+      anteriores: vistas,
       signal: control.signal,
     });
     abortRef.current = null;
@@ -154,6 +157,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
       setTexto(respuesta.texto ?? '');
       setConIA(true);
       setVersion(respuesta.version ?? null);
+      setVistas((v) => [...v, { genero: respuesta.genero ?? null, titulo: respuesta.titulo ?? null }].slice(-3));
       if (respuesta.limite) setLimite(respuesta.limite);
       setUsadas(respuesta.version ?? null);
       setPanelAgotadas(Boolean(respuesta.version && respuesta.limite && respuesta.version >= respuesta.limite));
@@ -168,7 +172,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
       return;
     }
     if (respuesta?.error !== 'cancelado') setAviso('La IA no contestó esta vez. Inténtalo de nuevo en un momento.');
-  }, [material, etapa, genero, titulo]);
+  }, [material, etapa, vistas]);
 
   const cancelar = () => abortRef.current?.abort();
 
@@ -395,7 +399,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
           <div className="tu-texto__acciones tu-texto__acciones--texto">
             <button type="button" className="tu-texto__volver" onClick={() => setEtapa('replicas')} data-volver-a-mis-replicas>Volver a mis réplicas</button>
             {conIA ? (
-              <button type="button" className="tu-texto__volver" onClick={() => (sinMasVersiones ? setPanelAgotadas(true) : void hilar({ otra: true }))} data-otra-version>Otra versión</button>
+              <button type="button" className="tu-texto__volver" onClick={() => (sinMasVersiones ? setPanelAgotadas(true) : void hilar())} data-otra-version>Otra versión</button>
             ) : null}
             <button type="button" className="tu-texto__volver" onClick={() => void llevarmelo()} disabled={!largo} data-llevarmelo>
               <Download size={15} aria-hidden="true" />
