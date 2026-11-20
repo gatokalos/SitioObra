@@ -23,12 +23,13 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import ChevronQueSigue from '@/components/ChevronQueSigue';
-import { Download, HeartHandshake, PenLine, Sparkles } from 'lucide-react';
+import { Download, HeartHandshake, Image as ImagenIcono, PenLine, Sparkles } from 'lucide-react';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { CATALOG } from '@/lib/bitacoraShared';
 import { leerTuTexto, guardarTuTexto, traerTuTextoDelServidor, guardarTuTextoEnElServidor, fechaCorta } from '@/lib/misReplicas';
 import { hilarConLaIA, versionesDeLaIA, anotarGestoDeTuTexto, proponerParaElBlog } from '@/lib/tuTextoIA';
-import { pdfDeTuTexto, llevarseElPdf } from '@/lib/pdfDeTuTexto';
+import { pdfDeTuTexto, llevarseElPdf, llevarseElArchivo } from '@/lib/pdfDeTuTexto';
+import { tarjetaDeTuTexto, esMicroliteratura } from '@/lib/tarjetaDeTuTexto';
 
 const CUARTILLA = 1700;
 const LIMITE_PARA_PROPONER = 2 * CUARTILLA;
@@ -214,10 +215,22 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
 
   const cancelar = () => abortRef.current?.abort();
 
+  // Carlos, 20 nov 2026: la microliteratura se lleva en una tarjeta para
+  // compartir; lo largo (el diario íntimo), en PDF. El nombre de la tarjeta es
+  // el que ella puso al firmar sus réplicas.
+  const micro = esMicroliteratura(texto);
   const llevarmelo = async () => {
-    const fecha = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-    const blob = pdfDeTuTexto({ titulo, texto, pie: `#GatoEncerrado · universo.gatoencerrado.org · ${fecha}` });
-    const como = await llevarseElPdf(blob);
+    let como;
+    if (micro) {
+      const nombre = [...replicas].reverse().find((r) => r.nombre)?.nombre ?? null;
+      const blob = await tarjetaDeTuTexto({ titulo, genero, texto, nombre, formas: [...formasConReplica] });
+      if (!blob) return;
+      como = await llevarseElArchivo(blob, 'tu-texto-gatoencerrado.png', 'image/png');
+    } else {
+      const fecha = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+      const blob = pdfDeTuTexto({ titulo, texto, pie: `#GatoEncerrado · universo.gatoencerrado.org · ${fecha}` });
+      como = await llevarseElPdf(blob);
+    }
     if (como !== 'cancelado') void anotarGestoDeTuTexto(userId, 'llevado', { conIA, version, formas: formasDelMaterial, nReplicas: material.length });
   };
 
@@ -230,6 +243,10 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
       titulo: titulo.trim(),
       texto: texto.trim(),
       meta: {
+        // La sección del blog a la que se propone (Carlos, 20 nov 2026:
+        // «Proponerlo para Narrativas»; en el blog, Expansiones Narrativas).
+        categoria: 'expansiones',
+        microliteratura: micro,
         genero,
         con_ia: conIA,
         version,
@@ -406,7 +423,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
         />
         <div className="tu-texto__cuenta">
           <span className={pasado ? 'tu-texto__cuenta--pasado' : undefined} data-cuartillas>
-            {(largo / CUARTILLA).toFixed(1)} de 2 cuartillas{pasado ? ' · recórtalo para proponerlo' : ''}
+            {(largo / CUARTILLA).toFixed(1)} de 2 cuartillas{pasado ? ' · recórtalo para proponerlo' : micro ? ' · cabe en una tarjeta' : ''}
           </span>
           {conIA && version ? <span className={version >= limite ? 'tu-texto__cuenta--pasado' : undefined}>Versión {version} de {limite}</span> : null}
         </div>
@@ -416,7 +433,7 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
       pie = (
         <div className="tu-texto__consentimiento" data-consentimiento-del-blog>
           <div className="tu-texto__consentimiento-texto">
-            <p>Se lee antes de publicarse en el blog. Si se publica, va con este nombre:</p>
+            <p>Se lee antes de publicarse en Expansiones Narrativas, en el blog. Si se publica, va con este nombre:</p>
             <input value={nombreBlog} onChange={(e) => setNombreBlog(e.target.value)} aria-label="Tu nombre" className="tu-texto__nombre" />
             {aviso ? <p className="tu-texto__nota">{aviso}</p> : null}
           </div>
@@ -446,9 +463,9 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
                 <span className="tu-texto__mano" aria-hidden="true">✍️</span>Otro género
               </button>
             ) : null}
-            <button type="button" className="tu-texto__volver" onClick={() => void llevarmelo()} disabled={!largo} data-llevarmelo>
-              <Download size={15} aria-hidden="true" />
-              Llevármelo
+            <button type="button" className="tu-texto__volver" onClick={() => void llevarmelo()} disabled={!largo} data-llevarmelo={micro ? 'tarjeta' : 'pdf'}>
+              {micro ? <ImagenIcono size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
+              {micro ? 'Llevarme la tarjeta' : 'Llevármelo'}
             </button>
             <button
               type="button"
@@ -457,12 +474,12 @@ const TuTexto = ({ replicas, user = null, onVolver, onSostener }) => {
               disabled={!largo || pasado || propuesto}
               data-proponer-al-blog
             >
-              {propuesto ? 'Propuesto' : 'Proponerlo para el blog'}
+              {propuesto ? 'Propuesto' : 'Proponerlo para Narrativas'}
             </button>
           </div>
           <p className={`tu-texto__nota${propuesto ? ' tu-texto__nota--hecho' : ''}`}>
             {aviso ?? (propuesto
-              ? 'Llegó. Se lee antes de publicarse en el blog.'
+              ? 'Llegó. Se lee antes de publicarse en Expansiones Narrativas.'
               : conIA
                 ? 'Es una propuesta: edítala como quieras. Se guarda sola y no se publica hasta que lo propongas.'
                 : 'Se guarda solo. No se publica hasta que lo propongas.')}

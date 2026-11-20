@@ -118,9 +118,11 @@ export function pdfDeTuTexto({ titulo = '', texto = '', pie = '' }) {
 
 // En el teléfono, el menú de compartir del aparato; si no se puede, se
 // descarga. Devuelve cómo salió: 'compartido', 'descargado' o 'cancelado'.
-export async function llevarseElPdf(blob, nombre = 'tu-texto-gatoencerrado.pdf') {
+// En el teléfono, la hoja de compartir; si no, una descarga. Sirve también para
+// la tarjeta de la microliteratura (PNG).
+export async function llevarseElArchivo(blob, nombre, tipo) {
   try {
-    const archivo = new File([blob], nombre, { type: 'application/pdf' });
+    const archivo = new File([blob], nombre, { type: tipo });
     const esTelefono = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
     if (esTelefono && navigator.canShare?.({ files: [archivo] })) {
       await navigator.share({ files: [archivo], title: 'Tu texto' });
@@ -138,4 +140,8 @@ export async function llevarseElPdf(blob, nombre = 'tu-texto-gatoencerrado.pdf')
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 4000);
   return 'descargado';
+}
+
+export function llevarseElPdf(blob, nombre = 'tu-texto-gatoencerrado.pdf') {
+  return llevarseElArchivo(blob, nombre, 'application/pdf');
 }
