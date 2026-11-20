@@ -587,6 +587,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // el modal se cerraba y al volver ofrecía el mismo botón (bucle, Carlos, 14 oct).
   const [escenaTerminada, setEscenaTerminada] = useState(() => !!lsRead(portal).l2_escena_terminada);
   const [l2ConvDone, setL2ConvDone] = useState(() => !!lsRead(portal).l2_conv_done);
+  // La pregunta con la que cierra la voz: la persona ya no la contesta, pero se
+  // queda a la vista (regla de /l2-turn: «nunca cierra en silencio»). Hasta el
+  // 19 nov 2026 el sitio la borraba al recibir el cierre.
+  const [convCierre, setConvCierre] = useState(() => (lsRead(portal).l2_conv_done ? lsRead(portal).l2_closing_question ?? null : null));
   const [convQuestion, setConvQuestion] = useState(() => lsRead(portal).l2_current_question ?? null);
   const [convTurn, setConvTurn] = useState(() => lsRead(portal).l2_current_turn ?? 0);
   const [convAnswer, setConvAnswer] = useState('');
@@ -916,8 +920,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     lsPatch(portal, { l2_conv_error: false });
     if (isDevAuth) {
       if (silent || (respuesta != null && convTurn >= 2)) {
-        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false });
+        const cierreDev = silent ? null : '¿Hay algo que te hubiera gustado que te preguntara y no te pregunté?';
+        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false, l2_closing_question: cierreDev });
         setL2ConvDone(true);
+        setConvCierre(cierreDev);
         setConvQuestion(null);
       } else {
         const nextTurn = respuesta == null ? 1 : convTurn + 1;
@@ -964,8 +970,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       }
       const data = await res.json();
       if (data.done) {
-        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false });
+        const cierre = typeof data.question === 'string' && data.question.trim() ? data.question.trim() : null;
+        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false, l2_closing_question: cierre });
         setL2ConvDone(true);
+        setConvCierre(cierre);
         setConvQuestion(null);
       } else {
         lsPatch(portal, { l2_current_question: data.question, l2_current_turn: data.turn, l2_conv_error: false });
@@ -994,6 +1002,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setEscenaTerminada(!!s.l2_escena_terminada);
     if (s.l2_narrative_opened) setL2NarrativeOpened(true);
     if (s.l2_conv_done) { setL2ConvDone(true); setConvQuestion(null); }
+    setConvCierre(s.l2_conv_done ? s.l2_closing_question ?? null : null);
     if ([1, 2, 3].includes(s.dashboard_active_level)) setDashboardActiveLevel(s.dashboard_active_level);
     // Lo que pudo ocurrir en la tarjeta de la galería mientras esta ventana
     // estaba montada y cerrada: En el foco se vive allá (14 nov 2026).
@@ -2682,6 +2691,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                       {isL3 && enElFoco}
                                       {isL2 && l2ConvDone && !escenaTerminada && (
                                         <div className="flex flex-col gap-4">
+                                          {convCierre && (
+                                            <p data-pregunta-de-cierre className="font-display text-lg leading-snug question-voice">
+                                              {convCierre}
+                                            </p>
+                                          )}
                                           <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
                                             <Check size={12} className="shrink-0 text-emerald-400/70" />
                                             <span className="italic">Conversación completada</span>
