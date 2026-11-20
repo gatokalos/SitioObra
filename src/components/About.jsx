@@ -1268,8 +1268,13 @@ export const ProvocaSection = () => {
           >
             <div className="min-w-0">
               {/* Las esferas de sus réplicas, encima de la pregunta (Carlos, 19
-                  nov 2026). Abajo ya no queda nada de esto. */}
-              {actoFinalTransformado ? (
+                  nov 2026). Abajo ya no queda nada de esto. Solo con cuenta:
+                  sin ella se interpreta una sola forma, y nueve esferas
+                  prometen lo que no puede hacer (Carlos, 19 nov 2026: «¿Cómo
+                  es posible que se muestre tus réplicas a un usuario cuando
+                  solamente puede hacer una si no está autenticado?»). Sin
+                  cuenta su réplica se queda en el recuadro. */}
+              {actoFinalTransformado && user ? (
                 <TusReplicas
                   ref={tusReplicasRef}
                   replicas={misReplicas}
@@ -1644,7 +1649,7 @@ export const ProvocaSection = () => {
                         </Button>
                       )}
                     </motion.div>
-                    {!user || !volvioDelTexto ? (
+                    {!user ? null : !volvioDelTexto ? (
                       /* En teléfono, «Tus réplicas» queda arriba: el enlace sube a ellas. */
                       <motion.button
                         type="button"
