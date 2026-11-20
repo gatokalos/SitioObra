@@ -34,7 +34,6 @@ import {
   anotarTuTextoCompartido,
   guardarTuTextoEnElServidor,
 } from '@/lib/misReplicas';
-import TusReplicas from '@/components/acto-final/TusReplicas';
 import TuTexto from '@/components/acto-final/TuTexto';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
@@ -284,7 +283,6 @@ export const ProvocaSection = () => {
   const [fichaVuelve, setFichaVuelve] = useState(false);
   const [altoDeLaFicha, setAltoDeLaFicha] = useState(null);
   const [estadoTuTexto, setEstadoTuTexto] = useState(() => (leerTuTexto()?.compartidoAt ? 'compartido' : 'listo'));
-  const tusReplicasRef = useRef(null);
   const fichaRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
@@ -1026,7 +1024,12 @@ export const ProvocaSection = () => {
   // donde se escucha con la voz de la obra; el texto no se repite a la
   // izquierda (Carlos, 19 nov 2026).
   const nombreDeLaForma = (portal) => CATALOG.find((f) => f.key === portal)?.form ?? null;
-  const replicaMostrada = replicaEnElRecuadro ?? (actoFinalTransformado && !miraOtrasVoces ? ultimaReplica : null);
+  // Ya transformado el acto final, el recuadro es de la comunidad: sus réplicas
+  // se ven y se editan en «Armar mi texto», esfera por esfera (Carlos, 19 nov
+  // 2026: «ya no estaría viendo su réplica en el recuadro. Ya lo estaría viendo
+  // en armar mi texto»). Solo la que acaba de publicar aparece ahí, en la caja
+  // de «Solo tú ves esto · en revisión».
+  const replicaMostrada = replicaEnElRecuadro;
   const vozEnElRecuadro = replicaMostrada ? {
     id: `mia-${replicaMostrada.id}`,
     sourceId: null,
@@ -1045,11 +1048,6 @@ export const ProvocaSection = () => {
   // seleccione el signo de comillas… no diga tu réplica y tampoco diga de dónde
   // viene. Simplemente "Réplicas de la comunidad"»).
   const enComunidad = actoFinalTransformado && !vozEnElRecuadro;
-  const verComunidad = useCallback(() => {
-    stopSilvestreResponse();
-    setReplicaEnElRecuadro(null);
-    setMiraOtrasVoces(true);
-  }, [stopSilvestreResponse]);
   const vocesEnElRecuadro = vozEnElRecuadro ? [vozEnElRecuadro] : visibleTestimonials;
   const llevarAlRecuadro = useCallback((replica) => {
     stopSilvestreResponse();
@@ -1118,9 +1116,6 @@ export const ProvocaSection = () => {
   }, []);
   // En teléfono no cabe «Tus réplicas» junto al recuadro: el enlace del pie
   // sube a ellas (Carlos, 19 nov 2026).
-  const verTusReplicas = useCallback(() => {
-    tusReplicasRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth', block: 'center' });
-  }, [prefersReducedMotion]);
 
   const handleListenToObra = useCallback(async (voice) => {
     if (pendingSilvestreAudioUrl) {
@@ -1305,24 +1300,6 @@ export const ProvocaSection = () => {
                   </AnimatePresence>
                 </span>
               </h3>
-              {/* Las esferas de sus réplicas, debajo de la pregunta (Carlos, 19
-                  nov 2026: «en móvil y en escritorio hay que ponerlas abajo del
-                  título»). En teléfono van al pie de la columna, junto al
-                  recuadro. Solo con cuenta: sin ella se interpreta una sola
-                  forma («¿Cómo es posible que se muestre tus réplicas a un
-                  usuario cuando solamente puede hacer una si no está
-                  autenticado?»). */}
-              {actoFinalTransformado && user ? (
-                <div className="-mt-2 mb-5 hidden md:block">
-                  <TusReplicas
-                    replicas={misReplicas}
-                    enElRecuadro={replicaMostrada}
-                    onLlevarAlRecuadro={llevarAlRecuadro}
-                    enComunidad={enComunidad}
-                    onComunidad={verComunidad}
-                  />
-                </div>
-              ) : null}
              
               <AnimatePresence initial={false}>
                 {isVoiceInputOpen ? (
@@ -1343,7 +1320,7 @@ export const ProvocaSection = () => {
                         disabled={formularioApagado}
                         className="form-surface w-full px-4 py-3 resize-none"
                         /* Texto de Claude, por revisar. */
-                        placeholder={formularioApagado ? 'Tu siguiente réplica llega con otra forma.' : 'Contéstale lo que te provoca…'}
+                        placeholder={formularioApagado ? 'Lo siguiente llega con otra forma.' : 'Contéstale lo que te provoca…'}
                       />
                       <button
                         type="button"
@@ -1449,20 +1426,6 @@ export const ProvocaSection = () => {
                   </a>
                 </div>
               </details>
-              {/* En teléfono, abajo de «Si algo se te mueve…» y arriba de la
-                  pleca, cerca del recuadro (Carlos, 19 nov 2026). */}
-              {actoFinalTransformado && user ? (
-                <div className="mt-6 md:hidden">
-                  <TusReplicas
-                    ref={tusReplicasRef}
-                    replicas={misReplicas}
-                    enElRecuadro={replicaMostrada}
-                    onLlevarAlRecuadro={llevarAlRecuadro}
-                    enComunidad={enComunidad}
-                    onComunidad={verComunidad}
-                  />
-                </div>
-              ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -1565,7 +1528,7 @@ export const ProvocaSection = () => {
                   type="button"
                   variant="outline"
                   onClick={handleRefreshVoices}
-                  disabled={!canRefreshVoices || escribiendoSuReplica || (actoFinalTransformado && Boolean(user) && Boolean(vozEnElRecuadro))}
+                  disabled={!canRefreshVoices || escribiendoSuReplica}
                   title={escribiendoSuReplica ? 'Mientras escribes tu réplica, las demás voces esperan.' : undefined}
                   className="ui-segmented__btn ui-segmented__btn--primary w-full justify-center gap-2 whitespace-normal text-center"
                 >
@@ -1681,19 +1644,9 @@ export const ProvocaSection = () => {
                         </Button>
                       )}
                     </motion.div>
-                    {!user ? null : !volvioDelTexto ? (
-                      /* En teléfono, «Tus réplicas» queda arriba: el enlace sube a ellas. */
-                      <motion.button
-                        type="button"
-                        variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
-                        onClick={verTusReplicas}
-                        className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white md:hidden"
-                        data-ver-tus-replicas
-                      >
-                        Ver tus réplicas
-                        <ArrowUpRight size={13} className="-rotate-45" />
-                      </motion.button>
-                    ) : (
+                    {/* «Ver tus réplicas ↑» se quitó (Carlos aceptó la propuesta, 19
+                        nov 2026): sus réplicas viven en «Armar mi texto». */}
+                    {!user || !volvioDelTexto ? null : (
                       /* Al volver del texto, «Sostener» toma el lugar de «Armar
                          mi texto»; el texto sigue a un toque (Carlos, 19 nov
                          2026: «al cerrar el texto ya no vuelvo a abrirlo»).
