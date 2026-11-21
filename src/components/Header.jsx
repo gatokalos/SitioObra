@@ -12,6 +12,8 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 import {
   readIndexCueUsedFromSession,
+  readIndexStartsRevealed,
+  readUmbralPendiente,
   writeMiniverseInlineOpenToSession,
   GAT_LINKTREE_DISMISSED_SESSION_KEY,
 } from '@/lib/heroActivation';
@@ -148,12 +150,12 @@ const Header = ({
   // del Header debe estar disponible desde el primer render, no oculto
   // esperando un clic ritual que en esa entrada nunca va a ocurrir.
   const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(
-    () => readIndexCueUsedFromSession() || isInstalledPWA()
+    () => readIndexStartsRevealed()
   );
   // Referencia para saber si el # ya estaba revelado en un montaje previo de
   // esta misma sesión — evita repetir el aro pulsante cada vez que Header se
   // remonta (p. ej. al navegar y volver a "/").
-  const wasIndexCueAlreadyUsedAtMountRef = useRef(readIndexCueUsedFromSession());
+  const wasIndexCueAlreadyUsedAtMountRef = useRef(readIndexCueUsedFromSession() && !readUmbralPendiente());
   const [hasOpenedIndexOnce, setHasOpenedIndexOnce] = useState(false);
   const [hasHeroLeftViewportOnce, setHasHeroLeftViewportOnce] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
@@ -200,7 +202,9 @@ const Header = ({
     hasCompletedRealProgress && (Boolean(user) || isInstalledPWA());
   // La entrada desde navegador depende solo de la vigencia del ritual.
   // Conserva la autoapertura anterior exclusivamente dentro de la PWA.
-  const shouldAutoOpenGatHub = isInstalledPWA() && isGatLinktreeAudience;
+  // Con un umbral pendiente, lo principal es la cinta (21 nov 2026): el HUB
+  // no se abre solo encima de ella.
+  const shouldAutoOpenGatHub = isInstalledPWA() && isGatLinktreeAudience && !readUmbralPendiente();
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
     () => shouldAutoOpenGatHub && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );

@@ -1,5 +1,6 @@
 import { safeGetItem, safeSetItem } from './safeStorage.js';
 import { isInstalledPWA } from './pwaDetection.js';
+import { leerElMomentoDelUmbral } from './umbralDelRegreso.js';
 
 // Hero, Header y el fondo comparten la misma decisión de entrada. El navegador
 // recuerda el ritual durante siete días sin uso; la PWA conserva su sesión.
@@ -98,6 +99,7 @@ export const writeHeroActivatedToSession = (isActivated) => {
   try {
     if (isActivated) {
       window.sessionStorage.setItem(HERO_ACTIVATED_SESSION_KEY, '1');
+      window.sessionStorage.setItem(UMBRAL_CRUZADO_SESSION_KEY, '1');
     } else {
       window.sessionStorage.removeItem(HERO_ACTIVATED_SESSION_KEY);
     }
@@ -105,6 +107,36 @@ export const writeHeroActivatedToSession = (isActivated) => {
     // ignore
   }
 };
+
+// El umbral del regreso (Carlos, 21 nov 2026; ver lib/umbralDelRegreso.js).
+// Quien vuelve con algo pendiente pasa otra vez por la cinta, también en la
+// PWA y aunque el navegador recuerde el ritual: una vez por visita. Pasar la
+// escena (con el gato o con «Explorar el universo») la da por cruzada hasta
+// que se cierre la pestaña.
+export const UMBRAL_CRUZADO_SESSION_KEY = 'gatoencerrado:umbral-cruzado-session';
+
+export const readUmbralPendiente = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (window.sessionStorage.getItem(UMBRAL_CRUZADO_SESSION_KEY) === '1') return null;
+  } catch {
+    // Sin almacenamiento de sesión no se puede recordar que ya lo cruzó: se
+    // entra como siempre para no repetir la cinta en cada vuelta a "/".
+    return null;
+  }
+  return leerElMomentoDelUmbral();
+};
+
+// La decisión de entrada que comparten Hero, Header y App: la escena arranca
+// encendida si el navegador recuerda el ritual o si es la PWA (Carlos,
+// 2026-08-19), salvo que haya un umbral pendiente.
+export const readSceneStartsActivated = () => (
+  (readHeroActivatedFromSession() || isInstalledPWA()) && !readUmbralPendiente()
+);
+
+export const readIndexStartsRevealed = () => (
+  (readIndexCueUsedFromSession() || isInstalledPWA()) && !readUmbralPendiente()
+);
 
 // "¿Ya usó el usuario el botón # del Hero para abrir el índice?" — mientras esto
 // sea falso, el toggle # del Header se mantiene oculto: solo debe haber un #

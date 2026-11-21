@@ -101,6 +101,7 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 import { momentoDeLaForma, readResonanceProgress, ROTULO_DEL_MOMENTO } from '@/lib/bitacoraShared';
+import { tomarElMomento, UMBRAL_EVENTO } from '@/lib/umbralDelRegreso';
 
 const MARIANA_GALLERY = [
   {
@@ -1792,6 +1793,45 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (giro) window.clearTimeout(giro);
     };
   }, [saltoALaTarjetaId, activeShowcase]); // eslint-disable-line react-hooks/exhaustive-deps
+  // El umbral del regreso (Carlos, 21 nov 2026; lib/umbralDelRegreso.js):
+  // quien pulsa el gato en la portada con algo pendiente llega aquí, a su
+  // momento, por los caminos que la tarjeta ya tiene. Si la tarjeta lleva el
+  // recorrido, se baja a ella y gira; si la pregunta volvió, la ficha abre el
+  // regreso; si falta la réplica, la ficha abre por el revés, en la Memoria;
+  // si ya pasó al acto final sin escribir, se baja a La Réplica.
+  const [umbralDestino, setUmbralDestino] = useState(null);
+  const umbralCaminosRef = useRef(null);
+  umbralCaminosRef.current = { laTarjetaTieneDorso, saltarALaTarjeta, elRegresoYaVolvio, handleFormatClick };
+  useEffect(() => {
+    const tomar = () => {
+      const destino = tomarElMomento();
+      if (destino?.formatId && showcaseDefinitions[destino.formatId]) setUmbralDestino(destino);
+    };
+    tomar();
+    window.addEventListener(UMBRAL_EVENTO, tomar);
+    return () => window.removeEventListener(UMBRAL_EVENTO, tomar);
+  }, []);
+  useEffect(() => {
+    if (!umbralDestino) return undefined;
+    // Deja que el [#] termine su viaje al índice antes de moverse.
+    const espera = window.setTimeout(() => {
+      const { formatId, momento, destino } = umbralDestino;
+      const caminos = umbralCaminosRef.current;
+      setUmbralDestino(null);
+      if (destino === 'acto-final') {
+        document.getElementById('provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (caminos.laTarjetaTieneDorso(formatId)) {
+        caminos.saltarALaTarjeta(formatId);
+        return;
+      }
+      if (momento === 'te-escucha') abrirMetodoAlLlegarRef.current = formatId;
+      if (momento === 'te-escucha' || caminos.elRegresoYaVolvio(formatId)) setRegresoPendienteId(formatId);
+      caminos.handleFormatClick(formatId);
+    }, 950);
+    return () => window.clearTimeout(espera);
+  }, [umbralDestino]);
   // El giro que la tarjeta hace sola al llegar: espera a que la recomendada
   // esté a la vista, deja verla limpia un instante y la voltea una vez.
   const pideLaRecomendada = Boolean(recommendedShowcaseId) && laTarjetaTieneDorso(recommendedShowcaseId);

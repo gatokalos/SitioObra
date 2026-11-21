@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CATALOG } from '@/lib/bitacoraShared';
 import { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
+import { UMBRAL_CRUZADO_SESSION_KEY } from '@/lib/heroActivation';
 
 // Panel de ensayo, solo en Vite DEV (Carlos, 14 nov 2026). Con `?devAuth=1`
 // se entra como cuenta y se ve todo abierto, pero lo nuevo del segundo acto es
@@ -175,6 +176,9 @@ const EnsayoDeVisitante = () => {
     const conReplicas = CON_REPLICAS.has(paso);
     try {
       window.sessionStorage.removeItem('gatoencerrado:dorso-cerrado-session');
+      // El salto aterriza directo en su paso, como siempre: la cinta del
+      // umbral se ve con «Volver a entrar por la portada».
+      window.sessionStorage.setItem(UMBRAL_CRUZADO_SESSION_KEY, '1');
       if (conReplicas) window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY);
       else window.sessionStorage.setItem(IR_A_LA_TARJETA_KEY, '1');
     } catch { /* sin almacenamiento */ }
@@ -196,6 +200,17 @@ const EnsayoDeVisitante = () => {
       quitar('gatoencerrado:mis-replicas');
     }
     recargar(conReplicas ? '#provoca' : '#transmedia');
+  };
+
+  // El umbral del regreso (21 nov 2026): como quien vuelve otro día. Si hay
+  // algo pendiente, la cinta de la portada dice su momento y el gato lo lleva.
+  const volverAEntrar = () => {
+    try {
+      window.sessionStorage.removeItem(UMBRAL_CRUZADO_SESSION_KEY);
+      window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY);
+    } catch { /* sin almacenamiento */ }
+    window.scrollTo(0, 0);
+    recargar('');
   };
 
   const etiqueta = modo === 'pase' ? 'visitante con pase' : modo === '1' ? 'cuenta de prueba' : 'sin ensayo';
@@ -270,6 +285,19 @@ const EnsayoDeVisitante = () => {
             <p className="text-[0.64rem] leading-snug text-slate-500">
               Cada salto reescribe el recorrido de esta forma en este navegador y recarga. El método no envía respuestas; el artefacto sí es el real y registra lo que hagas dentro.
             </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">Volver otro día</p>
+            <button
+              type="button"
+              data-ensayo-volver-a-entrar
+              onClick={volverAEntrar}
+              className="flex w-full flex-col rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-left text-sm text-slate-100 transition hover:border-amber-300/50 hover:bg-amber-400/10"
+            >
+              <span className="leading-tight">Volver a entrar por la portada</span>
+              <span className="text-[0.64rem] leading-snug text-slate-400">Si hay algo pendiente, la cinta dice su momento y el gato lo lleva ahí. Después de «El día del regreso», «La Memoria» o los tres primeros pasos.</span>
+            </button>
           </div>
         </div>
       ) : null}

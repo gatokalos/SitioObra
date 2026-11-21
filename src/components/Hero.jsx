@@ -33,13 +33,15 @@ import {
   ORACULO_RECOMMENDED_SHOWCASE_KEY,
 } from '@/components/transmedia/transmediaConstants';
 import {
-  readHeroActivatedFromSession,
+  readSceneStartsActivated,
+  readIndexStartsRevealed,
+  readUmbralPendiente,
   writeHeroActivatedToSession,
-  readIndexCueUsedFromSession,
   writeIndexCueUsedToSession,
   HERO_RITUAL_RESET_EVENT,
 } from '@/lib/heroActivation';
 import { consumePendingContinuation } from '@/lib/pendingContinuation';
+import { pedirElMomento } from '@/lib/umbralDelRegreso';
 import {
   getPwaInstallFlow,
   nextPwaInstallStep,
@@ -62,7 +64,11 @@ const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_ECHO_TEXT = 'Ante la duda, pulsa el gato';
-const HERO_INACTIVE_SIGNAL_LOOP_TEXT = `${HERO_INACTIVE_ECHO_TEXT} · `.repeat(9);
+// La cinta da nueve vueltas a su frase. Cada letra ocupa 10 unidades del
+// trazo (las 2700 de antes para «Ante la duda…»): con las frases del umbral
+// del regreso, más largas, la letra no se aprieta (Carlos, 21 nov 2026).
+const HERO_INACTIVE_SIGNAL_LOOPS = 9;
+const HERO_INACTIVE_SIGNAL_UNITS_PER_CHAR = 10;
 // El [#] se queda insinuado hasta que la cascada completa alcanza el umbral.
 // Así el brillo del símbolo es la consecuencia visual del eco, no una segunda
 // instrucción separada.
@@ -101,9 +107,18 @@ const HeroInactiveSignal = ({
   prefersReducedMotion = false,
   centerY = null,
   onReachThreshold,
+  frase = HERO_INACTIVE_ECHO_TEXT,
 }) => {
   const primaryDriftRef = useRef(null);
   const memoryDriftRef = useRef(null);
+  // El desplazamiento recorre exactamente una vuelta de la frase, así el bucle
+  // no se nota; la duración crece con ella para que la velocidad no cambie.
+  const vuelta = `${frase} · `;
+  const largoDeVuelta = vuelta.length * HERO_INACTIVE_SIGNAL_UNITS_PER_CHAR;
+  const loopText = vuelta.repeat(HERO_INACTIVE_SIGNAL_LOOPS);
+  const textLength = String(largoDeVuelta * HERO_INACTIVE_SIGNAL_LOOPS);
+  const driftTo = HERO_INACTIVE_SIGNAL_TEXT_OFFSET - largoDeVuelta;
+  const ritmo = largoDeVuelta / 300;
 
   useEffect(() => {
     if (typeof onReachThreshold !== 'function') return undefined;
@@ -134,7 +149,7 @@ const HeroInactiveSignal = ({
       // La cinta completa se anuncia una sola vez: las dos hileras visibles
       // son una misma frase y la segunda funciona como persistencia analógica.
       role="img"
-      aria-label={HERO_INACTIVE_ECHO_TEXT}
+      aria-label={frase}
       initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, filter: 'blur(4px)' }}
       animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       exit={
@@ -246,19 +261,19 @@ const HeroInactiveSignal = ({
           />
           <text
             className="hero-inactive-signal__text hero-inactive-signal__text--memory"
-            textLength="2700"
+            textLength={textLength}
             lengthAdjust="spacing"
           >
             <textPath href="#hero-inactive-signal-path-memory" startOffset={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}>
-              {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
+              {loopText}
               {!prefersReducedMotion ? (
                 <animate
                   ref={memoryDriftRef}
                   attributeName="startOffset"
                   begin="indefinite"
                   from={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}
-                  to={HERO_INACTIVE_SIGNAL_TEXT_OFFSET - 300}
-                  dur="21s"
+                  to={driftTo}
+                  dur={`${(21 * ritmo).toFixed(2)}s`}
                   repeatCount="indefinite"
                 />
               ) : null}
@@ -267,19 +282,19 @@ const HeroInactiveSignal = ({
 
           <text
             className="hero-inactive-signal__text hero-inactive-signal__text--primary"
-            textLength="2700"
+            textLength={textLength}
             lengthAdjust="spacing"
           >
             <textPath href="#hero-inactive-signal-path-primary" startOffset={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}>
-              {HERO_INACTIVE_SIGNAL_LOOP_TEXT}
+              {loopText}
               {!prefersReducedMotion ? (
                 <animate
                   ref={primaryDriftRef}
                   attributeName="startOffset"
                   begin="indefinite"
                   from={HERO_INACTIVE_SIGNAL_TEXT_OFFSET}
-                  to={HERO_INACTIVE_SIGNAL_TEXT_OFFSET - 300}
-                  dur="18s"
+                  to={driftTo}
+                  dur={`${(18 * ritmo).toFixed(2)}s`}
                   repeatCount="indefinite"
                 />
               ) : null}
@@ -359,15 +374,21 @@ const Hero = () => {
   // en el initializer de useState). Carlos, 2026-08-19: "me gustaría
   // empezar con la escena activada automáticamente cuando se abra la PWA."
   const [hasActivatedAudio, setHasActivatedAudio] = useState(
-    () => readHeroActivatedFromSession() || readIsRunningAsInstalledPwa()
+    () => readSceneStartsActivated()
   );
+  // El umbral del regreso (Carlos, 21 nov 2026; lib/umbralDelRegreso.js):
+  // quien vuelve con algo pendiente ve en la cinta su momento y el gato lo
+  // lleva ahí. Se lee una vez al montar, igual que la decisión de entrada.
+  const [umbral] = useState(() => readUmbralPendiente());
+  // «Explorar el universo» enciende la escena sin llevarlo a ningún lado.
+  const irAlMomentoRef = useRef(true);
   const [hasUsedIndexCue, setHasUsedIndexCue] = useState(
-    () => readIndexCueUsedFromSession() || readIsRunningAsInstalledPwa()
+    () => readIndexStartsRevealed()
   );
   const [transmigrationOrigin, setTransmigrationOrigin] = useState(null);
   const hashtagAnchorRef = useRef(null);
-  const userActivatedRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
-  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
+  const userActivatedRef = useRef(readSceneStartsActivated());
+  const audioActivatedOnceRef = useRef(readSceneStartsActivated());
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
   const pwaInstallFlow = useMemo(getPwaInstallFlow, []);
@@ -942,6 +963,7 @@ const Hero = () => {
         audioActivatedOnceRef.current = true;
         window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
       }
+      if (umbral && irAlMomentoRef.current) pedirElMomento(umbral);
       if (isHeroAudioMuted) {
         toggleHeroAmbientMuted();
       } else {
@@ -971,7 +993,7 @@ const Hero = () => {
       setHeroAmbientMuted(false, { targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
     }
-  }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin, prefersReducedMotion, revealHeaderIndexCueFromHero]);
+  }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin, prefersReducedMotion, revealHeaderIndexCueFromHero, umbral]);
 
   // Header y Hero son hermanos — cerrar el HUB de accesos rápidos vive en
   // Header.jsx, pero activar la escena (audio + índice) es lógica de Hero.
@@ -1041,6 +1063,14 @@ const Hero = () => {
     setIsHeroPwaInstructionsOpen(false);
     handleIsotipoClick();
   }, [handleIsotipoClick]);
+
+  // «Explorar el universo» (umbral del regreso, 21 nov 2026): el mismo gesto
+  // que pulsar el gato, sin el salto a la parte pendiente. Solo se puede tocar
+  // cuando el gato ya despertó, así que el gesto nunca se queda a medias.
+  const handleExplorarUniverso = useCallback(() => {
+    irAlMomentoRef.current = false;
+    handleHeroHashClick();
+  }, [handleHeroHashClick]);
 
   const handleHeroHashKeyDown = useCallback((event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1407,6 +1437,7 @@ const Hero = () => {
                     prefersReducedMotion={prefersReducedMotion}
                     centerY={heroSignalCenterY}
                     onReachThreshold={handleHeroSignalReachedThreshold}
+                    frase={umbral?.frase}
                   />
                 ) : null}
               </AnimatePresence>
@@ -1595,6 +1626,40 @@ const Hero = () => {
                   [#]
                 </span>
               </motion.div>
+
+              {/* Umbral del regreso: «Explorar el universo», pequeño y apagado,
+                  abajo al centro (maqueta aprobada el 21 nov 2026). Solo con
+                  algo pendiente; en la primera visita no existe. Va en un
+                  portal porque se fija a la pantalla mientras la portada
+                  todavía no deja bajar. */}
+              {umbral && typeof document !== 'undefined'
+                ? createPortal(
+                    <AnimatePresence>
+                      {shouldShowHeroInactiveHint ? (
+                        <motion.button
+                          key="hero-explorar-universo"
+                          type="button"
+                          data-umbral-explorar
+                          onClick={handleExplorarUniverso}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: isHeroThresholdReady ? 1 : 0 }}
+                          exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                          transition={{ duration: 0.9, ease: 'easeOut' }}
+                          tabIndex={isHeroThresholdReady ? 0 : -1}
+                          aria-hidden={!isHeroThresholdReady}
+                          className="fixed left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap border-b border-slate-300/20 pb-1.5 font-sans text-xs font-medium uppercase tracking-[0.22em] text-slate-300/60 transition-colors hover:border-slate-200/40 hover:text-slate-100 focus-visible:text-slate-100 focus-visible:outline-none"
+                          style={{
+                            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 34px)',
+                            pointerEvents: isHeroThresholdReady ? 'auto' : 'none',
+                          }}
+                        >
+                          Explorar el universo
+                        </motion.button>
+                      ) : null}
+                    </AnimatePresence>,
+                    document.body,
+                  )
+                : null}
 
               {/* El mismo # del gatillo de activación "transmigra" directo a su
                   destino final: el # real del Header (esquina superior

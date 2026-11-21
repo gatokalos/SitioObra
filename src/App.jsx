@@ -15,12 +15,11 @@ import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { markIntermedioVisto } from '@/lib/intermedio';
-import { isInstalledPWA } from '@/lib/pwaDetection';
 import { vigilarAppInstalada } from '@/lib/registroSitio';
 import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
-  readHeroActivatedFromSession,
+  readSceneStartsActivated,
   recordHeroBrowserActivity,
   readObraDestacadaRevealedFromSession,
   writeBeforeLeavingRevealedToSession,
@@ -204,7 +203,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
   // Misma regla que Hero.jsx: la PWA instalada arranca con la escena
   // revelada, sin la ceremonia de activación (Carlos, 2026-08-19).
   const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(
-    () => readHeroActivatedFromSession() || isInstalledPWA()
+    () => readSceneStartsActivated()
   );
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
@@ -544,7 +543,7 @@ function App() {
     return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
   });
   const [isHeroActivated, setIsHeroActivated] = useState(
-    () => readHeroActivatedFromSession() || isInstalledPWA()
+    () => readSceneStartsActivated()
   );
   // Si la app está instalada, se registra una vez por navegador (Carlos, 1 oct
   // 2026): Primer Contacto lo cuenta. Va aquí, en la raíz, porque el aviso de
