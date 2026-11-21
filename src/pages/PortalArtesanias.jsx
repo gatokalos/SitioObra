@@ -505,7 +505,7 @@ const PortalArtesanias = () => {
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
                 </div>
                 <div className="px-6 pb-6 space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                   <h4 className="font-display text-2xl text-white">Pulsa el gato</h4>
                   <p className="text-sm text-slate-300/85 leading-relaxed">
                     Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El # ha sido medida, número,tecla y código; en México también fue gato mucho antes de convertirse en una forma de conectar conversaciones por todo el mundo.
@@ -529,7 +529,7 @@ const PortalArtesanias = () => {
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
                 </div>
                 <div className="px-6 pb-6 space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                   <h4 className="font-display text-2xl text-white">La Taza</h4>
                   <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{ARTESANIAS_NOTE}</p>
                   <ul className="text-sm text-slate-300/90 space-y-1.5">

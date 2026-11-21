@@ -897,7 +897,7 @@ iaProfile: {
     entries: [
       {
         id: 'compra-libro',
-        eyebrow: 'Obra destacada',
+        eyebrow: 'Obra de origen',
         title: 'Mi Gato Encerrado',
         description:
           'Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.\n\nLeer este libro es algo parecido a despertar dentro de un libro.',

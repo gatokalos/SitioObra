@@ -2450,7 +2450,7 @@ const renderDramaFeaturedWork = () => (
     <div className="relative z-10 flex h-full min-h-[28rem] flex-col p-6">
       <div>
         <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
-          Obra destacada
+          Obra de origen
         </p>
         <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
           Es un gato encerrado
@@ -2637,7 +2637,7 @@ const renderDramaFeaturedWork = () => (
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-black/45 to-slate-950" />
                   <div className="relative z-10 flex h-full min-h-[28rem] flex-col p-6">
                     <div>
-                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
+                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra de origen</p>
                       <h4 className="font-display text-2xl text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Pulsa el gato</h4>
                     </div>
                     <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
@@ -2689,7 +2689,7 @@ const renderDramaFeaturedWork = () => (
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-black/45 to-slate-950" />
                   <div className="relative z-10 flex h-full min-h-[28rem] flex-col p-6">
                     <div>
-                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
+                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra de origen</p>
                       <h4 className="font-display text-2xl text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">La Taza</h4>
                     </div>
                     <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
@@ -2813,7 +2813,7 @@ const renderDramaFeaturedWork = () => (
                 <div className="dream-overlay dream-neblina" aria-hidden="true" />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
                 <div className="absolute top-0 left-0 right-0 p-5">
-                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                   <h5 className="font-display text-xl text-slate-100">Cámara de resonancia</h5>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-5">
@@ -2898,7 +2898,7 @@ const renderDramaFeaturedWork = () => (
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
                 <div className="absolute top-0 left-0 right-0 p-5">
-                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                   <h5 className="font-display text-xl text-slate-100">Meta-Obra</h5>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-5">
@@ -3532,7 +3532,7 @@ const renderDramaFeaturedWork = () => (
                       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
                       {/* Título en la parte superior */}
                       <div className="absolute left-0 top-0 p-5">
-                        <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                        <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                         <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
                       </div>
                       {/* Descripción + tags + botones al pie */}
@@ -3707,7 +3707,7 @@ const renderDramaFeaturedWork = () => (
                     />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/80" />
                     <div className="absolute top-0 left-0 right-0 p-5">
-                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                       <h5 className="font-display text-xl text-slate-100">{movementFeaturedName}</h5>
                     </div>
                     <div className="absolute bottom-0 inset-x-0 p-5">
@@ -3861,7 +3861,7 @@ const renderDramaFeaturedWork = () => (
               )}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
               <div className="absolute top-0 left-0 right-0 p-5">
-                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                 <h5 className="font-display text-xl text-slate-100">El riesgo</h5>
               </div>
               <div className="absolute bottom-0 inset-x-0 p-5">
@@ -4163,7 +4163,7 @@ const renderDramaFeaturedWork = () => (
 
       const quironBlock = (
         renderImmersiveCinemaBlock({
-          eyebrow: 'Obra destacada',
+          eyebrow: 'Obra de origen',
           title: activeDefinition.quiron?.title,
           description: activeDefinition.quiron?.description,
           microcopy: activeDefinition.quiron?.microcopy,
@@ -4515,7 +4515,7 @@ const renderDramaFeaturedWork = () => (
                         transition={{ duration: 0.35, ease: 'easeInOut' }}
                         className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-black/30"
                       >
-                        {entry.eyebrow === 'Obra destacada' ? renderLibritoDeLaObra() : null}
+                        {entry.eyebrow === 'Obra de origen' ? renderLibritoDeLaObra() : null}
                         {imageSrc ? (
                           /\.mp4($|\?)/i.test(imageSrc) ? (
                             <video
@@ -4549,7 +4549,7 @@ const renderDramaFeaturedWork = () => (
                             {entry.descriptionNode ?? (entry.description ? (
                               <p className="text-sm text-slate-200/90 leading-relaxed whitespace-pre-line">{entry.description}</p>
                             ) : null)}
-                            {entry.eyebrow === 'Obra destacada' ? (
+                            {entry.eyebrow === 'Obra de origen' ? (
                               <div className="flex flex-wrap gap-2">
                                 {renderChipsDeLaForma()}
                               </div>

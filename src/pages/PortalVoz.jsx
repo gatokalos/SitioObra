@@ -1099,7 +1099,7 @@ const PortalVoz = () => {
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
               {/* Overlay superior: eyebrow + título */}
               <div className="absolute top-0 left-0 p-5">
-                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                 <h4 className="font-display text-2xl text-slate-100">Es un gato encerrado</h4>
               </div>
               {/* Overlay inferior: descripción + tags + CTA */}

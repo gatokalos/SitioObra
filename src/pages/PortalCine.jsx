@@ -499,7 +499,7 @@ const PortalCine = () => {
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
               <div className="absolute top-0 left-0 right-0 p-5">
-                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra de origen</p>
                 <h4 className="font-display text-2xl text-slate-100">{QUIRON_DATA.title}</h4>
               </div>
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
