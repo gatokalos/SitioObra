@@ -7929,15 +7929,34 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
 /* Una obra dentro de otra (Carlos, 22 nov 2026: «que la orbe coincidiera con
    la esfera color turquesa», «un desktop dentro de un desktop»). En escritorio
    el hero toma la proporción de la laptop de 1280 × 720, la que más le gustó:
-   - GATOENCERRADO crece hasta el marco de la cabecera, de un [#] al otro: el
-     [#] queda 24 px adentro de un marco de 1400 px (las letras miden 10.93
-     veces la fuente, sin el último espaciado).
+   - GATOENCERRADO va de orilla a orilla, con el mismo margen que el [#] del
+     programa de mano (--marco-del-programa; las letras miden 10.93 veces la
+     fuente, sin el último espaciado).
    - La orbe y el subtítulo crecen con el alto de la pantalla; Hero.jsx sienta
      la orbe sobre la esfera de la cabina y deja el subtítulo al centro.
    - La espiral de la fase cero, centrada en la orbe, mide 90vh.
    - La sección deja salir hacia arriba la orbe y la espiral, que ahora entran
      en la franja de la cabecera; de lado sigue recortando. */
 @media (min-width: 1024px) {
+  /* El programa de mano sale de su marco de 1400 px (Carlos, 22 nov 2026: «el
+     margen del programa de mano no estuviera contenido»; en su monitor de
+     2560 el [#] quedaba a 604 px del borde). Un solo margen para el [#], el
+     índice que se despliega y el título: 2.5 % del ancho, nunca menos de
+     24 px. Las demás secciones tienen su propio marco y no cambian. */
+  :root {
+    --marco-del-programa: max(24px, 2.5vw);
+  }
+
+  nav[data-site-index-root] {
+    max-width: none;
+    padding-left: var(--marco-del-programa);
+    padding-right: var(--marco-del-programa);
+  }
+
+  #site-index-menu {
+    left: var(--marco-del-programa);
+  }
+
   /* 80vh: centrada en la esfera (18.9 % del alto), el anillo de arriba
      respira también en una laptop con la barra del navegador (1366 × 657). */
   #hero {
@@ -7956,7 +7975,7 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   /* La sangría compensa el espaciado que queda después de la última letra:
      sin ella el título se cargaba 15 px a la izquierda. */
   #hero .hero-title {
-    font-size: calc(min(100vw - 48px, 1352px) / 10.93);
+    font-size: calc((100vw - 2 * var(--marco-del-programa)) / 10.93);
     text-indent: 0.21em;
   }
 
