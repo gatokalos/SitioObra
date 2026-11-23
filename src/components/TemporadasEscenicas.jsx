@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Las temporadas de la obra de teatro (antes en Caída del telón). Desde el
 // 23 nov 2026 son la última tarjeta del archivo («Visitar archivo» en El
@@ -40,6 +41,9 @@ const TemporadasEscenicas = () => {
     [activeShowId]
   );
 
+  // Gemela de la tarjeta del video («Sentirse menos solxs», About.jsx), a
+  // pedido de Carlos (23 nov 2026): la misma rejilla, la foto del alto del
+  // video (h-96) y las temporadas como sus dos botones, en el mismo lugar.
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -48,31 +52,29 @@ const TemporadasEscenicas = () => {
       viewport={{ once: true }}
       className="glass-effect relative overflow-hidden rounded-2xl p-8 md:p-12 mt-12"
     >
-      <div className="relative z-10">
-        <div className="grid gap-8 md:grid-cols-[1.1fr_1fr] md:items-center text-left">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${activeShow.id}-image`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="w-full"
-            >
-              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl bg-black/40">
-                <img
-                  src={activeShow.image}
-                  alt={activeShow.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  width={1200}
-                  height={900}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            </motion.div>
-          </AnimatePresence>
+      <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${activeShow.id}-image`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="order-2 md:order-1 w-full overflow-hidden rounded-xl shadow-2xl shadow-black/50"
+          >
+            <img
+              src={activeShow.image}
+              alt={activeShow.title}
+              className="h-96 w-full object-cover"
+              width={1200}
+              height={900}
+              loading="lazy"
+              decoding="async"
+            />
+          </motion.div>
+        </AnimatePresence>
 
+        <div className="order-1 md:order-2">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${activeShow.id}-copy`}
@@ -80,36 +82,35 @@ const TemporadasEscenicas = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="space-y-4"
             >
-              <h3 className="font-display text-2xl text-slate-100">{activeShow.title}</h3>
-              <div className="flex items-center gap-3 text-sm text-slate-300/80">
+              <h3 className="font-display mb-3 text-3xl font-medium text-slate-100">{activeShow.title}</h3>
+              <div className="mb-5 flex items-center gap-3 text-sm text-slate-300/80">
                 <Calendar size={18} className="text-purple-300" />
                 <span className="uppercase tracking-[0.25em]">{activeShow.dateLabel}</span>
               </div>
-              <div className="text-base text-slate-300/80 leading-relaxed space-y-3">
+              <div className="mb-8 space-y-3 text-slate-50/50 leading-relaxed font-light">
                 {activeShow.description.map((line) => (
                   <p key={line}>{line}</p>
                 ))}
               </div>
             </motion.div>
           </AnimatePresence>
-        </div>
-
-        <div className="mt-8 flex flex-wrap justify-center gap-2">
-          {SHOW_HISTORY.map((show) => (
-            <button
-              key={show.id}
-              type="button"
-              onClick={() => setActiveShowId(show.id)}
-              aria-pressed={activeShowId === show.id}
-              className={`ge-chip-filter ${
-                activeShowId === show.id ? 'ge-chip-filter--active' : 'ge-chip-filter--idle'
-              }`}
-            >
-              {show.label}
-            </button>
-          ))}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {SHOW_HISTORY.map((show) => (
+              <Button
+                key={show.id}
+                type="button"
+                variant="outline"
+                onClick={() => setActiveShowId(show.id)}
+                aria-pressed={activeShowId === show.id}
+                className={`ge-chip-action ${
+                  activeShowId === show.id ? 'ge-chip-action--primary' : 'ge-chip-action--secondary'
+                }`}
+              >
+                {show.label}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
