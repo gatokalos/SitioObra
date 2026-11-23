@@ -7989,4 +7989,28 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     -webkit-filter: none;
     filter: none;
   }
+  /* El umbral igual en Chrome y en Safari (Carlos, 22 nov 2026). El interior
+     oscuro de Chrome no venía del degradado sino de una sombra casi negra que
+     lo tapaba; Safari no pinta sombras sobre texto con degradado recortado,
+     y por eso ahí solo quedaba el contorno. Sin el degradado (que nunca se
+     veía), el interior oscuro se pinta directo y el halo va como resplandor
+     sobre el contorno, que los dos navegadores dibujan. Sin nada escondido
+     que pueda asomar (ver ae420476 y su reversión e0a0dd94). */
+  #hero .hero-title--scene-active,
+  .provoca-act-title--section {
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-text-fill-color: rgba(6, 5, 12, 0.9);
+    color: rgba(6, 5, 12, 0.9);
+    text-shadow: none;
+  }
+
+  #hero .hero-title--scene-active > span,
+  .provoca-act-title--section > span {
+    filter:
+      drop-shadow(0 -1px 0 rgba(255, 228, 250, 0.32))
+      drop-shadow(0 1px 0 rgba(102, 125, 151, 0.42))
+      drop-shadow(0 0 10px rgba(139, 92, 246, 0.42));
+  }
 }
