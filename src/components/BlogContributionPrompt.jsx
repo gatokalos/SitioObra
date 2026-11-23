@@ -119,7 +119,7 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
 
 </p>
 
-  <div className="flex flex-col items-center">
+  <div className="narrative-transition-cta flex flex-col items-center">
     <Button
       type="button"
       onClick={() => onAskQuestion?.()}

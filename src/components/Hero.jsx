@@ -709,6 +709,14 @@ const Hero = () => {
           const regresa = tituloMedido ? mitadDeLaVentanaChica() - centroDelTitulo : 0;
           const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
           logo.style.translate = `0 ${(escenaEncendidaRef.current ? subeLaOrbe : regresa).toFixed(1)}px`;
+          // Las transiciones de escritorio ponen su emblema a esta altura
+          // (hooks/useTransicionesAlEje.js): en la ventana, no en la página
+          // (la cabina es fija), y donde se ve la orbe, que su imagen sube un
+          // 2 % dentro de su caja (.hero-logo-img).
+          document.documentElement.style.setProperty(
+            '--eje-de-la-orbe',
+            `${(cabinaEnLaVentana.esfera - 0.02 * imagenOrbe.offsetHeight).toFixed(1)}px`
+          );
           nextCenterY += regresa;
           content.style.removeProperty('--hero-signal-frame-h');
           const titulo = content.querySelector('.hero-title-stage');
@@ -755,6 +763,11 @@ const Hero = () => {
           const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
           logo.style.translate = `0 ${subeLaOrbe.toFixed(1)}px`;
           nextCenterY += subeLaOrbe;
+          const imagenDeLaOrbeEnElEje = logo.querySelector('.hero-logo-img') ?? logo;
+          document.documentElement.style.setProperty(
+            '--eje-de-la-orbe',
+            `${(yEsfera - 0.02 * imagenDeLaOrbeEnElEje.offsetHeight).toFixed(1)}px`
+          );
           // La espiral, centrada en la esfera, mide hasta 80vh, pero su anillo
           // de arriba (con las letras, a (378 − 240) / 620 de su alto sobre el
           // centro) no debe salirse de la ventana: en pantallas más anchas
@@ -785,6 +798,7 @@ const Hero = () => {
           }
         } else {
           logo.style.translate = '';
+          document.documentElement.style.removeProperty('--eje-de-la-orbe');
           content.style.removeProperty('--hero-signal-frame-h');
           content.style.removeProperty('--hero-titulo-al-centro');
           if (filaSubtitulo) filaSubtitulo.style.translate = '';
