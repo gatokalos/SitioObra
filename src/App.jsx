@@ -202,9 +202,11 @@ const HERO_GUEST_CABINA_IDLE_OPACITY = 0;
 // las pantallas que tragan los tonos oscuros lo apagaban. Se le dio más luz
 // (antes 0.33 y contrast(78%) brightness(78%) saturate(74%)). Desde el 23 nov
 // 2026 la misma luz en todas las pantallas: «que el brillo que le aumentamos
-// se mantenga homogéneo en todas las pantallas».
+// se mantenga homogéneo en todas las pantallas». Y con contraste real
+// (100 %, antes 86 %; Carlos, 23 nov 2026): el ensueño lo dan la opacidad y
+// el halo borroso, no el contraste; los negros quedan más limpios.
 const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.52;
-const HERO_GUEST_CABINA_REVEALED_FILTER = 'contrast(86%) brightness(100%) saturate(82%)';
+const HERO_GUEST_CABINA_REVEALED_FILTER = 'contrast(100%) brightness(100%) saturate(82%)';
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
