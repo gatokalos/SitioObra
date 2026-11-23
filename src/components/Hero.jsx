@@ -69,6 +69,31 @@ const HERO_INACTIVE_ECHO_TEXT = 'Ante la duda, pulsa el gato';
 // del regreso, más largas, la letra no se aprieta (Carlos, 21 nov 2026).
 const HERO_INACTIVE_SIGNAL_LOOPS = 9;
 const HERO_INACTIVE_SIGNAL_UNITS_PER_CHAR = 10;
+// Una obra dentro de otra (Carlos, 22 nov 2026): en escritorio la orbe se
+// sienta sobre la esfera turquesa de la cabina. La cabina de fondo es una
+// imagen de 2560 × 1440 con object-fit: cover, object-position 50% 28% y
+// translateY(10.25%) scale(1.1) (App.jsx, HERO_BACKGROUND_VARIANTS, e
+// index.css, --hero-cabina-shift); el centro de la esfera está en y = 178.5
+// de la imagen. Devuelve dónde cae en la ventana: casi siempre al 18.9 % del
+// alto, salvo en pantallas más anchas que 16:9.
+const CABINA_ANCHO = 2560;
+const CABINA_ALTO = 1440;
+const CABINA_ESFERA_Y = 178.5;
+const CABINA_POSICION_Y = 0.28;
+const CABINA_DESPLAZAMIENTO = 0.1025;
+const CABINA_ESCALA = 1.1;
+const yDeLaEsferaDeLaCabina = (ancho, alto) => {
+  const escala = Math.max(ancho / CABINA_ANCHO, alto / CABINA_ALTO);
+  const arriba = (alto - CABINA_ALTO * escala) * CABINA_POSICION_Y;
+  const y = arriba + CABINA_ESFERA_Y * escala;
+  return alto / 2 + CABINA_ESCALA * (y - alto / 2) + CABINA_DESPLAZAMIENTO * alto;
+};
+const HERO_ESCRITORIO_QUERY = '(min-width: 1024px)';
+
+const leerTranslateY = (elemento) => Number.parseFloat(
+  String(window.getComputedStyle(elemento).translate || '').split(' ')[1]
+) || 0;
+
 // La punta del trazo de la cinta (y = 665 en el viewBox de 500 × 620) queda
 // bajo el centro de la espiral (y = 378, sobre la orbe) a esta fracción de su
 // alto. El [#] sube hasta ahí.
@@ -560,7 +585,52 @@ const Hero = () => {
         if (offsetParent !== content) {
           const contentRect = content.getBoundingClientRect();
           const logoRect = logo.getBoundingClientRect();
-          nextCenterY = logoRect.top + logoRect.height / 2 - contentRect.top;
+          nextCenterY = logoRect.top + logoRect.height / 2 - contentRect.top - leerTranslateY(logo);
+        }
+        // Una obra dentro de otra (Carlos, 22 nov 2026): en escritorio la
+        // orbe sube hasta la esfera turquesa de la cabina y la espiral de la
+        // fase cero, centrada en ella, sube con ella. El subtítulo queda al
+        // centro entre la orbe y las letras del título. Todo con `translate`,
+        // sin tocar el layout ni el centrado del título (useHeroTituloAlCentro).
+        const esEscritorio = window.matchMedia(HERO_ESCRITORIO_QUERY).matches;
+        const filaSubtitulo = content.querySelector('.hero-subtitle-row');
+        if (esEscritorio) {
+          const raiz = document.documentElement;
+          const yEsfera = yDeLaEsferaDeLaCabina(raiz.clientWidth, raiz.clientHeight);
+          const arribaDelContenido = content.getBoundingClientRect().top + window.scrollY;
+          const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
+          logo.style.translate = `0 ${subeLaOrbe.toFixed(1)}px`;
+          nextCenterY += subeLaOrbe;
+          // La espiral, centrada en la esfera, mide hasta 80vh, pero su anillo
+          // de arriba (con las letras, a (378 − 240) / 620 de su alto sobre el
+          // centro) no debe salirse de la ventana: en pantallas más anchas
+          // que 16:9 la esfera cae más arriba (1366 × 657: al 16 %).
+          const altoEspiral = Math.min(raiz.clientHeight * 0.8, (yEsfera - 16) / ((378 - 240) / 620));
+          content.style.setProperty('--hero-signal-frame-h', `${Math.max(240, altoEspiral).toFixed(1)}px`);
+
+          const titulo = content.querySelector('.hero-title-stage');
+          const capa = titulo?.querySelector('.hero-title');
+          const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
+          const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
+          if (filaSubtitulo && textoSubtitulo && titulo && capa) {
+            // El centro del texto, no de la fila: la fila guarda lugar de más.
+            const rango = document.createRange();
+            rango.selectNodeContents(textoSubtitulo);
+            const texto = rango.getBoundingClientRect();
+            const centroFila = texto.top + texto.height / 2 - leerTranslateY(filaSubtitulo);
+            const cajaTitulo = titulo.getBoundingClientRect();
+            const fuente = Number.parseFloat(window.getComputedStyle(capa).fontSize) || 0;
+            // Las mayúsculas de Vox Round miden 0.75 de la fuente (medido en
+            // captura), centradas en su caja.
+            const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
+            const abajoDeLaOrbe = yEsfera - window.scrollY + imagenOrbe.offsetHeight / 2;
+            const bajaLaFila = (abajoDeLaOrbe + arribaDeLasLetras) / 2 - centroFila;
+            filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
+          }
+        } else {
+          logo.style.translate = '';
+          content.style.removeProperty('--hero-signal-frame-h');
+          if (filaSubtitulo) filaSubtitulo.style.translate = '';
         }
         setHeroSignalCenterY((current) =>
           current !== null && Math.abs(current - nextCenterY) < 0.5
@@ -578,9 +648,7 @@ const Hero = () => {
         if (hashSlot && hashSlot.offsetHeight > 0) {
           const contentRect = content.getBoundingClientRect();
           const slotRect = hashSlot.getBoundingClientRect();
-          const appliedLift = Number.parseFloat(
-            String(window.getComputedStyle(hashSlot).translate || '').split(' ')[1]
-          ) || 0;
+          const appliedLift = leerTranslateY(hashSlot);
           const slotCenterY = slotRect.top + slotRect.height / 2 - appliedLift - contentRect.top;
           const liftPx = nextCenterY + hashSlot.offsetHeight * 0.08 - slotCenterY;
           hashSlot.style.translate =
@@ -596,11 +664,26 @@ const Hero = () => {
     resizeObserver?.observe(content);
     resizeObserver?.observe(logo);
     if (hashtagAnchorRef.current) resizeObserver?.observe(hashtagAnchorRef.current);
+    const tituloStage = content.querySelector('.hero-title-stage');
+    if (tituloStage) resizeObserver?.observe(tituloStage);
     window.addEventListener('resize', syncSignalCenter);
+    // useHeroTituloAlCentro mueve el título (y con él la orbe) escribiendo
+    // en el estilo de #hero; aquí se vuelve a acomodar todo cuando lo hace.
+    const heroSection = document.getElementById('hero');
+    const mutationObserver = heroSection && typeof window.MutationObserver === 'function'
+      ? new window.MutationObserver(syncSignalCenter)
+      : null;
+    mutationObserver?.observe(heroSection, { attributes: true, attributeFilter: ['style', 'data-titulo-medido'] });
+    // El subtítulo aparece al encender la escena y rota: al cambiar, se
+    // vuelve a centrar entre la orbe y el título.
+    const filaDelSubtitulo = content.querySelector('.hero-subtitle-row');
+    if (filaDelSubtitulo) mutationObserver?.observe(filaDelSubtitulo, { childList: true, subtree: true });
+    document.fonts?.ready?.then(syncSignalCenter).catch(() => {});
 
     return () => {
       window.cancelAnimationFrame(frameId);
       resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
       window.removeEventListener('resize', syncSignalCenter);
     };
   }, []);

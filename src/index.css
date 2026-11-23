@@ -7925,3 +7925,46 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   .espejo-en-la-obra { padding: 2.75rem 3.4rem 1.25rem; }
 }
 
+
+/* Una obra dentro de otra (Carlos, 22 nov 2026: «que la orbe coincidiera con
+   la esfera color turquesa», «un desktop dentro de un desktop»). En escritorio
+   el hero toma la proporción de la laptop de 1280 × 720, la que más le gustó:
+   - GATOENCERRADO crece hasta el marco de la cabecera, de un [#] al otro: el
+     [#] queda 24 px adentro de un marco de 1400 px (las letras miden 10.93
+     veces la fuente, sin el último espaciado).
+   - La orbe y el subtítulo crecen con el alto de la pantalla; Hero.jsx sienta
+     la orbe sobre la esfera de la cabina y deja el subtítulo al centro.
+   - La espiral de la fase cero, centrada en la orbe, mide 90vh.
+   - La sección deja salir hacia arriba la orbe y la espiral, que ahora entran
+     en la franja de la cabecera; de lado sigue recortando. */
+@media (min-width: 1024px) {
+  /* 80vh: centrada en la esfera (18.9 % del alto), el anillo de arriba
+     respira también en una laptop con la barra del navegador (1366 × 657). */
+  #hero {
+    --hero-signal-frame-h: 80vh;
+    overflow: visible;
+    overflow-x: clip;
+  }
+
+  /* Con el título de orilla a orilla, el renglón (sangría + letras +
+     espaciado final) no cabía en su caja y el navegador lo alineaba a la
+     izquierda; la caja se ensancha y lo que sobra es aire que se recorta. */
+  #hero .hero-title-viewport {
+    width: calc(100vw + 4rem);
+  }
+
+  /* La sangría compensa el espaciado que queda después de la última letra:
+     sin ella el título se cargaba 15 px a la izquierda. */
+  #hero .hero-title {
+    font-size: calc(min(100vw - 48px, 1352px) / 10.93);
+    text-indent: 0.21em;
+  }
+
+  #hero .hero-subtitle-copy {
+    font-size: clamp(0.98rem, 2.18vh, 1.4rem);
+  }
+
+  #hero .hero-logo--portal {
+    --hero-portal-logo-size: clamp(96px, 13.33vh, 260px);
+  }
+}
