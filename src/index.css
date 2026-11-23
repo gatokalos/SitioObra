@@ -7974,20 +7974,17 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     text-indent: 0.21em;
   }
 
-  /* El subtítulo en un renglón, de tamaño intermedio (Carlos, 22 nov 2026:
-     los dos renglones ya no le gustaban). Crece con el alto de la pantalla
-     (unos 19 px en 1280 × 720, 23 en 1440 × 900, 28 en Full HD): la frase
-     larga no se vuelve una tira y la corta no se pierde junto al título.
-     Hero.jsx lo coloca cerca de la orbe. */
+  /* El subtítulo en un renglón, con su tamaño estándar de escritorio (el de
+     siempre: clamp(0.98rem, 0.76vw, 1.12rem), entre 16 y 18 px; Carlos, 22
+     nov 2026: «se va a ver más elegante con el tamaño estándar»). Hero.jsx
+     lo coloca cerca de la orbe, como su pie. */
   #hero .hero-subtitle-track {
-    font-size: clamp(1.05rem, 2.6vh, 1.8rem);
     width: min(92vw, 60rem);
     max-width: min(92vw, 60rem);
     min-height: 1.4em;
   }
 
   #hero .hero-subtitle-copy {
-    font-size: clamp(1.05rem, 2.6vh, 1.8rem);
     line-height: 1.4;
     white-space: nowrap;
   }
