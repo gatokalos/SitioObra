@@ -7934,10 +7934,12 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
      fuente, sin el último espaciado).
    - La orbe y el subtítulo crecen con el alto de la pantalla; Hero.jsx sienta
      la orbe sobre la esfera de la cabina y deja el subtítulo al centro.
-   - La espiral de la fase cero, centrada en la orbe, mide 90vh.
+   - La espiral de la fase cero, centrada en la orbe, mide hasta 80vh.
    - La sección deja salir hacia arriba la orbe y la espiral, que ahora entran
-     en la franja de la cabecera; de lado sigue recortando. */
-@media (min-width: 1024px) {
+     en la franja de la cabecera; de lado sigue recortando.
+   Solo en pantallas con mouse: el iPad y las tabletas en horizontal conservan
+   su título de antes y solo centran el subtítulo (Carlos, 22 nov 2026). */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   /* El programa de mano sale de su marco de 1400 px (Carlos, 22 nov 2026: «el
      margen del programa de mano no estuviera contenido»; en su monitor de
      2560 el [#] quedaba a 604 px del borde). Un solo margen para el [#], el

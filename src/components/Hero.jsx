@@ -88,7 +88,8 @@ const yDeLaEsferaDeLaCabina = (ancho, alto) => {
   const y = arriba + CABINA_ESFERA_Y * escala;
   return alto / 2 + CABINA_ESCALA * (y - alto / 2) + CABINA_DESPLAZAMIENTO * alto;
 };
-const HERO_ESCRITORIO_QUERY = '(min-width: 1024px)';
+// Solo pantallas con mouse: el iPad en horizontal conserva su hero de antes.
+const HERO_ESCRITORIO_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
 
 const leerTranslateY = (elemento) => Number.parseFloat(
   String(window.getComputedStyle(elemento).translate || '').split(' ')[1]
