@@ -22,6 +22,7 @@ const PWAInstructionsOverlay = ({
   const prefersReducedMotion = useReducedMotion();
   const [primeraInstruccionLista, setPrimeraInstruccionLista] = useState(false);
   const guideRef = useRef(null);
+  const [alturaDeMasTarde, setAlturaDeMasTarde] = useState(null);
 
   useEffect(() => {
     if (!isOpen || typeof window === 'undefined') {
@@ -49,22 +50,40 @@ const PWAInstructionsOverlay = ({
     };
   }, [isOpen]);
 
-  // En teléfono (Carlos, 23 nov 2026, con su maqueta): los pasos quedan al
-  // centro entre el letrero y el [#], y la instrucción en amarillo baja bajo
-  // el [#]. Aquí solo se mide; index.css usa las medidas en (max-width: 639px).
+  // Con la maqueta de Carlos (23 nov 2026: «mi pupila estaba haciendo muchos
+  // brincos»): la instrucción en amarillo va justo bajo el letrero, los pasos
+  // al centro entre ambos y el [#], y «Quizá más tarde» al centro del aire
+  // entre los pasos y el [#]. Aquí se mide; index.css usa --pwa-guia-baja.
   useLayoutEffect(() => {
     if (!isOpen || typeof window === 'undefined') return undefined;
     const medir = () => {
       const guia = guideRef.current;
       const ranura = anchorRef?.current?.parentElement;
-      const titulo = document.getElementById('pwa-install-title');
+      // El letrero y la instrucción (su caja guarda lugar para dos renglones).
+      const letrero = document.querySelector('.pwa-install-introduction');
       const pasos = guia?.querySelector('.pwa-install-sequence');
-      if (!guia || !ranura || !titulo || !pasos) return;
-      const abajoDelLetrero = titulo.getBoundingClientRect().bottom;
-      const arribaDelHash = ranura.getBoundingClientRect().top - 4;
-      const aire = Math.max(8, (arribaDelHash - abajoDelLetrero - pasos.offsetHeight) / 2);
-      guia.style.setProperty('--pwa-guia-aire', `${aire.toFixed(1)}px`);
-      guia.style.setProperty('--pwa-hash-alto', `${ranura.offsetHeight}px`);
+      if (!guia || !ranura || !letrero || !pasos) return;
+      const abajoDelLetrero = letrero.getBoundingClientRect().bottom;
+      // El borde de arriba del [#] visible (su caja es más alta que el signo):
+      // los corchetes de Vox Round ocupan cerca de 0.8 de la letra, al centro.
+      const signo = ranura.querySelector('.hero-threshold-index-mark');
+      const cajaSigno = (signo ?? ranura).getBoundingClientRect();
+      const letraSigno = signo ? Number.parseFloat(window.getComputedStyle(signo).fontSize) || 0 : 0;
+      const arribaDelSigno = signo
+        ? cajaSigno.top + (cajaSigno.height - 0.8 * letraSigno) / 2
+        : cajaSigno.top;
+      // La guía cuelga del borde de la ranura (4 px arriba); se baja lo que
+      // haga falta para que los pasos queden al centro del hueco.
+      const abajoDeLaGuia = ranura.getBoundingClientRect().top - 4;
+      // Arriba de los pasos, un respiro corto; abajo, el resto: ahí cabe
+      // «Quizá más tarde», como en la maqueta.
+      const libre = arribaDelSigno - abajoDelLetrero - pasos.offsetHeight;
+      const aireArriba = Math.max(8, Math.min(24, libre / 2));
+      const aire = Math.max(8, libre - aireArriba);
+      guia.style.setProperty('--pwa-guia-baja', `${(arribaDelSigno - aire - abajoDeLaGuia).toFixed(1)}px`);
+      // «Quizá más tarde» al centro del aire entre los pasos y el [#], si cabe
+      // (en pantallas muy bajas se queda abajo, como antes).
+      setAlturaDeMasTarde(aire >= 44 ? Math.round(arribaDelSigno - aire / 2) : null);
     };
     medir();
     // El letrero entra subiendo 8 px en medio segundo: se mide otra vez.
@@ -100,10 +119,31 @@ const PWAInstructionsOverlay = ({
             >
               {subtitle}
             </motion.h2>
+            <div id="pwa-install-current-step" className="pwa-install-copy-slot" aria-live="polite" aria-atomic="true">
+              <AnimatePresence mode="wait" initial={false}>
+                {instruction && (
+                  <motion.span
+                    key={currentStep}
+                    className="hero-pwa-hash-whisper"
+                    initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 4 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      // La primera entra despacio; todas se van rápido.
+                      transition: { duration: prefersReducedMotion ? 0.1 : currentStep === 1 ? 0.6 : 0.2 },
+                    }}
+                    exit={{ opacity: 0, transition: { duration: prefersReducedMotion ? 0.1 : 0.2 } }}
+                  >
+                    {instruction}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
           </section>
           {currentStep >= steps.length && (
             <motion.div
               className="pwa-install-footer"
+              style={alturaDeMasTarde === null ? undefined : { top: alturaDeMasTarde, bottom: 'auto', translate: '0 -50%' }}
               initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReducedMotion ? 0.12 : 0.35 }}
@@ -156,26 +196,6 @@ const PWAInstructionsOverlay = ({
               );
             })}
           </ol>
-          <div id="pwa-install-current-step" className="pwa-install-copy-slot" aria-live="polite" aria-atomic="true">
-            <AnimatePresence mode="wait" initial={false}>
-              {instruction && (
-                <motion.span
-                  key={currentStep}
-                  className="hero-pwa-hash-whisper"
-                  initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 4 }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    // La primera entra despacio; todas se van rápido.
-                    transition: { duration: prefersReducedMotion ? 0.1 : currentStep === 1 ? 0.6 : 0.2 },
-                  }}
-                  exit={{ opacity: 0, transition: { duration: prefersReducedMotion ? 0.1 : 0.2 } }}
-                >
-                  {instruction}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
         </div>,
         anchorRef.current,
       )}

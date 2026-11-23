@@ -8125,22 +8125,18 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   }
 }
 
-/* La guía de instalación en teléfono, como la maqueta de Carlos (23 nov 2026):
-   los pasos al centro entre el letrero y el [#] (PWAInstructionsOverlay mide
-   el aire) y la instrucción en amarillo debajo del [#]. */
-@media (max-width: 639px) {
-  .pwa-install-guide {
-    position: relative;
-    padding-bottom: var(--pwa-guia-aire, 1.5rem);
-  }
+/* La guía de instalación, como las maquetas de Carlos (23 nov 2026): la
+   instrucción en amarillo justo bajo el letrero (la caja guarda lugar para
+   dos renglones y se apoya arriba: nada brinca), los pasos al centro entre
+   ella y el [#] (PWAInstructionsOverlay mide el aire). La guía solo sale en
+   pantallas de hasta 768 px. */
+.pwa-install-guide {
+  translate: 0 var(--pwa-guia-baja, 0px);
+}
 
-  .pwa-install-copy-slot {
-    position: absolute;
-    top: calc(100% + 0.25rem + var(--pwa-hash-alto, 6rem) - 0.6rem);
-    left: 0;
-    right: 0;
-    min-height: 0;
-    margin-top: 0;
-    align-items: start;
-  }
+.pwa-install-introduction .pwa-install-copy-slot {
+  align-items: start;
+  margin-top: 0.5rem;
+  /* Dos renglones justos de la instrucción (letra y 1.4 de interlínea). */
+  min-height: calc(2 * 1.4 * clamp(0.8rem, 2.1 * var(--pwa-vh), 0.95rem));
 }
