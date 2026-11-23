@@ -8,6 +8,10 @@ import { useEffect } from 'react';
 // 2. El botón es un ancla: queda a la misma altura en las dos escenas, así
 //    sus tarjetas miden lo mismo y el halo violeta late en el mismo lugar.
 //    Manda la más larga.
+// 2b. El título de cada escena no sube de la línea del título del hero
+//    (--eje-del-titulo): entre el emblema y el título se abre el aire que
+//    haga falta (Carlos, 23 nov 2026: «no pueden quedar más arriba que la
+//    línea del título del hero»).
 // 3. A la escena más corta le sobra aire: un tercio entre el título y el
 //    texto, dos tercios antes del botón («prefiero que haya más aire abajo
 //    que arriba»). El emblema y el título no se separan.
@@ -34,12 +38,14 @@ const acomodar = () => {
   const raiz = document.documentElement;
   const secciones = [...document.querySelectorAll('.desktop-viewport-scene')];
   const eje = Number.parseFloat(raiz.style.getPropertyValue('--eje-de-la-orbe'));
+  const ejeDelTitulo = Number.parseFloat(raiz.style.getPropertyValue('--eje-del-titulo'));
   const activo = Number.isFinite(eje) && secciones.length > 0;
 
   // Se mide siempre desde el estado natural; quitar y volver a poner ocurre
   // en el mismo cuadro, sin pintarse en medio.
   for (const seccion of secciones) {
     seccion.style.removeProperty('--transicion-arriba');
+    seccion.style.removeProperty('--transicion-titulo-aire');
     const contenido = seccion.querySelector('.narrative-transition-content');
     contenido?.style.removeProperty('--transicion-alto');
     contenido?.style.removeProperty('--transicion-sobra');
@@ -64,6 +70,20 @@ const acomodar = () => {
       '--transicion-arriba',
       `${Math.max(16, eje - margenDeLlegada - (centro - rellenoActual)).toFixed(1)}px`
     );
+    // Al llegar, el centro del emblema está en el eje: ¿dónde caen las letras
+    // del título? (las mayúsculas de Vox Round, 0.75 de la letra, al centro
+    // de su renglón)
+    const titulo = contenido.querySelector('.narrative-transition-title');
+    if (titulo && Number.isFinite(ejeDelTitulo)) {
+      const marcaAntes = emblema.getBoundingClientRect();
+      const cajaTitulo = titulo.getBoundingClientRect();
+      const estilo = window.getComputedStyle(titulo);
+      const letra = Number.parseFloat(estilo.fontSize) || 0;
+      const renglon = Number.parseFloat(estilo.lineHeight) || letra * 1.2;
+      const letrasAlLlegar = eje + (cajaTitulo.top + (renglon - 0.75 * letra) / 2) - (marcaAntes.top + marcaAntes.height / 2);
+      const faltan = ejeDelTitulo - letrasAlLlegar;
+      if (faltan > 0) seccion.style.setProperty('--transicion-titulo-aire', `${faltan.toFixed(1)}px`);
+    }
     const caja = contenido.getBoundingClientRect();
     const boton = ancla.getBoundingClientRect();
     const marca = emblema.getBoundingClientRect();

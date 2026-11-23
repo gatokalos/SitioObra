@@ -8178,6 +8178,10 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
   padding-top: 0;
 }
 
+html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-title {
+  margin-top: var(--transicion-titulo-aire, 0px);
+}
+
 html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-copy {
   margin-top: calc(var(--transicion-sobra, 0px) / 3);
 }

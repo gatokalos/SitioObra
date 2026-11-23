@@ -32,8 +32,12 @@ import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
-// Escritorio con mouse: el Programa de mano va en la barra de arriba.
-const PROGRAMA_EN_BARRA_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
+// El Programa de mano va en la barra de arriba en escritorio con mouse y en
+// las tabletas grandes acostadas (desde 1024 px de ancho la fila cabe sin
+// tocar el [#]; Carlos, 23 nov 2026). En vertical y en teléfono, el menú de
+// pantalla completa.
+const PROGRAMA_EN_BARRA_QUERY =
+  '(min-width: 1024px) and (hover: hover) and (pointer: fine), (min-width: 1024px) and (orientation: landscape)';
 const BITACORA_API_BASE = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
@@ -815,6 +819,14 @@ const Header = ({
   const handleNavClick = useCallback((href) => {
     setIsMenuOpen(false);
     if (typeof href !== 'string' || !href) return;
+    // Proscenio lleva hasta arriba del todo, no al borde del hero bajo la
+    // cabecera: el hero empieza unos píxeles más abajo que ella, y como la
+    // cabina es fija la orbe quedaba 16 px arriba de la esfera al volver
+    // (Carlos, 23 nov 2026).
+    if (href === '#hero') {
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      return;
+    }
     const revealFractalGallery = () => {
       window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-fractal-gallery'));
     };
@@ -849,7 +861,7 @@ const Header = ({
     if (href === '#instagram') {
       revealFractalGallery();
     }
-  }, [location.pathname, location.search, navigate]);
+  }, [location.pathname, location.search, navigate, prefersReducedMotion]);
 
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
@@ -1691,7 +1703,7 @@ const Header = ({
                 tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
                 <span
-                  className={`header-hashtag-mark h-10 w-10 text-3xl sm:h-11 sm:w-11 sm:text-4xl ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''}`}
+                  className={`header-hashtag-mark h-10 w-10 text-3xl sm:h-11 sm:w-11 sm:text-4xl transition-opacity duration-300 ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''} ${esBarraDeEscritorio && isBarraAbierta ? 'opacity-40' : ''}`}
                   aria-hidden="true"
                 >
                   [#]

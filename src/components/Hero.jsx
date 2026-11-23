@@ -732,6 +732,12 @@ const Hero = () => {
             const cajaTitulo = titulo.getBoundingClientRect();
             const fuente = Number.parseFloat(window.getComputedStyle(capa).fontSize) || 0;
             const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
+            // La línea del título, con el hero arriba: los títulos de las
+            // transiciones no suben de ella (hooks/useTransicionesAlEje.js).
+            document.documentElement.style.setProperty(
+              '--eje-del-titulo',
+              `${(arribaDeLasLetras + window.scrollY).toFixed(1)}px`
+            );
             const bajaLaFila = (abajoDeLaOrbe - window.scrollY + arribaDeLasLetras) / 2 - centroFila;
             filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
           }
@@ -796,6 +802,12 @@ const Hero = () => {
             // Las mayúsculas de Vox Round miden 0.75 de la fuente (medido en
             // captura), centradas en su caja.
             const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
+            // La línea del título, con el hero arriba: los títulos de las
+            // transiciones no suben de ella (hooks/useTransicionesAlEje.js).
+            document.documentElement.style.setProperty(
+              '--eje-del-titulo',
+              `${(arribaDeLasLetras + window.scrollY).toFixed(1)}px`
+            );
             const abajoDeLaOrbe = yEsfera - window.scrollY + imagenOrbe.offsetHeight / 2;
             const bajaLaFila = (abajoDeLaOrbe + arribaDeLasLetras) / 2 - centroFila;
             filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
@@ -803,6 +815,7 @@ const Hero = () => {
         } else {
           logo.style.translate = '';
           document.documentElement.style.removeProperty('--eje-de-la-orbe');
+          document.documentElement.style.removeProperty('--eje-del-titulo');
           content.style.removeProperty('--hero-signal-frame-h');
           content.style.removeProperty('--hero-titulo-al-centro');
           if (filaSubtitulo) filaSubtitulo.style.translate = '';
