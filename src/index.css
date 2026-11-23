@@ -7972,9 +7972,17 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   /* Tres cuartos del ancho entre los márgenes del programa de mano (Carlos,
      22 nov 2026, entre tres anchos: «el intermedio»): el título queda más o
      menos del ancho de la cabina con sus columnas y la enmarca en vez de
-     atravesarla. */
+     atravesarla.
+     Desde el 23 nov 2026, además, nunca pasa de los pilares de afuera del
+     marco de la cabina (Carlos: «que el título no rebase la figura de la
+     cabina»): en la imagen de 2560 × 1440 van de x ≈ 720 a 1850 (1130 px),
+     y la imagen se ve a max(100vw / 2560, 100vh / 1440) × 1.1 (cover y su
+     scale). 109.17 = 1130 × 1.1 × 0.96 (un respiro) / 10.93. */
   #hero .hero-title {
-    font-size: calc((100vw - 2 * var(--marco-del-programa)) * 0.75 / 10.93);
+    font-size: min(
+      calc((100vw - 2 * var(--marco-del-programa)) * 0.75 / 10.93),
+      calc(109.17 * max(100vw / 2560, 100vh / 1440))
+    );
     text-indent: 0.21em;
   }
 
@@ -7993,8 +8001,10 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     white-space: nowrap;
   }
 
+  /* 85 % del tamaño del 22 nov (Carlos, 23 nov 2026: «me dio penita que se
+     vieran tan grandes»). */
   #hero .hero-logo--portal {
-    --hero-portal-logo-size: clamp(96px, 13.33vh, 260px);
+    --hero-portal-logo-size: calc(0.85 * clamp(96px, 13.33vh, 260px));
   }
 
   /* La orbe, sin resplandor por fuera (Carlos, 22 nov 2026: «quitarle el
