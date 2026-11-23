@@ -14,7 +14,7 @@ import useScrambleText from '@/hooks/useScrambleText';
 // «El anillo que vuelve al punto», contiene a la vez despedida y origen.
 // Conserva el id #next-show para los enlaces del Programa de mano.
 const TITLE_FIRST_LINE = 'El aplauso…';
-const TITLE_SECOND_LINE = 'decirnos adiós';
+const TITLE_SECOND_LINE = '¿y después?';
 const TITLE = `${TITLE_FIRST_LINE} ${TITLE_SECOND_LINE}`;
 
 const NextShow = () => {
@@ -79,8 +79,8 @@ const NextShow = () => {
             </h3>
 
             <div className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
-              <p>Durante mucho tiempo pensé que el escenario era el destino. Después entendí que también podía ser el punto de partida.</p>
-              <p>Este espacio conserva fragmentos de la puesta en escena que <strong>dio origen</strong> a este universo.</p>
+              <p>Durante mucho tiempo pensé<br /> que el escenario era mi destino.<br />Después entendí que también podía ser<br /> mi punto de partida.</p>
+              <p>Aquella puesta en escena terminó, pero <strong>dio origen</strong><br /> a un universo que sigue buscando cómo sostenerse.</p>
             </div>
 
             <div className="narrative-transition-cta flex flex-row flex-wrap items-center justify-center gap-4">

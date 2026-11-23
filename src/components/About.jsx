@@ -2073,7 +2073,7 @@ const About = () => {
                 </span>
               </h3>
               <p className="text-slate-50/50 leading-relaxed mb-8 font-light">
-                El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Allá arriba, un tigre de fuego encarna por un instante su devenir. Tú puedes entra en directo <strong>a ese estado emocional</strong>, porque quizás… tú también tienes <i>un gato encerrado</i>.
+                El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Allá arriba, un tigre de fuego encarna por un instante su devenir.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button
