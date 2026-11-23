@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Share, Plus, Check, MoreVertical, Download, ArrowDown } from 'lucide-react';
@@ -21,6 +21,7 @@ const PWAInstructionsOverlay = ({
   const [visibleHeight, setVisibleHeight] = useState(null);
   const prefersReducedMotion = useReducedMotion();
   const [primeraInstruccionLista, setPrimeraInstruccionLista] = useState(false);
+  const guideRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || typeof window === 'undefined') {
@@ -47,6 +48,29 @@ const PWAInstructionsOverlay = ({
       window.removeEventListener('resize', readVisibleHeight);
     };
   }, [isOpen]);
+
+  // En teléfono (Carlos, 23 nov 2026, con su maqueta): los pasos quedan al
+  // centro entre el letrero y el [#], y la instrucción en amarillo baja bajo
+  // el [#]. Aquí solo se mide; index.css usa las medidas en (max-width: 639px).
+  useLayoutEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return undefined;
+    const medir = () => {
+      const guia = guideRef.current;
+      const ranura = anchorRef?.current?.parentElement;
+      const titulo = document.getElementById('pwa-install-title');
+      const pasos = guia?.querySelector('.pwa-install-sequence');
+      if (!guia || !ranura || !titulo || !pasos) return;
+      const abajoDelLetrero = titulo.getBoundingClientRect().bottom;
+      const arribaDelHash = ranura.getBoundingClientRect().top - 4;
+      const aire = Math.max(8, (arribaDelHash - abajoDelLetrero - pasos.offsetHeight) / 2);
+      guia.style.setProperty('--pwa-guia-aire', `${aire.toFixed(1)}px`);
+      guia.style.setProperty('--pwa-hash-alto', `${ranura.offsetHeight}px`);
+    };
+    medir();
+    // El letrero entra subiendo 8 px en medio segundo: se mide otra vez.
+    const timerId = window.setTimeout(medir, 650);
+    return () => window.clearTimeout(timerId);
+  }, [isOpen, visibleHeight, anchorRef]);
 
   if (!isOpen || typeof document === 'undefined') return null;
 
@@ -98,7 +122,7 @@ const PWAInstructionsOverlay = ({
         document.body,
       )}
       {anchorRef.current && createPortal(
-        <div className="pwa-install-guide" style={viewportStyle}>
+        <div ref={guideRef} className="pwa-install-guide" style={viewportStyle}>
           <ol className="pwa-install-sequence" aria-hidden="true">
             {steps.map((step, index) => {
               const Icon = SYMBOLS[step.symbol];

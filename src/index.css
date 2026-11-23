@@ -8112,3 +8112,38 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     overflow-x: clip;
   }
 }
+
+/* Al encender la escena en teléfono la orbe sube desde el centro de la cinta
+   hasta la esfera de la cabina (Carlos, 23 nov 2026). Hero.jsx le cambia el
+   `translate`; el fundido de entrada (0.9 s) lo hace Framer al mismo tiempo. */
+@media (max-width: 639px) {
+  #hero .hero-logo--portal {
+    transition: translate 1.9s cubic-bezier(0.5, 0, 0.2, 1);
+  }
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+  #hero .hero-logo--portal {
+    transition: none;
+  }
+}
+
+/* La guía de instalación en teléfono, como la maqueta de Carlos (23 nov 2026):
+   los pasos al centro entre el letrero y el [#] (PWAInstructionsOverlay mide
+   el aire) y la instrucción en amarillo debajo del [#]. */
+@media (max-width: 639px) {
+  .pwa-install-guide {
+    position: relative;
+    padding-bottom: var(--pwa-guia-aire, 1.5rem);
+  }
+
+  .pwa-install-copy-slot {
+    position: absolute;
+    top: calc(100% + 0.25rem + var(--pwa-hash-alto, 6rem) - 0.6rem);
+    left: 0;
+    right: 0;
+    min-height: 0;
+    margin-top: 0;
+    align-items: start;
+  }
+}

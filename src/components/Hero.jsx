@@ -106,6 +106,18 @@ const HERO_ESCRITORIO_QUERY = '(min-width: 1024px) and (hover: hover) and (point
 // orejas en y = 664. Se mide la imagen misma, que es fija y en iOS cambia de
 // alto con las barras del navegador.
 const HERO_TELEFONO_QUERY = '(max-width: 639px)';
+// La mitad del alto chico de la ventana (50svh), donde el título iba antes en
+// teléfono. Se mide con una sonda invisible: en iOS no coincide con innerHeight.
+let sondaDeMitad = null;
+const mitadDeLaVentanaChica = () => {
+  if (!sondaDeMitad || !sondaDeMitad.isConnected) {
+    sondaDeMitad = document.createElement('div');
+    sondaDeMitad.setAttribute('aria-hidden', 'true');
+    sondaDeMitad.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:50vh;height:50svh;visibility:hidden;pointer-events:none;';
+    document.body.appendChild(sondaDeMitad);
+  }
+  return sondaDeMitad.offsetHeight;
+};
 const CABINA_TELEFONO_ANCHO = 1080;
 const CABINA_TELEFONO_ALTO = 1920;
 const CABINA_TELEFONO_ESFERA_Y = 242;
@@ -170,17 +182,9 @@ const HERO_GHOST_SUBTITLES = [
 const HeroInactiveSignal = ({
   prefersReducedMotion = false,
   centerY = null,
-  colaExtra = 0,
   onReachThreshold,
   frase = HERO_INACTIVE_ECHO_TEXT,
 }) => {
-  // La cola se alarga hasta el [#] (Carlos, 23 nov 2026: «una cinta más
-  // responsive»): en teléfono la espiral sube con la orbe y el [#] se queda
-  // en su lugar; el último tramo del trazo baja `colaExtra` unidades del
-  // viewBox. Con 0 el trazo es el de siempre.
-  const e = Math.max(0, Math.round(colaExtra));
-  const yCola = (y, f = 1) => Math.round(y + f * e);
-  const altoMascara = 700 + e;
   const primaryDriftRef = useRef(null);
   const memoryDriftRef = useRef(null);
   // El desplazamiento recorre exactamente una vuelta de la frase, así el bucle
@@ -283,9 +287,9 @@ const HeroInactiveSignal = ({
             x="0"
             y="0"
             width="500"
-            height={altoMascara}
+            height="700"
           >
-            <rect width="500" height={altoMascara} fill="url(#hero-inactive-signal-fade)" />
+            <rect width="500" height="700" fill="url(#hero-inactive-signal-fade)" />
             <circle
               cx="250"
               cy="378"
@@ -298,7 +302,7 @@ const HeroInactiveSignal = ({
                 tenue que toca al [#]. */}
             <circle
               cx="304"
-              cy={yCola(667)}
+              cy="667"
               r="88"
               fill="url(#hero-inactive-signal-tail-fade)"
             />
@@ -309,11 +313,11 @@ const HeroInactiveSignal = ({
             x="0"
             y="0"
             width="500"
-            height={altoMascara}
+            height="700"
           >
-            <rect width="500" height={altoMascara} fill="black" />
+            <rect width="500" height="700" fill="black" />
             <motion.path
-              d={`M 248 378 C 268 388 273 414 255 428 C 233 446 197 433 192 403 C 186 367 220 335 262 352 C 318 375 328 445 280 480 C 228 517 154 485 133 417 C 111 345 155 270 235 268 C 329 266 402 341 403 438 C 440 ${yCola(525, 0.45)} 395 ${yCola(630)} 307 ${yCola(665)}`}
+              d="M 248 378 C 268 388 273 414 255 428 C 233 446 197 433 192 403 C 186 367 220 335 262 352 C 318 375 328 445 280 480 C 228 517 154 485 133 417 C 111 345 155 270 235 268 C 329 266 402 341 403 438 C 440 525 395 630 307 665"
               fill="none"
               stroke="white"
               strokeWidth="58"
@@ -329,15 +333,15 @@ const HeroInactiveSignal = ({
           </mask>
           <path
             id="hero-inactive-signal-path-primary"
-            d={`M 300 ${yCola(665)} C 390 ${yCola(630)} 440 ${yCola(525, 0.45)} 411 438 C 411 337 333 258 235 260 C 150 262 104 342 127 419 C 149 492 229 526 284 486 C 336 448 325 371 265 347 C 218 328 180 363 187 404 C 193 439 234 453 260 433 C 281 417 276 384 251 372`}
+            d="M 300 665 C 390 630 440 525 411 438 C 411 337 333 258 235 260 C 150 262 104 342 127 419 C 149 492 229 526 284 486 C 336 448 325 371 265 347 C 218 328 180 363 187 404 C 193 439 234 453 260 433 C 281 417 276 384 251 372"
           />
           <path
             id="hero-inactive-signal-path-memory"
-            d={`M 314 ${yCola(665)} C 400 ${yCola(628)} 429 ${yCola(523, 0.45)} 396 438 C 395 345 324 273 235 275 C 160 277 118 347 139 415 C 159 478 228 508 276 473 C 320 441 311 378 260 358 C 221 343 192 371 197 402 C 202 427 231 438 250 423 C 264 412 261 392 245 384`}
+            d="M 314 665 C 400 628 429 523 396 438 C 395 345 324 273 235 275 C 160 277 118 347 139 415 C 159 478 228 508 276 473 C 320 441 311 378 260 358 C 221 343 192 371 197 402 C 202 427 231 438 250 423 C 264 412 261 392 245 384"
           />
           <path
             id="hero-inactive-signal-path-spine"
-            d={`M 307 ${yCola(665)} C 395 ${yCola(630)} 440 ${yCola(525, 0.45)} 403 438 C 402 341 329 266 235 268 C 155 270 111 345 133 417 C 154 485 228 517 280 480 C 328 445 318 375 262 352 C 220 335 186 367 192 403 C 197 433 233 446 255 428 C 273 414 268 388 248 378`}
+            d="M 307 665 C 395 630 440 525 403 438 C 402 341 329 266 235 268 C 155 270 111 345 133 417 C 154 485 228 517 280 480 C 328 445 318 375 262 352 C 220 335 186 367 192 403 C 197 433 233 446 255 428 C 273 414 268 388 248 378"
           />
         </defs>
 
@@ -453,7 +457,6 @@ const Hero = () => {
   const heroContentRef = useRef(null);
   const heroLogoAnchorRef = useRef(null);
   const [heroSignalCenterY, setHeroSignalCenterY] = useState(null);
-  const [heroSignalTailExtra, setHeroSignalTailExtra] = useState(0);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -468,6 +471,14 @@ const Hero = () => {
   const [hasActivatedAudio, setHasActivatedAudio] = useState(
     () => readSceneStartsActivated()
   );
+  // El acomodo del hero (más abajo) lee si la escena está encendida sin
+  // volver a montarse; al cambiar, se le pide que se acomode otra vez.
+  const escenaEncendidaRef = useRef(hasActivatedAudio);
+  const acomodarHeroRef = useRef(null);
+  useEffect(() => {
+    escenaEncendidaRef.current = hasActivatedAudio;
+    acomodarHeroRef.current?.();
+  }, [hasActivatedAudio]);
   // El umbral del regreso (Carlos, 21 nov 2026; lib/umbralDelRegreso.js):
   // quien vuelve con algo pendiente ve en la cinta su momento y el gato lo
   // lleva ahí. Se lee una vez al montar, igual que la decisión de entrada.
@@ -639,7 +650,6 @@ const Hero = () => {
         const esEscritorio = window.matchMedia(HERO_ESCRITORIO_QUERY).matches;
         const esTelefono = !esEscritorio && window.matchMedia(HERO_TELEFONO_QUERY).matches;
         const filaSubtitulo = content.querySelector('.hero-subtitle-row');
-        let altoEspiralTelefono = 0;
         if (esTelefono) {
           const raiz = document.documentElement;
           // En la página (no en la ventana): la cabina es fija.
@@ -670,19 +680,22 @@ const Hero = () => {
             `calc(${centroDelTitulo.toFixed(1)}px - var(--hero-titulo-y0, ${centroDelTitulo.toFixed(1)}px))`
           );
           const arribaDelContenido = content.getBoundingClientRect().top + window.scrollY;
+          // La fase cero del teléfono no cambia: la espiral, el [#] y la guía
+          // de instalación quedan donde estaban (nextCenterY no se toca). Al
+          // encender la escena la orbe aparece en el centro de la cinta y sube
+          // hasta la esfera (Carlos, 23 nov 2026: «que la orbe suba desde el
+          // epicentro de la cinta hasta acomodarse donde debe estar»); el
+          // viaje lo hace la transición de `translate` en index.css.
+          // La orbe va amarrada al título en teléfono (index.css: su top
+          // sigue a --hero-titulo-al-centro): al subir el título sube ella.
+          // En la fase cero se le regresa a su lugar de antes (título a 50svh)
+          // y la espiral y el [#] se miden desde ahí.
+          const tituloMedido = document.getElementById('hero')?.hasAttribute('data-titulo-medido');
+          const regresa = tituloMedido ? mitadDeLaVentanaChica() - centroDelTitulo : 0;
           const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
-          logo.style.translate = `0 ${subeLaOrbe.toFixed(1)}px`;
-          nextCenterY += subeLaOrbe;
-          // La espiral sigue a la orbe; su anillo de arriba no se sale de la
-          // ventana. Tope: el alto que ya tenía (min(78vh, 42rem)).
-          const rem = Number.parseFloat(window.getComputedStyle(raiz).fontSize) || 16;
-          const altoEspiral = Math.min(
-            raiz.clientHeight * 0.78,
-            42 * rem,
-            (yEsfera - window.scrollY - 12) / ((378 - 240) / 620)
-          );
-          altoEspiralTelefono = Math.max(240, altoEspiral);
-          content.style.setProperty('--hero-signal-frame-h', `${altoEspiralTelefono.toFixed(1)}px`);
+          logo.style.translate = `0 ${(escenaEncendidaRef.current ? subeLaOrbe : regresa).toFixed(1)}px`;
+          nextCenterY += regresa;
+          content.style.removeProperty('--hero-signal-frame-h');
           const titulo = content.querySelector('.hero-title-stage');
           const capa = titulo?.querySelector('.hero-title');
           const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
@@ -773,25 +786,13 @@ const Hero = () => {
           const appliedLift = leerTranslateY(hashSlot);
           const slotCenterY = slotRect.top + slotRect.height / 2 - appliedLift - contentRect.top;
           const liftPx = nextCenterY + hashSlot.offsetHeight * 0.08 - slotCenterY;
-          // En teléfono la cola baja hasta el [#] y el [#] se queda en su
-          // lugar (Carlos, 23 nov 2026): así la guía de instalación, que se
-          // apila sobre el [#], conserva su espacio bajo el letrero. Unidades
-          // del viewBox que le faltan a la punta (y = 665) para llegar.
-          const colaExtra = altoEspiralTelefono > 0
-            ? (-liftPx * 620) / altoEspiralTelefono - (665 - 378)
-            : 0;
-          if (colaExtra > 0) {
-            hashSlot.style.translate = '';
-          } else {
-            hashSlot.style.translate =
-              `0 calc(${liftPx.toFixed(1)}px + ${HERO_INACTIVE_SIGNAL_TAIL_RATIO} * var(--hero-signal-frame-h))`;
-          }
-          const colaRedonda = Math.max(0, Math.round(colaExtra));
-          setHeroSignalTailExtra((actual) => (Math.abs(actual - colaRedonda) < 2 ? actual : colaRedonda));
+          hashSlot.style.translate =
+            `0 calc(${liftPx.toFixed(1)}px + ${HERO_INACTIVE_SIGNAL_TAIL_RATIO} * var(--hero-signal-frame-h))`;
         }
       });
     };
 
+    acomodarHeroRef.current = syncSignalCenter;
     syncSignalCenter();
     const resizeObserver = typeof window.ResizeObserver === 'function'
       ? new window.ResizeObserver(syncSignalCenter)
@@ -817,6 +818,7 @@ const Hero = () => {
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      acomodarHeroRef.current = null;
       resizeObserver?.disconnect();
       mutationObserver?.disconnect();
       window.removeEventListener('resize', syncSignalCenter);
@@ -1697,7 +1699,6 @@ const Hero = () => {
                     key="hero-inactive-signal"
                     prefersReducedMotion={prefersReducedMotion}
                     centerY={heroSignalCenterY}
-                    colaExtra={heroSignalTailExtra}
                     onReachThreshold={handleHeroSignalReachedThreshold}
                     frase={umbral?.frase}
                   />
