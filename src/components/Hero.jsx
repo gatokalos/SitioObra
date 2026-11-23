@@ -69,9 +69,6 @@ const HERO_INACTIVE_ECHO_TEXT = 'Ante la duda, pulsa el gato';
 // del regreso, más largas, la letra no se aprieta (Carlos, 21 nov 2026).
 const HERO_INACTIVE_SIGNAL_LOOPS = 9;
 const HERO_INACTIVE_SIGNAL_UNITS_PER_CHAR = 10;
-// Donde empieza el trazo de la cinta, en el viewBox de 500 × 620: la punta
-// que toca al [#].
-const HERO_INACTIVE_SIGNAL_TAIL_Y = 665;
 // El [#] se queda insinuado hasta que la cascada completa alcanza el umbral.
 // Así el brillo del símbolo es la consecuencia visual del eco, no una segunda
 // instrucción separada.
@@ -109,7 +106,6 @@ const HERO_GHOST_SUBTITLES = [
 const HeroInactiveSignal = ({
   prefersReducedMotion = false,
   centerY = null,
-  tailY = null,
   onReachThreshold,
   frase = HERO_INACTIVE_ECHO_TEXT,
 }) => {
@@ -175,15 +171,7 @@ const HeroInactiveSignal = ({
         '--hero-signal-center-y': centerY === null ? '40vh' : `${centerY}px`,
       }}
     >
-      <div
-        className="hero-inactive-signal__frame"
-        // Por la punta del trazo (y = 665 de 620 en el viewBox), junto al [#].
-        // Sin medida todavía, el CSS la coloca por el centro, como antes.
-        style={tailY === null ? undefined : {
-          top: `${tailY}px`,
-          transform: `translate(-50%, ${-(HERO_INACTIVE_SIGNAL_TAIL_Y / 620) * 100}%)`,
-        }}
-      >
+      <div className="hero-inactive-signal__frame">
         <svg
           className="hero-inactive-signal__svg"
           viewBox="0 0 500 620"
@@ -374,7 +362,6 @@ const Hero = () => {
   const heroContentRef = useRef(null);
   const heroLogoAnchorRef = useRef(null);
   const [heroSignalCenterY, setHeroSignalCenterY] = useState(null);
-  const [heroSignalTailY, setHeroSignalTailY] = useState(null);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -557,27 +544,6 @@ const Hero = () => {
             ? current
             : nextCenterY
         );
-        // La cola de la cinta llega al [#] (Carlos, 22 nov 2026: «se desplazó
-        // el SVG con respecto al [#]»). La espiral se colocaba por el centro
-        // del logo y el [#] queda más abajo o más arriba según la pantalla;
-        // ahora se coloca por la punta del trazo, junto al [#], un poco arriba
-        // de su centro (el texto se apoya sobre el trazo). El rect sí incluye
-        // el -translate-y-[7vh] del [#] en teléfono; su escala de entrada no
-        // mueve el centro.
-        const hashSlot = hashtagAnchorRef.current;
-        if (hashSlot) {
-          const contentRect = content.getBoundingClientRect();
-          const slotRect = hashSlot.getBoundingClientRect();
-          if (slotRect.height > 0) {
-            const slotCenterY = slotRect.top + slotRect.height / 2 - contentRect.top;
-            const nextTailY = slotCenterY - hashSlot.offsetHeight * 0.08;
-            setHeroSignalTailY((current) =>
-              current !== null && Math.abs(current - nextTailY) < 0.5
-                ? current
-                : nextTailY
-            );
-          }
-        }
       });
     };
 
@@ -587,7 +553,6 @@ const Hero = () => {
       : null;
     resizeObserver?.observe(content);
     resizeObserver?.observe(logo);
-    if (hashtagAnchorRef.current) resizeObserver?.observe(hashtagAnchorRef.current);
     window.addEventListener('resize', syncSignalCenter);
 
     return () => {
@@ -1471,7 +1436,6 @@ const Hero = () => {
                     key="hero-inactive-signal"
                     prefersReducedMotion={prefersReducedMotion}
                     centerY={heroSignalCenterY}
-                    tailY={heroSignalTailY}
                     onReachThreshold={handleHeroSignalReachedThreshold}
                     frase={umbral?.frase}
                   />
