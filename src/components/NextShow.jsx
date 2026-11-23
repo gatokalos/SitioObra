@@ -8,7 +8,7 @@ import useScrambleText from '@/hooks/useScrambleText';
 // pausa…» (emblema en el eje de la orbe, título, poco texto y el botón como
 // ancla). Cada botón abre algo ahí mismo:
 // - «Visitar archivo» revela la obra fundacional (con las temporadas como
-//   primera tarjeta) y sus créditos, y baja a ella;
+//   última tarjeta) y sus créditos, y baja a ella;
 // - «Antes de irte» revela la taquilla.
 // El título y el copy son de Carlos; el nombre puede cambiar. El emblema es
 // provisional hasta que llegue el suyo (.aplauso-emblema-provisional).

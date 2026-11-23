@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 
 // Las temporadas de la obra de teatro (antes en Caída del telón). Desde el
-// 23 nov 2026 son la primera tarjeta del archivo («Visitar archivo» en El
+// 23 nov 2026 son la última tarjeta del archivo («Visitar archivo» en El
 // aplauso), con la maqueta de Carlos: la foto y su texto, y las pestañas de
 // las temporadas abajo, al centro. No despliega nada: se ve ahí mismo.
 const SHOW_HISTORY = [
@@ -46,7 +46,7 @@ const TemporadasEscenicas = () => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
       viewport={{ once: true }}
-      className="glass-effect relative overflow-hidden rounded-2xl p-8 md:p-12 mb-12"
+      className="glass-effect relative overflow-hidden rounded-2xl p-8 md:p-12 mt-12"
     >
       <div className="relative z-10">
         <div className="grid gap-8 md:grid-cols-[1.1fr_1fr] md:items-center text-left">
