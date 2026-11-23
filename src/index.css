@@ -8188,47 +8188,17 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 
 
 /* El Programa de mano en la barra de arriba, en escritorio con mouse (Carlos,
-   23 nov 2026): «Programa de mano:» y todas las estaciones en fila, junto al
-   [#]; el [#] lo despliega y lo vuelve a plegar. Las estaciones que aún no se
-   abren se ven tenues; la sección donde estás, encendida. */
+   23 nov 2026): todas las estaciones en fila, al centro de la barra y sin
+   rótulo; el [#] lo despliega y lo vuelve a plegar. Las letras y los colores
+   son los del Programa de mano de siempre (Header.jsx); aquí solo va la fila. */
 .programa-de-mano-barra {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
-  column-gap: clamp(0.9rem, 1.5vw, 1.6rem);
-  row-gap: 0.25rem;
-  margin-left: 0.5rem;
-}
-
-.programa-de-mano-barra__rotulo {
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgb(203 213 225 / 0.55);
-}
-
-.programa-de-mano-barra__estacion {
-  font-size: 0.82rem;
-  letter-spacing: 0.04em;
+  column-gap: clamp(1rem, 2.2vw, 2.4rem);
   white-space: nowrap;
-  color: rgb(226 232 240 / 0.78);
-  transition: color 0.2s ease, text-shadow 0.2s ease;
-}
-
-button.programa-de-mano-barra__estacion:hover,
-button.programa-de-mano-barra__estacion:focus-visible {
-  color: #fff;
-  text-shadow: 0 0 10px rgba(196, 181, 253, 0.45);
-  outline: none;
-}
-
-.programa-de-mano-barra__estacion--aqui {
-  color: #fff;
-  text-shadow: 0 0 10px rgba(196, 181, 253, 0.5);
-}
-
-.programa-de-mano-barra__estacion--cerrada {
-  color: rgb(148 163 184 / 0.35);
-  cursor: default;
 }

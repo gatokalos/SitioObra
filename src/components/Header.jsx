@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, useReducedMotion } from 'framer-motion';
-import { Armchair, ArrowLeft, Coffee, Info, Sparkles, LogIn, Orbit, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Armchair, ArrowLeft, Coffee, Info, Sparkles, LogIn, Orbit, BookOpen, MessageCircle, UserCircle2, DoorOpen, Lock } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -1604,7 +1604,71 @@ const Header = ({
           className="container mx-auto px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] max-[375px]:px-4"
           data-site-index-root
         >
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between">
+          {/* El Programa de mano en la barra de escritorio, al centro y sin
+              rótulo (Carlos, 23 nov 2026: «que aparezca cinematográficamente y
+              bien centrado»): las estaciones entran una tras otra, de borrosas
+              a nítidas, y se van en orden inverso al plegarlas con el [#]. */}
+          <AnimatePresence>
+            {esBarraDeEscritorio && isBarraAbierta && !isGatLinktreeOpen ? (
+              <motion.div
+                key="programa-de-mano-barra"
+                id="programa-de-mano-barra"
+                role="navigation"
+                aria-label="Programa de mano"
+                initial="oculto"
+                animate="visible"
+                exit="oculto"
+                variants={{
+                  visible: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07 } },
+                  oculto: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.04, staggerDirection: -1 } },
+                }}
+                className="programa-de-mano-barra"
+              >
+                {mobileMenuItems.map((item) => {
+                  const isHere = activeSectionHref === item.href;
+                  const entrada = {
+                    oculto: prefersReducedMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, y: -4, filter: 'blur(6px)' },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      filter: 'blur(0px)',
+                      transition: { duration: prefersReducedMotion ? 0.1 : 0.55, ease: [0.22, 1, 0.36, 1] },
+                    },
+                  };
+                  return item.locked ? (
+                    <motion.span
+                      key={item.href}
+                      variants={entrada}
+                      aria-disabled="true"
+                      className="relative inline-flex items-center gap-1.5 font-display text-[1.02rem] leading-tight text-slate-100/45"
+                    >
+                      {item.name}
+                      <Lock size={12} className="text-slate-400/45" aria-label="Todavía no disponible" />
+                    </motion.span>
+                  ) : (
+                    <motion.button
+                      key={item.href}
+                      variants={entrada}
+                      type="button"
+                      onClick={() => handleNavClick(item.href)}
+                      aria-current={isHere ? 'location' : undefined}
+                      className={`relative font-display text-[1.02rem] leading-tight transition-colors hover:text-white ${isHere ? 'text-white' : 'text-slate-100/80'}`}
+                    >
+                      {item.name}
+                      {isHere && item.description ? (
+                        <span className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap font-sans text-[10px] uppercase tracking-[0.2em] text-slate-400/85">
+                          {item.description}
+                        </span>
+                      ) : null}
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
             <div className="flex items-center gap-3 text-white">
               {!isGatLinktreeOpen ? (
               <motion.button
@@ -1648,40 +1712,6 @@ const Header = ({
                   />
                 ) : null}
               </motion.button>
-              ) : null}
-              {esBarraDeEscritorio && isBarraAbierta && !isGatLinktreeOpen ? (
-                <motion.div
-                  id="programa-de-mano-barra"
-                  role="navigation"
-                  aria-label="Programa de mano"
-                  initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: prefersReducedMotion ? 0.1 : 0.4, ease: 'easeOut' }}
-                  className="programa-de-mano-barra"
-                >
-                  <span className="programa-de-mano-barra__rotulo">Programa de mano:</span>
-                  {mobileMenuItems.map((item) => (
-                    item.locked ? (
-                      <span
-                        key={item.href}
-                        className="programa-de-mano-barra__estacion programa-de-mano-barra__estacion--cerrada"
-                        title="Se abre más adelante en la función"
-                      >
-                        {item.name}
-                      </span>
-                    ) : (
-                      <button
-                        key={item.href}
-                        type="button"
-                        onClick={() => handleNavClick(item.href)}
-                        aria-current={activeSectionHref === item.href ? 'location' : undefined}
-                        className={`programa-de-mano-barra__estacion${activeSectionHref === item.href ? ' programa-de-mano-barra__estacion--aqui' : ''}`}
-                      >
-                        {item.name}
-                      </button>
-                    )
-                  ))}
-                </motion.div>
               ) : null}
             </div>
 

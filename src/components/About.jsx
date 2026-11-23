@@ -2046,6 +2046,9 @@ const About = () => {
                 aria-label="Sentirse menos solxs"
               >
                 <span aria-hidden="true">Sentirse menos </span>
+                {/* «solxs» es una sola palabra: sus letras que cambian no se
+                    quedan huérfanas en el renglón de abajo (Carlos, 23 nov 2026). */}
+                <span className="whitespace-nowrap">
                 <span aria-hidden="true">sol</span>
                 <span aria-hidden="true" className="relative inline-grid min-w-[1ch] text-center align-baseline">
                   <span className="invisible col-start-1 row-start-1">x</span>
@@ -2067,6 +2070,7 @@ const About = () => {
                   </AnimatePresence>
                 </span>
                 <span aria-hidden="true">s</span>
+                </span>
               </h3>
               <p className="text-slate-50/50 leading-relaxed mb-8 font-light">
                 El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Allá arriba, un tigre de fuego encarna por un instante su devenir. Tú puedes entra en directo <strong>a ese estado emocional</strong>, porque quizás… tú también tienes <i>un gato encerrado</i>.
