@@ -710,7 +710,7 @@ const Header = ({
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showPerspectivasNav ? [{ name: 'Acto final', href: '#provoca' }] : []),
-    ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
+    ...(showIntermedioNav ? [{ name: 'El aplauso', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
@@ -765,7 +765,7 @@ const Header = ({
       description: '#TeToca',
     }),
     station(showIntermedioNav, {
-      name: 'Caída del telón',
+      name: 'El aplauso',
       href: '#next-show',
       description: '#ArchivoEscénico',
       ...(showObraDestacadaNav

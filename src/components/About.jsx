@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import TemporadasEscenicas from '@/components/TemporadasEscenicas';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -1961,8 +1962,10 @@ const About = () => {
 
   return (
     <>
-    <section id="about" className="py-24 relative">
-      <div className="section-divider mb-24"></div>
+    {/* Se abre con «Visitar archivo» en El aplauso (Carlos, 23 nov 2026):
+        sin línea divisoria, la ceja llega a la altura de la de La Réplica y
+        la primera tarjeta son las temporadas de la obra de teatro. */}
+    <section id="about" className="relative pt-32 pb-24 md:pt-36 lg:pt-40">
 
       <div className="container mx-auto px-6">
         <motion.div
@@ -1990,6 +1993,8 @@ const About = () => {
             ))}
           </div>
         </motion.div>
+
+        <TemporadasEscenicas />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}

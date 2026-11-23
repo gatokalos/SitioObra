@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { abrirContacto } from '@/lib/contacto';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -2274,9 +2275,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     (paraProponerDesde = null) => {
       handleCloseShowcase();
       if (paraProponerDesde) marcarLlegadaParaProponer(paraProponerDesde);
-      window.setTimeout(() => {
-        document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 120);
+      window.setTimeout(abrirContacto, 120);
     },
     [handleCloseShowcase]
   );

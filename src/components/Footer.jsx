@@ -1,4 +1,5 @@
 import React from 'react';
+import { abrirContacto } from '@/lib/contacto';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
@@ -48,7 +49,15 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              <span className="font-semibold text-slate-200 mb-4 block">Salida</span>
+              {/* Abre la hoja de contacto, que ya no está siempre a la vista
+                  (Carlos, 23 nov 2026). */}
+              <button
+                type="button"
+                onClick={abrirContacto}
+                className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact mb-4"
+              >
+                Contacto
+              </button>
               <ul className="space-y-3 text-sm font-light">
                 <li className="text-slate-400">dramaturgo@gatoencerrado.org</li>
                 <li className="text-slate-400">+52 331 532 7985</li>

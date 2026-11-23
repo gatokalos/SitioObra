@@ -8181,3 +8181,13 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     margin-top: auto;
   }
 }
+
+/* Emblema provisional de El aplauso (23 nov 2026), mientras llega el de
+   Carlos: un aro tenue del mismo tamaño que los otros emblemas, para que el
+   eje y la medida de la escena ya sean los definitivos. Al llegar la imagen,
+   NextShow.jsx cambia este div por un <img> y esta regla se borra. */
+.aplauso-emblema-provisional {
+  border-radius: 9999px;
+  border: 1px dashed rgba(196, 181, 253, 0.45);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.18), inset 0 0 18px rgba(139, 92, 246, 0.12);
+}

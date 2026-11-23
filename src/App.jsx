@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHeroTituloAlCentro } from '@/hooks/useHeroTituloAlCentro';
 import { useTransicionesAlEje } from '@/hooks/useTransicionesAlEje';
+import { CONTACTO_EVENTO, leerContactoAbierto, recordarContactoAbierto } from '@/lib/contacto';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import ArticleDrawer from '@/components/ArticleDrawer';
@@ -621,6 +622,28 @@ function App() {
   // remonta App.jsx desde cero y el bloque se colapsa aunque ya se había revelado.
   const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(readObraDestacadaRevealedFromSession);
   const [isBeforeLeavingVisible, setIsBeforeLeavingVisible] = useState(readBeforeLeavingRevealedFromSession);
+  // La hoja de contacto (Salida) se abre con el botón «Contacto» del pie de
+  // página o al llegar con #contact (Programa de mano, portales); ver
+  // lib/contacto.js.
+  const [isContactoVisible, setIsContactoVisible] = useState(
+    () => leerContactoAbierto()
+      || (typeof window !== 'undefined' && window.location.hash.startsWith('#contact'))
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleReveal = () => {
+      setIsContactoVisible(true);
+      recordarContactoAbierto();
+    };
+    window.addEventListener(CONTACTO_EVENTO, handleReveal);
+    return () => window.removeEventListener(CONTACTO_EVENTO, handleReveal);
+  }, []);
+  useEffect(() => {
+    if (location.hash.startsWith('#contact')) {
+      setIsContactoVisible(true);
+      recordarContactoAbierto();
+    }
+  }, [location.hash]);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleReveal = () => {
@@ -1074,11 +1097,13 @@ function App() {
                   </>
                 )}
 
+                {isContactoVisible && (
                 <DeferredSection fallback={<SectionFallback id="contact" minHeight={560} />}>
                   <Suspense fallback={<SectionFallback id="contact" minHeight={560} />}>
                     <Contact />
                   </Suspense>
                 </DeferredSection>
+                )}
               </main>
 
               <Footer />

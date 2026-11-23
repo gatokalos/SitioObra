@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { abrirContacto } from '@/lib/contacto';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
@@ -1471,7 +1472,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                   // Baja a la Salida, que recibe a quien viene a proponer
                                   // un texto con su propia ficha (Carlos, 12 nov 2026).
                                   marcarLlegadaDesdeCamerino();
-                                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                  abrirContacto();
                                 }}
                                 className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                               >
