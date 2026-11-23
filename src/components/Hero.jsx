@@ -615,11 +615,12 @@ const Hero = () => {
           const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
           const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
           if (filaSubtitulo && textoSubtitulo && titulo && capa) {
-            // El subtítulo, arriba del título, en su caja de dos renglones y
-            // al centro entre la orbe y las letras del título (Carlos, 22 nov
-            // 2026, camino A: llena el aire entre los dos).
-            // La caja del texto (no la fila, que trae margen abajo) mide
-            // siempre dos renglones: su centro no cambia con la frase.
+            // El subtítulo, arriba del título y en un renglón, más cerca de la
+            // orbe que del título: a un tercio del camino (Carlos, 22 nov
+            // 2026). Se lee como el pie de la orbe y el aire de abajo queda
+            // para el título.
+            // La caja del texto (no la fila, que trae margen abajo): su centro
+            // no cambia con la frase.
             const caja = textoSubtitulo.getBoundingClientRect();
             const centroFila = caja.top + caja.height / 2 - leerTranslateY(filaSubtitulo);
             const cajaTitulo = titulo.getBoundingClientRect();
@@ -628,7 +629,7 @@ const Hero = () => {
             // captura), centradas en su caja.
             const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
             const abajoDeLaOrbe = yEsfera - window.scrollY + imagenOrbe.offsetHeight / 2;
-            const bajaLaFila = (abajoDeLaOrbe + arribaDeLasLetras) / 2 - centroFila;
+            const bajaLaFila = abajoDeLaOrbe + (arribaDeLasLetras - abajoDeLaOrbe) / 3 - centroFila;
             filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
           }
         } else {

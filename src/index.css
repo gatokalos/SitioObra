@@ -7974,22 +7974,22 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     text-indent: 0.21em;
   }
 
-  /* El subtítulo, más grande y en una caja de dos renglones (Carlos, 22 nov
-     2026, camino A): crece con el alto de la pantalla (24 px en 1280 × 720,
-     30 en 1440 × 900, 36 en Full HD) y su caja mide 20 letras de ancho, así
-     el más largo cabe en dos renglones; la caja guarda siempre el alto de
-     dos y el texto va al centro, así nada brinca al rotar. */
+  /* El subtítulo en un renglón, de tamaño intermedio (Carlos, 22 nov 2026:
+     los dos renglones ya no le gustaban). Crece con el alto de la pantalla
+     (unos 19 px en 1280 × 720, 23 en 1440 × 900, 28 en Full HD): la frase
+     larga no se vuelve una tira y la corta no se pierde junto al título.
+     Hero.jsx lo coloca cerca de la orbe. */
   #hero .hero-subtitle-track {
-    font-size: clamp(1.4rem, 3.3vh, 2.4rem);
-    width: min(82vw, 20em);
-    max-width: min(82vw, 20em);
-    min-height: 2.8em;
+    font-size: clamp(1.05rem, 2.6vh, 1.8rem);
+    width: min(92vw, 60rem);
+    max-width: min(92vw, 60rem);
+    min-height: 1.4em;
   }
 
   #hero .hero-subtitle-copy {
-    font-size: clamp(1.4rem, 3.3vh, 2.4rem);
+    font-size: clamp(1.05rem, 2.6vh, 1.8rem);
     line-height: 1.4;
-    text-wrap: balance;
+    white-space: nowrap;
   }
 
   #hero .hero-logo--portal {
@@ -8003,6 +8003,7 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     -webkit-filter: none;
     filter: none;
   }
+
   /* El umbral igual en Chrome y en Safari (Carlos, 22 nov 2026). El interior
      oscuro de Chrome no venía del degradado sino de una sombra casi negra que
      lo tapaba; Safari no pinta sombras sobre texto con degradado recortado,
