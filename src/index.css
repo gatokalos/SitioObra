@@ -876,11 +876,17 @@ body {
   will-change: transform, opacity, filter;
 }
 
+/* El alto de la espiral vive en #hero porque el [#] también lo usa: sube
+   hasta la punta del trazo (Hero.jsx, syncSignalCenter; Carlos, 22 nov 2026). */
+#hero {
+  --hero-signal-frame-h: min(78vh, 48rem);
+}
+
 .hero-inactive-signal__frame {
   position: absolute;
   top: var(--hero-signal-center-y, 40vh);
   left: 50%;
-  height: min(78vh, 48rem);
+  height: var(--hero-signal-frame-h, min(78vh, 48rem));
   aspect-ratio: 500 / 620;
   transform: translate(-50%, -60.9677%);
 }
@@ -962,8 +968,8 @@ body {
 }
 
 @media (max-width: 640px) {
-  .hero-inactive-signal__frame {
-    height: min(78vh, 42rem);
+  #hero {
+    --hero-signal-frame-h: min(78vh, 42rem);
   }
 
   .hero-inactive-signal__text {
@@ -1302,9 +1308,18 @@ body {
   }
 }
 
+/* En escritorio las estrellas se veían diminutas junto a las del teléfono
+   (Carlos, 22 nov 2026): miden lo mismo en píxeles, pero la pantalla es más
+   grande y se mira de más lejos. Desde 1024 px crecen 1.6 veces. */
+@media (min-width: 1024px) {
+  .hero-starfield {
+    --hero-star-size-scale: 1.6;
+  }
+}
+
 @media (min-width: 1600px) {
   .hero-starfield {
-    --hero-star-size-scale: 1.08;
+    --hero-star-size-scale: 1.73;
   }
 }
 
@@ -7049,10 +7064,17 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
 /* En teléfono la caja del subtítulo también toma el ancho disponible (Carlos,
    14 nov 2026): medía lo que mide el texto de reserva y por eso cinco de los
    siete subtítulos se partían en dos renglones aunque cupieran en uno. Queda
-   partido solo el más largo; la caja conserva el alto de dos renglones. */
+   partido solo el más largo; la caja conserva el alto de dos renglones.
+   Desde el 22 nov 2026 el subtítulo de un renglón va al centro de esa caja
+   (Carlos: «subtítulo centrado»): apoyado abajo dejaba mucho aire con la
+   orbe, y centrado reparte el aire como el de dos renglones. */
 @media (max-width: 639px) {
   #hero .hero-subtitle-track {
     width: calc(100vw - 4rem);
+  }
+
+  #hero .hero-subtitle-copy {
+    align-items: center;
   }
 }
 

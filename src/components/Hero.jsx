@@ -69,6 +69,10 @@ const HERO_INACTIVE_ECHO_TEXT = 'Ante la duda, pulsa el gato';
 // del regreso, más largas, la letra no se aprieta (Carlos, 21 nov 2026).
 const HERO_INACTIVE_SIGNAL_LOOPS = 9;
 const HERO_INACTIVE_SIGNAL_UNITS_PER_CHAR = 10;
+// La punta del trazo de la cinta (y = 665 en el viewBox de 500 × 620) queda
+// bajo el centro de la espiral (y = 378, sobre la orbe) a esta fracción de su
+// alto. El [#] sube hasta ahí.
+const HERO_INACTIVE_SIGNAL_TAIL_RATIO = ((665 - 378) / 620).toFixed(5);
 // El [#] se queda insinuado hasta que la cascada completa alcanza el umbral.
 // Así el brillo del símbolo es la consecuencia visual del eco, no una segunda
 // instrucción separada.
@@ -316,7 +320,10 @@ const HERO_SUBTITLE_ROTATION_MS = 3800;
 // de lectura solo esa primera vez, antes de entrar al ritmo normal.
 const HERO_SUBTITLE_FIRST_ROTATION_EXTRA_MS = 0;
 const HERO_STARFIELD_STAR_COUNT_MOBILE = 165;
-const HERO_STARFIELD_STAR_COUNT_DESKTOP = 300;
+// Fuera del teléfono había la mitad de estrellas por espacio (300 en una
+// pantalla cuatro veces más grande que la del teléfono); con 480 la densidad
+// se parece (Carlos, 22 nov 2026).
+const HERO_STARFIELD_STAR_COUNT_DESKTOP = 480;
 
 // Estrellas fugaces: pocas, esporádicas (ciclo largo + delay propio) y
 // confinadas a la mitad superior, para no cruzar el título ni el # 3D.
@@ -544,6 +551,25 @@ const Hero = () => {
             ? current
             : nextCenterY
         );
+        // El [#] sube a la punta de la cinta (Carlos, 22 nov 2026). La
+        // espiral sigue centrada en la orbe, como él la pidió; según la
+        // pantalla, el [#] quedaba de 50 a 190 px abajo de la cola. Se
+        // desplaza con `translate`, que no toca el `transform` de Framer ni
+        // el layout: la punta del trazo está a (665 − 378) / 620 del alto de
+        // la espiral bajo su centro, y el [#] se acomoda con su centro un
+        // poco abajo de ella (el texto se apoya sobre el trazo).
+        const hashSlot = hashtagAnchorRef.current;
+        if (hashSlot && hashSlot.offsetHeight > 0) {
+          const contentRect = content.getBoundingClientRect();
+          const slotRect = hashSlot.getBoundingClientRect();
+          const appliedLift = Number.parseFloat(
+            String(window.getComputedStyle(hashSlot).translate || '').split(' ')[1]
+          ) || 0;
+          const slotCenterY = slotRect.top + slotRect.height / 2 - appliedLift - contentRect.top;
+          const liftPx = nextCenterY + hashSlot.offsetHeight * 0.08 - slotCenterY;
+          hashSlot.style.translate =
+            `0 calc(${liftPx.toFixed(1)}px + ${HERO_INACTIVE_SIGNAL_TAIL_RATIO} * var(--hero-signal-frame-h))`;
+        }
       });
     };
 
@@ -553,6 +579,7 @@ const Hero = () => {
       : null;
     resizeObserver?.observe(content);
     resizeObserver?.observe(logo);
+    if (hashtagAnchorRef.current) resizeObserver?.observe(hashtagAnchorRef.current);
     window.addEventListener('resize', syncSignalCenter);
 
     return () => {
