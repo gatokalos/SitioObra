@@ -98,6 +98,32 @@ const CABINA_OREJAS_Y = 498;
 const yDeLasOrejasDelGato = (ancho, alto) => yEnLaVentana(CABINA_OREJAS_Y, ancho, alto);
 // Solo pantallas con mouse: el iPad en horizontal conserva su hero de antes.
 const HERO_ESCRITORIO_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
+// La misma distribución en teléfono (Carlos, 23 nov 2026, con su maqueta):
+// orbe sobre la esfera, título a la mitad entre la orbe y las orejas del gato,
+// subtítulo a la mitad entre la orbe y el título. Solo teléfono en vertical;
+// las tabletas conservan su hero. La cabina del teléfono es otra imagen
+// (1080 × 1920, App.jsx, (max-width: 767px)): esfera en y = 242, puntas de las
+// orejas en y = 664. Se mide la imagen misma, que es fija y en iOS cambia de
+// alto con las barras del navegador.
+const HERO_TELEFONO_QUERY = '(max-width: 639px)';
+const CABINA_TELEFONO_ANCHO = 1080;
+const CABINA_TELEFONO_ALTO = 1920;
+const CABINA_TELEFONO_ESFERA_Y = 242;
+const CABINA_TELEFONO_OREJAS_Y = 664;
+const CABINA_TELEFONO_DESPLAZAMIENTO = 0.075;
+const yEnLaCabinaDelTelefono = (yDeLaImagen) => {
+  const imagen = document.querySelector('img.hero-guest-cabina');
+  const anchoCaja = imagen?.offsetWidth || document.documentElement.clientWidth;
+  const altoCaja = imagen?.offsetHeight || document.documentElement.clientHeight;
+  const escala = Math.max(anchoCaja / CABINA_TELEFONO_ANCHO, altoCaja / CABINA_TELEFONO_ALTO);
+  const y = (altoCaja - CABINA_TELEFONO_ALTO * escala) * CABINA_POSICION_Y + yDeLaImagen * escala;
+  if (imagen && imagen.offsetHeight > 0) {
+    // La caja ya trae su translateY y su scale(1.1): se lee de su rectángulo.
+    const caja = imagen.getBoundingClientRect();
+    return caja.top + y * (caja.height / altoCaja);
+  }
+  return altoCaja / 2 + CABINA_ESCALA * (y - altoCaja / 2) + CABINA_TELEFONO_DESPLAZAMIENTO * altoCaja;
+};
 
 const leerTranslateY = (elemento) => Number.parseFloat(
   String(window.getComputedStyle(elemento).translate || '').split(' ')[1]
@@ -144,9 +170,17 @@ const HERO_GHOST_SUBTITLES = [
 const HeroInactiveSignal = ({
   prefersReducedMotion = false,
   centerY = null,
+  colaExtra = 0,
   onReachThreshold,
   frase = HERO_INACTIVE_ECHO_TEXT,
 }) => {
+  // La cola se alarga hasta el [#] (Carlos, 23 nov 2026: «una cinta más
+  // responsive»): en teléfono la espiral sube con la orbe y el [#] se queda
+  // en su lugar; el último tramo del trazo baja `colaExtra` unidades del
+  // viewBox. Con 0 el trazo es el de siempre.
+  const e = Math.max(0, Math.round(colaExtra));
+  const yCola = (y, f = 1) => Math.round(y + f * e);
+  const altoMascara = 700 + e;
   const primaryDriftRef = useRef(null);
   const memoryDriftRef = useRef(null);
   // El desplazamiento recorre exactamente una vuelta de la frase, así el bucle
@@ -249,9 +283,9 @@ const HeroInactiveSignal = ({
             x="0"
             y="0"
             width="500"
-            height="700"
+            height={altoMascara}
           >
-            <rect width="500" height="700" fill="url(#hero-inactive-signal-fade)" />
+            <rect width="500" height={altoMascara} fill="url(#hero-inactive-signal-fade)" />
             <circle
               cx="250"
               cy="378"
@@ -264,7 +298,7 @@ const HeroInactiveSignal = ({
                 tenue que toca al [#]. */}
             <circle
               cx="304"
-              cy="667"
+              cy={yCola(667)}
               r="88"
               fill="url(#hero-inactive-signal-tail-fade)"
             />
@@ -275,11 +309,11 @@ const HeroInactiveSignal = ({
             x="0"
             y="0"
             width="500"
-            height="700"
+            height={altoMascara}
           >
-            <rect width="500" height="700" fill="black" />
+            <rect width="500" height={altoMascara} fill="black" />
             <motion.path
-              d="M 248 378 C 268 388 273 414 255 428 C 233 446 197 433 192 403 C 186 367 220 335 262 352 C 318 375 328 445 280 480 C 228 517 154 485 133 417 C 111 345 155 270 235 268 C 329 266 402 341 403 438 C 440 525 395 630 307 665"
+              d={`M 248 378 C 268 388 273 414 255 428 C 233 446 197 433 192 403 C 186 367 220 335 262 352 C 318 375 328 445 280 480 C 228 517 154 485 133 417 C 111 345 155 270 235 268 C 329 266 402 341 403 438 C 440 ${yCola(525, 0.45)} 395 ${yCola(630)} 307 ${yCola(665)}`}
               fill="none"
               stroke="white"
               strokeWidth="58"
@@ -295,15 +329,15 @@ const HeroInactiveSignal = ({
           </mask>
           <path
             id="hero-inactive-signal-path-primary"
-            d="M 300 665 C 390 630 440 525 411 438 C 411 337 333 258 235 260 C 150 262 104 342 127 419 C 149 492 229 526 284 486 C 336 448 325 371 265 347 C 218 328 180 363 187 404 C 193 439 234 453 260 433 C 281 417 276 384 251 372"
+            d={`M 300 ${yCola(665)} C 390 ${yCola(630)} 440 ${yCola(525, 0.45)} 411 438 C 411 337 333 258 235 260 C 150 262 104 342 127 419 C 149 492 229 526 284 486 C 336 448 325 371 265 347 C 218 328 180 363 187 404 C 193 439 234 453 260 433 C 281 417 276 384 251 372`}
           />
           <path
             id="hero-inactive-signal-path-memory"
-            d="M 314 665 C 400 628 429 523 396 438 C 395 345 324 273 235 275 C 160 277 118 347 139 415 C 159 478 228 508 276 473 C 320 441 311 378 260 358 C 221 343 192 371 197 402 C 202 427 231 438 250 423 C 264 412 261 392 245 384"
+            d={`M 314 ${yCola(665)} C 400 ${yCola(628)} 429 ${yCola(523, 0.45)} 396 438 C 395 345 324 273 235 275 C 160 277 118 347 139 415 C 159 478 228 508 276 473 C 320 441 311 378 260 358 C 221 343 192 371 197 402 C 202 427 231 438 250 423 C 264 412 261 392 245 384`}
           />
           <path
             id="hero-inactive-signal-path-spine"
-            d="M 307 665 C 395 630 440 525 403 438 C 402 341 329 266 235 268 C 155 270 111 345 133 417 C 154 485 228 517 280 480 C 328 445 318 375 262 352 C 220 335 186 367 192 403 C 197 433 233 446 255 428 C 273 414 268 388 248 378"
+            d={`M 307 ${yCola(665)} C 395 ${yCola(630)} 440 ${yCola(525, 0.45)} 403 438 C 402 341 329 266 235 268 C 155 270 111 345 133 417 C 154 485 228 517 280 480 C 328 445 318 375 262 352 C 220 335 186 367 192 403 C 197 433 233 446 255 428 C 273 414 268 388 248 378`}
           />
         </defs>
 
@@ -419,6 +453,7 @@ const Hero = () => {
   const heroContentRef = useRef(null);
   const heroLogoAnchorRef = useRef(null);
   const [heroSignalCenterY, setHeroSignalCenterY] = useState(null);
+  const [heroSignalTailExtra, setHeroSignalTailExtra] = useState(0);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -602,8 +637,65 @@ const Hero = () => {
         // centro entre la orbe y las letras del título. Todo con `translate`,
         // sin tocar el layout ni el centrado del título (useHeroTituloAlCentro).
         const esEscritorio = window.matchMedia(HERO_ESCRITORIO_QUERY).matches;
+        const esTelefono = !esEscritorio && window.matchMedia(HERO_TELEFONO_QUERY).matches;
         const filaSubtitulo = content.querySelector('.hero-subtitle-row');
-        if (esEscritorio) {
+        let altoEspiralTelefono = 0;
+        if (esTelefono) {
+          const raiz = document.documentElement;
+          // En la página (no en la ventana): la cabina es fija.
+          const yEsfera = yEnLaCabinaDelTelefono(CABINA_TELEFONO_ESFERA_Y) + window.scrollY;
+          const yOrejas = yEnLaCabinaDelTelefono(CABINA_TELEFONO_OREJAS_Y) + window.scrollY;
+          const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
+          const abajoDeLaOrbe = yEsfera + imagenOrbe.offsetHeight / 2;
+          // El título, a la mitad entre la orbe y las orejas (su maqueta).
+          // En teléfonos chicos (iPhone SE) la caja del subtítulo, que guarda
+          // lugar para dos renglones, no cabía entre ambos: el título baja lo
+          // justo para dejarle 10 px de aire arriba y abajo, sin pasar de las
+          // orejas. La caja no cambia de alto con la frase: nada brinca.
+          const capaDelTitulo = content.querySelector('.hero-title-stage .hero-title');
+          const fuenteDelTitulo = capaDelTitulo
+            ? Number.parseFloat(window.getComputedStyle(capaDelTitulo).fontSize) || 0
+            : 0;
+          // La caja (track) existe desde antes de encender la escena; la frase no.
+          const altoDelSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-track')?.offsetHeight || 0;
+          const centroDelTitulo = Math.min(
+            yOrejas - 0.375 * fuenteDelTitulo,
+            Math.max(
+              (abajoDeLaOrbe + yOrejas) / 2,
+              abajoDeLaOrbe + altoDelSubtitulo + 2 * 10 + 0.375 * fuenteDelTitulo
+            )
+          );
+          content.style.setProperty(
+            '--hero-titulo-al-centro',
+            `calc(${centroDelTitulo.toFixed(1)}px - var(--hero-titulo-y0, ${centroDelTitulo.toFixed(1)}px))`
+          );
+          const arribaDelContenido = content.getBoundingClientRect().top + window.scrollY;
+          const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
+          logo.style.translate = `0 ${subeLaOrbe.toFixed(1)}px`;
+          nextCenterY += subeLaOrbe;
+          // La espiral sigue a la orbe; su anillo de arriba no se sale de la
+          // ventana. Tope: el alto que ya tenía (min(78vh, 42rem)).
+          const rem = Number.parseFloat(window.getComputedStyle(raiz).fontSize) || 16;
+          const altoEspiral = Math.min(
+            raiz.clientHeight * 0.78,
+            42 * rem,
+            (yEsfera - window.scrollY - 12) / ((378 - 240) / 620)
+          );
+          altoEspiralTelefono = Math.max(240, altoEspiral);
+          content.style.setProperty('--hero-signal-frame-h', `${altoEspiralTelefono.toFixed(1)}px`);
+          const titulo = content.querySelector('.hero-title-stage');
+          const capa = titulo?.querySelector('.hero-title');
+          const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
+          if (filaSubtitulo && textoSubtitulo && titulo && capa) {
+            const caja = textoSubtitulo.getBoundingClientRect();
+            const centroFila = caja.top + caja.height / 2 - leerTranslateY(filaSubtitulo);
+            const cajaTitulo = titulo.getBoundingClientRect();
+            const fuente = Number.parseFloat(window.getComputedStyle(capa).fontSize) || 0;
+            const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
+            const bajaLaFila = (abajoDeLaOrbe - window.scrollY + arribaDeLasLetras) / 2 - centroFila;
+            filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
+          }
+        } else if (esEscritorio) {
           const raiz = document.documentElement;
           const yEsfera = yDeLaEsferaDeLaCabina(raiz.clientWidth, raiz.clientHeight);
           // El título se apoya justo encima de las orejas del gato, en vez de
@@ -681,8 +773,21 @@ const Hero = () => {
           const appliedLift = leerTranslateY(hashSlot);
           const slotCenterY = slotRect.top + slotRect.height / 2 - appliedLift - contentRect.top;
           const liftPx = nextCenterY + hashSlot.offsetHeight * 0.08 - slotCenterY;
-          hashSlot.style.translate =
-            `0 calc(${liftPx.toFixed(1)}px + ${HERO_INACTIVE_SIGNAL_TAIL_RATIO} * var(--hero-signal-frame-h))`;
+          // En teléfono la cola baja hasta el [#] y el [#] se queda en su
+          // lugar (Carlos, 23 nov 2026): así la guía de instalación, que se
+          // apila sobre el [#], conserva su espacio bajo el letrero. Unidades
+          // del viewBox que le faltan a la punta (y = 665) para llegar.
+          const colaExtra = altoEspiralTelefono > 0
+            ? (-liftPx * 620) / altoEspiralTelefono - (665 - 378)
+            : 0;
+          if (colaExtra > 0) {
+            hashSlot.style.translate = '';
+          } else {
+            hashSlot.style.translate =
+              `0 calc(${liftPx.toFixed(1)}px + ${HERO_INACTIVE_SIGNAL_TAIL_RATIO} * var(--hero-signal-frame-h))`;
+          }
+          const colaRedonda = Math.max(0, Math.round(colaExtra));
+          setHeroSignalTailExtra((actual) => (Math.abs(actual - colaRedonda) < 2 ? actual : colaRedonda));
         }
       });
     };
@@ -1592,6 +1697,7 @@ const Hero = () => {
                     key="hero-inactive-signal"
                     prefersReducedMotion={prefersReducedMotion}
                     centerY={heroSignalCenterY}
+                    colaExtra={heroSignalTailExtra}
                     onReachThreshold={handleHeroSignalReachedThreshold}
                     frase={umbral?.frase}
                   />

@@ -8101,3 +8101,14 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   letter-spacing: 0.06em;
 }
+
+/* La distribución de escritorio, en teléfono (Carlos, 23 nov 2026): la orbe
+   sube a la esfera de la cabina (Hero.jsx, HERO_TELEFONO_QUERY) y el hero ya
+   no recorta lo que asoma sobre su borde, bajo la cabecera: dejaba una franja
+   de orilla recta. Igual que en escritorio. */
+@media (max-width: 639px) {
+  #hero {
+    overflow: visible;
+    overflow-x: clip;
+  }
+}
