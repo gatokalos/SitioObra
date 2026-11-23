@@ -5,6 +5,7 @@ const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchase
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
+const isotipoGatoDesktopWebp = '/assets/isotipo_hero_desktop_a.webp';
 import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
 import PWAFirstLaunchWelcome from '@/components/PWAFirstLaunchWelcome';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
@@ -1589,12 +1590,18 @@ const Hero = () => {
                     }}
                   >
                     <div className="hero-logo-visual">
-                      <img
-                        src={isotipoGatoWebp}
-                        alt=""
-                        className="hero-logo-img"
-                        fetchpriority="high"
-                      />
+                      {/* La orbe de escritorio (retocada con Codex, 22 nov 2026)
+                          solo en pantallas con mouse; teléfono y tableta
+                          conservan la suya. */}
+                      <picture style={{ display: 'contents' }}>
+                        <source media={HERO_ESCRITORIO_QUERY} srcSet={isotipoGatoDesktopWebp} />
+                        <img
+                          src={isotipoGatoWebp}
+                          alt=""
+                          className="hero-logo-img"
+                          fetchpriority="high"
+                        />
+                      </picture>
                       {hasActivatedAudio ? (
                         <span className="hero-logo-orb-reflection" />
                       ) : null}

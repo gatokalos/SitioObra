@@ -1672,17 +1672,10 @@ body {
 }
 
 /* Luz fija: da volumen incluso entre pulsaciones sin volver blanco el logo. */
-.hero-logo-orb-reflection::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(ellipse at 31% 24%, rgba(255, 255, 255, 0.42) 0%, rgba(231, 224, 255, 0.15) 18%, rgba(255, 255, 255, 0) 42%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 57%, rgba(196, 181, 253, 0.13) 70%, rgba(255, 255, 255, 0) 79%);
-  opacity: 0.58;
-  mix-blend-mode: screen;
-}
+/* El brillo fijo (manchón blanco arriba a la izquierda y anillo lila, al
+   58 % en mix-blend-mode: screen) se quitó el 22 nov 2026: screen siempre
+   aclara y lavaba el negro del remolino, como una nubosidad (Carlos). La
+   orbe trae sus reflejos pintados; queda solo el barrido de ::after. */
 
 /* La franja aparece cada tres rotaciones (11.4 s), a mitad del intervalo de
    lectura (1.9 s): acompaña la escena sin competir con un copy nuevo. */
