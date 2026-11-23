@@ -1978,7 +1978,7 @@ const About = () => {
         sin línea divisoria, la ceja llega a la altura de la de La Réplica y
         después vienen los créditos y la galería, y al final las temporadas
         (App.jsx, TemporadasEscenicas). */}
-    <section id="about" className="relative pt-32 pb-24 md:pt-36 lg:pt-40">
+    <section id="about" className="relative pt-28 pb-24 md:pt-36 lg:pt-40">
 
       <div className="container mx-auto px-6">
         <motion.div

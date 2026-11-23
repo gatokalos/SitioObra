@@ -8147,39 +8147,43 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   min-height: calc(2 * 1.4 * clamp(0.8rem, 2.1 * var(--pwa-vh), 0.95rem));
 }
 
-/* Las transiciones de escritorio al eje de la orbe (Carlos, 23 nov 2026):
-   el emblema a la altura de la orbe del hero, sin línea divisoria, y el botón
-   como ancla común de Tercera llamada y la pausa; a la más corta le sobra
-   aire, un tercio arriba del texto y el resto antes del botón.
+/* Las transiciones al eje de la orbe (Carlos, 23 nov 2026; primero en
+   escritorio, desde la tarde también en teléfono y tableta): el emblema a la
+   altura de la orbe del hero, sin línea divisoria, cada escena de una
+   pantalla completa (así no asoma la anterior bajo la cabecera) y el botón
+   como ancla común de Tercera llamada, la pausa y El aplauso; a la más corta
+   le sobra aire, un tercio arriba del texto y el resto antes del botón.
    hooks/useTransicionesAlEje.js mide y marca <html>; sin la marca (sin hero,
-   o con JavaScript apagado) las escenas siguen centradas como antes. */
-@media (min-width: 1024px) {
-  html[data-transiciones-al-eje] .desktop-viewport-scene {
-    justify-content: flex-start;
-    padding-top: var(--transicion-arriba, clamp(3rem, 6svh, 6rem)) !important;
-  }
+   teléfono acostado o JavaScript apagado) las escenas siguen como antes. */
+html[data-transiciones-al-eje] .desktop-viewport-scene.desktop-viewport-scene {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: calc(100svh - 5rem) !important;
+  padding-top: var(--transicion-arriba, clamp(3rem, 6svh, 6rem)) !important;
+}
 
-  html[data-transiciones-al-eje] .desktop-viewport-scene > .narrative-transition-divider {
-    display: none;
-  }
+html[data-transiciones-al-eje] .desktop-viewport-scene > .narrative-transition-divider {
+  display: none;
+}
 
-  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-card {
-    padding-top: 0;
-  }
+html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-card {
+  padding-top: 0;
+}
 
-  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content {
-    display: flex;
-    flex-direction: column;
-    min-height: var(--transicion-alto, auto);
-  }
+html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--transicion-alto, auto);
+  padding-top: 0;
+}
 
-  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-copy {
-    margin-top: calc(var(--transicion-sobra, 0px) / 3);
-  }
+html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-copy {
+  margin-top: calc(var(--transicion-sobra, 0px) / 3);
+}
 
-  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content > .narrative-transition-cta {
-    margin-top: auto;
-  }
+html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content > .narrative-transition-cta {
+  margin-top: auto;
 }
 
 

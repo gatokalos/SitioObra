@@ -13,7 +13,10 @@ import { useEffect } from 'react';
 //    que arriba»). El emblema y el título no se separan.
 // Aquí solo se mide; index.css aplica las medidas bajo
 // html[data-transiciones-al-eje].
-const CONSULTA = '(min-width: 1024px)';
+// Desde el 23 nov 2026 vale en todas las pantallas donde el hero publica el
+// eje (teléfono y tableta incluidos; el teléfono acostado no lo publica y se
+// queda como antes). En teléfonos chicos el botón solo hace de ancla si
+// todavía cabe en la pantalla al llegar; si no, cada escena conserva el suyo.
 
 // Distancia del borde de arriba de la sección al centro del emblema, sin el
 // relleno de arriba ni transformaciones (la tarjeta entra subiendo 30 px).
@@ -31,7 +34,7 @@ const acomodar = () => {
   const raiz = document.documentElement;
   const secciones = [...document.querySelectorAll('.desktop-viewport-scene')];
   const eje = Number.parseFloat(raiz.style.getPropertyValue('--eje-de-la-orbe'));
-  const activo = window.matchMedia(CONSULTA).matches && Number.isFinite(eje) && secciones.length > 0;
+  const activo = Number.isFinite(eje) && secciones.length > 0;
 
   // Se mide siempre desde el estado natural; quitar y volver a poner ocurre
   // en el mismo cuadro, sin pintarse en medio.
@@ -63,10 +66,19 @@ const acomodar = () => {
     );
     const caja = contenido.getBoundingClientRect();
     const boton = ancla.getBoundingClientRect();
-    medidas.push({ contenido, hasta: boton.bottom - caja.top, cola: caja.bottom - boton.bottom });
+    const marca = emblema.getBoundingClientRect();
+    medidas.push({
+      contenido,
+      hasta: boton.bottom - caja.top,
+      cola: caja.bottom - boton.bottom,
+      // del centro del emblema al pie del botón: al llegar, el emblema está en el eje
+      bajoElEje: boton.bottom - (marca.top + marca.height / 2),
+    });
   }
   if (medidas.length === 0) return;
   const comun = Math.max(...medidas.map((m) => m.hasta));
+  const pieDelAncla = eje + Math.max(...medidas.map((m) => m.bajoElEje));
+  if (pieDelAncla > window.innerHeight - 16) return;
   for (const m of medidas) {
     m.contenido.style.setProperty('--transicion-alto', `${(comun + m.cola).toFixed(1)}px`);
     m.contenido.style.setProperty('--transicion-sobra', `${(comun - m.hasta).toFixed(1)}px`);
