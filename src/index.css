@@ -7922,7 +7922,7 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
 /* Una obra dentro de otra (Carlos, 22 nov 2026: «que la orbe coincidiera con
    la esfera color turquesa», «un desktop dentro de un desktop»). En escritorio
    el hero toma la proporción de la laptop de 1280 × 720, la que más le gustó:
-   - GATOENCERRADO va de orilla a orilla, con el mismo margen que el [#] del
+   - GATOENCERRADO mide tres cuartos del ancho entre los márgenes del [#] del
      programa de mano (--marco-del-programa; las letras miden 10.93 veces la
      fuente, sin el último espaciado).
    - La orbe y el subtítulo crecen con el alto de la pantalla; Hero.jsx sienta
@@ -7969,8 +7969,12 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
 
   /* La sangría compensa el espaciado que queda después de la última letra:
      sin ella el título se cargaba 15 px a la izquierda. */
+  /* Tres cuartos del ancho entre los márgenes del programa de mano (Carlos,
+     22 nov 2026, entre tres anchos: «el intermedio»): el título queda más o
+     menos del ancho de la cabina con sus columnas y la enmarca en vez de
+     atravesarla. */
   #hero .hero-title {
-    font-size: calc((100vw - 2 * var(--marco-del-programa)) / 10.93);
+    font-size: calc((100vw - 2 * var(--marco-del-programa)) * 0.75 / 10.93);
     text-indent: 0.21em;
   }
 
