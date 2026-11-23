@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import TemporadasEscenicas from '@/components/TemporadasEscenicas';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -1964,7 +1963,8 @@ const About = () => {
     <>
     {/* Se abre con «Visitar archivo» en El aplauso (Carlos, 23 nov 2026):
         sin línea divisoria, la ceja llega a la altura de la de La Réplica y
-        la última tarjeta son las temporadas de la obra de teatro. */}
+        después vienen los créditos y la galería, y al final las temporadas
+        (App.jsx, TemporadasEscenicas). */}
     <section id="about" className="relative pt-32 pb-24 md:pt-36 lg:pt-40">
 
       <div className="container mx-auto px-6">
@@ -2085,10 +2085,6 @@ const About = () => {
             </div>
           </div>
         </motion.div>
-
-        {/* Las temporadas, al final: es la tarjeta que no despliega nada
-            (Carlos, 23 nov 2026). */}
-        <TemporadasEscenicas />
 
       </div>
 

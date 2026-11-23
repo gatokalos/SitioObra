@@ -52,6 +52,7 @@ const Transmedia = lazy(loadTransmedia);
 const MiniverseInlineSection = lazy(() => import('@/components/MiniverseInlineSection'));
 const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
+const TemporadasEscenicas = lazy(() => import('@/components/TemporadasEscenicas'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
 const Blog = lazy(() => import('@/components/Blog'));
 const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
@@ -1082,6 +1083,12 @@ function App() {
                             </Suspense>
                           </DeferredSection>
                         )}
+                        {/* Las temporadas cierran el archivo: lo que abren
+                            Créditos y Galería queda entre las dos tarjetas
+                            (Carlos, 23 nov 2026). */}
+                        <Suspense fallback={null}>
+                          <TemporadasEscenicas />
+                        </Suspense>
                       </>
                     )}
 

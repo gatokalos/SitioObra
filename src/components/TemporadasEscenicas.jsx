@@ -1,12 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Las temporadas de la obra de teatro (antes en Caída del telón). Desde el
-// 23 nov 2026 son la última tarjeta del archivo («Visitar archivo» en El
-// aplauso), con la maqueta de Carlos: la foto y su texto, y las pestañas de
-// las temporadas abajo, al centro. No despliega nada: se ve ahí mismo.
+// 23 nov 2026 cierran el archivo que abre «Visitar archivo» en El aplauso,
+// después de los créditos y la galería. No despliega nada: se ve ahí mismo.
 const SHOW_HISTORY = [
   {
     id: 'camafeo',
@@ -36,6 +35,31 @@ const SHOW_HISTORY = [
 
 const TemporadasEscenicas = () => {
   const [activeShowId, setActiveShowId] = useState('cecut');
+  // Quien llega hasta aquí recorrió el archivo completo: la taquilla («Antes
+  // de irte») aparece sola debajo, sin mover la pantalla, para que no tenga
+  // que volver a subir a El aplauso (Carlos, 23 nov 2026).
+  const tarjetaRef = useRef(null);
+  useEffect(() => {
+    const tarjeta = tarjetaRef.current;
+    if (!tarjeta || typeof IntersectionObserver === 'undefined') return undefined;
+    // Cuenta solo si la tarjeta se queda a la vista casi un segundo: al
+    // abrir Créditos o Galería la página pasa por encima de ella de camino.
+    let espera = 0;
+    const observador = new IntersectionObserver((entradas) => {
+      const aLaVista = entradas.some((e) => e.isIntersecting);
+      window.clearTimeout(espera);
+      if (!aLaVista) return;
+      espera = window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-before-leaving'));
+        observador.disconnect();
+      }, 900);
+    }, { threshold: 0.5 });
+    observador.observe(tarjeta);
+    return () => {
+      window.clearTimeout(espera);
+      observador.disconnect();
+    };
+  }, []);
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
     [activeShowId]
@@ -45,12 +69,15 @@ const TemporadasEscenicas = () => {
   // pedido de Carlos (23 nov 2026): la misma rejilla, la foto del alto del
   // video (h-96) y las temporadas como sus dos botones, en el mismo lugar.
   return (
+    <section id="temporadas" className="relative pb-24">
+    <div className="container mx-auto px-6">
     <motion.div
+      ref={tarjetaRef}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
       viewport={{ once: true }}
-      className="glass-effect relative overflow-hidden rounded-2xl p-8 md:p-12 mt-12"
+      className="glass-effect relative overflow-hidden rounded-2xl p-8 md:p-12"
     >
       <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
         <AnimatePresence mode="wait">
@@ -117,6 +144,8 @@ const TemporadasEscenicas = () => {
       <div aria-hidden="true" className="absolute -top-20 -left-20 w-64 h-64 bg-purple-900/20 rounded-full blur-3xl animate-pulse"></div>
       <div aria-hidden="true" className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-900/20 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
     </motion.div>
+    </div>
+    </section>
   );
 };
 
