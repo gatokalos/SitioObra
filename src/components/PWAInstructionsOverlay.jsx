@@ -5,6 +5,11 @@ import { Share, Plus, Check, MoreVertical, Download, ArrowDown } from 'lucide-re
 
 const SYMBOLS = { menu: MoreVertical, download: Download, share: Share, plus: Plus, check: Check };
 
+// La primera instrucción (en amarillo) espera a que se alcance a leer «Esta
+// obra se disfruta más como app instalada.» (Carlos, 22 nov 2026). Las
+// siguientes salen al tocar el [#], como siempre.
+const PRIMERA_INSTRUCCION_MS = 2600;
+
 const PWAInstructionsOverlay = ({
   isOpen,
   onClose,
@@ -15,6 +20,19 @@ const PWAInstructionsOverlay = ({
 }) => {
   const [visibleHeight, setVisibleHeight] = useState(null);
   const prefersReducedMotion = useReducedMotion();
+  const [primeraInstruccionLista, setPrimeraInstruccionLista] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') {
+      setPrimeraInstruccionLista(false);
+      return undefined;
+    }
+    const timerId = window.setTimeout(
+      () => setPrimeraInstruccionLista(true),
+      prefersReducedMotion ? 0 : PRIMERA_INSTRUCCION_MS,
+    );
+    return () => window.clearTimeout(timerId);
+  }, [isOpen, prefersReducedMotion]);
 
   useEffect(() => {
     if (!isOpen || typeof window === 'undefined') return undefined;
@@ -33,7 +51,10 @@ const PWAInstructionsOverlay = ({
   if (!isOpen || typeof document === 'undefined') return null;
 
   const viewportStyle = { '--pwa-vh': visibleHeight ? `${visibleHeight / 100}px` : '1svh' };
-  const instruction = steps[currentStep - 1]?.text;
+  // Si toca el [#] antes de que salga la primera, la del paso siguiente sale ya.
+  const instruction = primeraInstruccionLista || currentStep > 1
+    ? steps[currentStep - 1]?.text
+    : null;
 
   return (
     <>
@@ -118,9 +139,13 @@ const PWAInstructionsOverlay = ({
                   key={currentStep}
                   className="hero-pwa-hash-whisper"
                   initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: prefersReducedMotion ? 0.1 : 0.2 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    // La primera entra despacio; todas se van rápido.
+                    transition: { duration: prefersReducedMotion ? 0.1 : currentStep === 1 ? 0.6 : 0.2 },
+                  }}
+                  exit={{ opacity: 0, transition: { duration: prefersReducedMotion ? 0.1 : 0.2 } }}
                 >
                   {instruction}
                 </motion.span>
