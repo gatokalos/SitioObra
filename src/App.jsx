@@ -987,7 +987,12 @@ function App() {
               showObraDestacadaNav={isObraDestacadaVisible}
               showBeforeLeavingNav={isBeforeLeavingVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
-              showGatChip={isAuthenticated || isHeroActivated}
+              // El chip de Energía sale de la cabecera (Carlos, 22 nov 2026: «la
+              // fase 0 es como un vestíbulo sideral»; el umbral del regreso ya
+              // lleva a cada quien a lo suyo). Era la puerta al Vestíbulo
+              // Sideral en el navegador; en la app instalada se sigue abriendo
+              // solo.
+              showGatChip={false}
             />
 
             <div className="relative z-10">
