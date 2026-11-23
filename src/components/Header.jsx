@@ -714,8 +714,8 @@ const Header = ({
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-    ...(showBeforeLeavingNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
-    { name: 'Salida', href: '#contact' },
+    ...(showBeforeLeavingNav ? [{ name: 'La salida', href: '#conoce-sistema' }] : []),
+    { name: 'Contacto', href: '#contact' },
   ];
   // Un programa de mano anuncia la función completa, incluidos los actos que
   // todavía no ocurren. Antes, las estaciones no disponibles simplemente no se
@@ -781,9 +781,9 @@ const Header = ({
     // "Antes de irte" no es una estación de la función, es un apéndice: se
     // mantiene condicional en vez de aparecer bloqueado para todos.
     ...(showBeforeLeavingNav
-      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#NuestroModelo' }]
+      ? [{ name: 'La salida', href: '#conoce-sistema', description: '#NuestroModelo' }]
       : []),
-    { name: 'Salida', href: '#contact', description: '#CuriosidadGatuna' },
+    { name: 'Contacto', href: '#contact', description: '#CuriosidadGatuna' },
   ];
 
   const activeSectionHref = useActiveSectionHref(mobileMenuItems.map((item) => item.href));

@@ -2,6 +2,8 @@ import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef,
 import { useHeroTituloAlCentro } from '@/hooks/useHeroTituloAlCentro';
 import { useTransicionesAlEje } from '@/hooks/useTransicionesAlEje';
 import { CONTACTO_EVENTO, leerContactoAbierto, recordarContactoAbierto } from '@/lib/contacto';
+
+const CREDITOS_SESION = 'gatoencerrado:creditos-revealed-session';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import ArticleDrawer from '@/components/ArticleDrawer';
@@ -639,6 +641,30 @@ function App() {
     window.addEventListener(CONTACTO_EVENTO, handleReveal);
     return () => window.removeEventListener(CONTACTO_EVENTO, handleReveal);
   }, []);
+  const [isCreditosVisible, setIsCreditosVisible] = useState(() => {
+    try {
+      return window.sessionStorage.getItem(CREDITOS_SESION) === '1'
+        || window.location.hash.startsWith('#team');
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleReveal = () => {
+      setIsCreditosVisible(true);
+      try { window.sessionStorage.setItem(CREDITOS_SESION, '1'); } catch { /* sin sesión */ }
+    };
+    window.addEventListener('gatoencerrado:reveal-creditos', handleReveal);
+    return () => window.removeEventListener('gatoencerrado:reveal-creditos', handleReveal);
+  }, []);
+  useEffect(() => {
+    if (location.hash.startsWith('#team')) {
+      setIsCreditosVisible(true);
+      // también hace falta el archivo, que los contiene
+      window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    }
+  }, [location.hash]);
   useEffect(() => {
     if (location.hash.startsWith('#contact')) {
       setIsContactoVisible(true);
@@ -1071,11 +1097,16 @@ function App() {
                             <About />
                           </Suspense>
                         </DeferredSection>
+                        {/* Los créditos se abren solo con su botón (o con
+                            #team), no junto con el archivo (Carlos, 23 nov
+                            2026): si no, se meten entre las dos tarjetas. */}
+                        {isCreditosVisible && (
                         <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
                           <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
                             <Team />
                           </Suspense>
                         </DeferredSection>
+                        )}
                         {isFractalGalleryVisible && (
                           <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                             <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>

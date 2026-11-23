@@ -1949,9 +1949,22 @@ const About = () => {
     [stopTrailerPlayback]
   );
 
+  // Los créditos ya no se abren con el archivo: el botón los revela y baja a
+  // ellos cuando ya están montados (Carlos, 23 nov 2026).
   const handleOpenCredits = useCallback(() => {
-    if (typeof document === 'undefined') return;
-    document.getElementById('team')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-creditos'));
+    let intentos = 0;
+    const bajar = () => {
+      const creditos = document.getElementById('team');
+      if (creditos) {
+        creditos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      intentos += 1;
+      if (intentos < 25) window.setTimeout(bajar, 100);
+    };
+    window.setTimeout(bajar, 120);
   }, []);
 
   const handleOpenFractalGallery = useCallback(() => {

@@ -403,7 +403,7 @@ const Contact = () => {
             className={`transition-opacity duration-500 ease-out ${vieneAProponer && !cambiandoFicha ? 'opacity-50' : 'opacity-100'}`}
           >
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  Salida
+  Contacto
 </p>
 
 <h2 ref={titleRef} aria-label={CONTACT_TITLE} className="font-display text-4xl md:text-5xl font-medium mb-6 italic">
