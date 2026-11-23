@@ -1027,7 +1027,7 @@ function App() {
               showCuradoriaNav={isCuradoriaVisible}
               showIntermedioNav={canShowPostHeroContent}
               showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-              showPerspectivasNav={canShowPostHeroContent}
+              showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
               showObraDestacadaNav={isObraDestacadaVisible}
               showBeforeLeavingNav={isBeforeLeavingVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
@@ -1076,11 +1076,17 @@ function App() {
                     {/* Segundo acto / La réplica: una sección propia del recorrido,
                         entre Intermedio y Caída del Telón. No depende de que el archivo
                         de Curaduría esté desplegado. */}
+                    {/* La Réplica, bajo candado hasta que se revela el segundo
+                        acto (Carlos, 23 nov 2026): primero va la pregunta madre
+                        y las formas; si no, las preguntas rotativas se
+                        contestan sin pasar por ellas y el método se salta. */}
+                    {hasEnteredUniverse && canAccessTransmedia && (
                     <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
                       <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
                         <ProvocaSection />
                       </Suspense>
                     </DeferredSection>
+                    )}
 
                     {/* Archivo Escénico / Caída del Telón: siempre visible una vez activada la escena;
                         su CTA revela Obra Destacada + Créditos */}

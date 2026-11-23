@@ -32,6 +32,8 @@ import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
+// Escritorio con mouse: el Programa de mano va en la barra de arriba.
+const PROGRAMA_EN_BARRA_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
 const BITACORA_API_BASE = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
@@ -478,9 +480,30 @@ const Header = ({
     };
   }, []);
 
+  // En escritorio con mouse el Programa de mano se despliega en la barra de
+  // arriba, junto al [#], y el [#] lo vuelve a plegar (Carlos, 23 nov 2026).
+  // En teléfono y tableta sigue el menú de pantalla completa.
+  const [esBarraDeEscritorio, setEsBarraDeEscritorio] = useState(() => (
+    typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia(PROGRAMA_EN_BARRA_QUERY).matches
+  ));
+  const [isBarraAbierta, setIsBarraAbierta] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const consulta = window.matchMedia(PROGRAMA_EN_BARRA_QUERY);
+    const alCambiar = (evento) => {
+      setEsBarraDeEscritorio(evento.matches);
+      if (!evento.matches) setIsBarraAbierta(false);
+    };
+    consulta.addEventListener?.('change', alCambiar);
+    return () => consulta.removeEventListener?.('change', alCambiar);
+  }, []);
+
   useEffect(() => {
     if (shouldGateIndexUntilHeroReveal) {
       setIsMenuOpen(false);
+      setIsBarraAbierta(false);
     }
   }, [shouldGateIndexUntilHeroReveal]);
 
@@ -488,11 +511,12 @@ const Header = ({
     if (typeof window === 'undefined') return undefined;
     const handleOpenIndex = () => {
       if (shouldGateIndexUntilHeroReveal) return;
-      setIsMenuOpen(true);
+      if (esBarraDeEscritorio) setIsBarraAbierta(true);
+      else setIsMenuOpen(true);
     };
     window.addEventListener('gatoencerrado:open-index', handleOpenIndex);
     return () => window.removeEventListener('gatoencerrado:open-index', handleOpenIndex);
-  }, [shouldGateIndexUntilHeroReveal]);
+  }, [shouldGateIndexUntilHeroReveal, esBarraDeEscritorio]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -840,8 +864,12 @@ const Header = ({
     if (shouldGateIndexUntilHeroReveal) return;
     setIsGatInfoOpen(false);
     setHasOpenedIndexOnce(true);
+    if (esBarraDeEscritorio) {
+      setIsBarraAbierta((prev) => !prev);
+      return;
+    }
     setIsMenuOpen((prev) => !prev);
-  }, [shouldGateIndexUntilHeroReveal]);
+  }, [shouldGateIndexUntilHeroReveal, esBarraDeEscritorio]);
 
   const acknowledgeGatRevealPulse = useCallback((source = 'header-chip') => {
     if (typeof window === 'undefined') return;
@@ -1593,9 +1621,9 @@ const Header = ({
                   visibility: shouldGateIndexUntilHeroReveal ? 'hidden' : 'visible',
                 }}
                 onClick={handleToggleIndex}
-                aria-controls="site-index-menu"
-                aria-expanded={isMenuOpen}
-                aria-label={`${isMenuOpen ? 'Cerrar' : 'Abrir'} índice de navegación${user ? ' · sesión iniciada' : ''}`}
+                aria-controls={esBarraDeEscritorio ? 'programa-de-mano-barra' : 'site-index-menu'}
+                aria-expanded={esBarraDeEscritorio ? isBarraAbierta : isMenuOpen}
+                aria-label={`${(esBarraDeEscritorio ? isBarraAbierta : isMenuOpen) ? 'Cerrar' : 'Abrir'} el Programa de mano${user ? ' · sesión iniciada' : ''}`}
                 tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
                 <span
@@ -1620,6 +1648,40 @@ const Header = ({
                   />
                 ) : null}
               </motion.button>
+              ) : null}
+              {esBarraDeEscritorio && isBarraAbierta && !isGatLinktreeOpen ? (
+                <motion.div
+                  id="programa-de-mano-barra"
+                  role="navigation"
+                  aria-label="Programa de mano"
+                  initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: prefersReducedMotion ? 0.1 : 0.4, ease: 'easeOut' }}
+                  className="programa-de-mano-barra"
+                >
+                  <span className="programa-de-mano-barra__rotulo">Programa de mano:</span>
+                  {mobileMenuItems.map((item) => (
+                    item.locked ? (
+                      <span
+                        key={item.href}
+                        className="programa-de-mano-barra__estacion programa-de-mano-barra__estacion--cerrada"
+                        title="Se abre más adelante en la función"
+                      >
+                        {item.name}
+                      </span>
+                    ) : (
+                      <button
+                        key={item.href}
+                        type="button"
+                        onClick={() => handleNavClick(item.href)}
+                        aria-current={activeSectionHref === item.href ? 'location' : undefined}
+                        className={`programa-de-mano-barra__estacion${activeSectionHref === item.href ? ' programa-de-mano-barra__estacion--aqui' : ''}`}
+                      >
+                        {item.name}
+                      </button>
+                    )
+                  ))}
+                </motion.div>
               ) : null}
             </div>
 
