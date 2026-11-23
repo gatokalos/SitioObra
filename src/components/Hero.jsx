@@ -611,22 +611,24 @@ const Hero = () => {
 
           const titulo = content.querySelector('.hero-title-stage');
           const capa = titulo?.querySelector('.hero-title');
-          const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
           const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
           if (filaSubtitulo && textoSubtitulo && titulo && capa) {
-            // El centro del texto, no de la fila: la fila guarda lugar de más.
-            const rango = document.createRange();
-            rango.selectNodeContents(textoSubtitulo);
-            const texto = rango.getBoundingClientRect();
-            const centroFila = texto.top + texto.height / 2 - leerTranslateY(filaSubtitulo);
+            // El subtítulo baja a debajo del título (Carlos, 22 nov 2026, con
+            // sus maquetas: la orbe queda sola arriba, sobre la esfera, y el
+            // espacio se equilibra). Se mide el centro de la fila, que no
+            // cambia con la frase que rota, así nada brinca al rotar.
+            const fila = filaSubtitulo.getBoundingClientRect();
+            const centroFila = fila.top + fila.height / 2 - leerTranslateY(filaSubtitulo);
             const cajaTitulo = titulo.getBoundingClientRect();
             const fuente = Number.parseFloat(window.getComputedStyle(capa).fontSize) || 0;
+            const fuenteSub = Number.parseFloat(window.getComputedStyle(textoSubtitulo).fontSize) || 16;
             // Las mayúsculas de Vox Round miden 0.75 de la fuente (medido en
             // captura), centradas en su caja.
-            const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
-            const abajoDeLaOrbe = yEsfera - window.scrollY + imagenOrbe.offsetHeight / 2;
-            const bajaLaFila = (abajoDeLaOrbe + arribaDeLasLetras) / 2 - centroFila;
-            filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
+            const abajoDeLasLetras = cajaTitulo.top + (cajaTitulo.height + 0.75 * fuente) / 2;
+            // Entre las letras del título y las del subtítulo, dos veces la
+            // letra del subtítulo, como en la maqueta.
+            const centroBuscado = abajoDeLasLetras + 2 * fuenteSub + 0.5 * fuenteSub;
+            filaSubtitulo.style.translate = `0 ${(centroBuscado - centroFila).toFixed(1)}px`;
           }
         } else {
           logo.style.translate = '';
