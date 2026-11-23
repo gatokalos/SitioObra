@@ -666,10 +666,14 @@ const Hero = () => {
         const filaSubtitulo = content.querySelector('.hero-subtitle-row');
         if (esTactil) {
           const raiz = document.documentElement;
-          // En la página (no en la ventana): la cabina es fija.
+          // Dónde quedan la esfera y las orejas en la página cuando el hero
+          // está arriba (scroll en cero). La cabina es fija: su lugar en la
+          // ventana no cambia al bajar, así que NO se suma el scroll. Sumarlo
+          // (23 nov 2026) hacía que el hero persiguiera a la pantalla en
+          // teléfono cada vez que rotaba el subtítulo.
           const cabinaEnLaVentana = laCabinaEnLaVentana();
-          const yEsfera = cabinaEnLaVentana.esfera + window.scrollY;
-          const yOrejas = cabinaEnLaVentana.orejas + window.scrollY;
+          const yEsfera = cabinaEnLaVentana.esfera;
+          const yOrejas = cabinaEnLaVentana.orejas;
           const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
           const abajoDeLaOrbe = yEsfera + imagenOrbe.offsetHeight / 2;
           // El título, a la mitad entre la orbe y las orejas (su maqueta).
