@@ -98,16 +98,17 @@ const CABINA_OREJAS_Y = 498;
 const yDeLasOrejasDelGato = (ancho, alto) => yEnLaVentana(CABINA_OREJAS_Y, ancho, alto);
 // Solo pantallas con mouse: el iPad en horizontal conserva su hero de antes.
 const HERO_ESCRITORIO_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
-// La misma distribución en teléfono (Carlos, 23 nov 2026, con su maqueta):
-// orbe sobre la esfera, título a la mitad entre la orbe y las orejas del gato,
-// subtítulo a la mitad entre la orbe y el título. Solo teléfono en vertical;
-// las tabletas conservan su hero. La cabina del teléfono es otra imagen
-// (1080 × 1920, App.jsx, (max-width: 767px)): esfera en y = 242, puntas de las
-// orejas en y = 664. Se mide la imagen misma, que es fija y en iOS cambia de
-// alto con las barras del navegador.
-const HERO_TELEFONO_QUERY = '(max-width: 639px)';
-// La mitad del alto chico de la ventana (50svh), donde el título iba antes en
-// teléfono. Se mide con una sonda invisible: en iOS no coincide con innerHeight.
+// La misma distribución en teléfono y tableta, en vertical y en horizontal
+// (Carlos, 23 nov 2026, con su maqueta): orbe sobre la esfera, título a la
+// mitad entre la orbe y las orejas del gato, subtítulo a la mitad entre la
+// orbe y el título. Queda fuera el teléfono acostado: su cabina no muestra la
+// esfera. Hay dos cabinas (App.jsx): la de teléfono, 1080 × 1920, hasta 767 px
+// (esfera en y = 242, orejas en y = 664), y la ancha, 2560 × 1440 (178.5 y
+// 498). Se mide la imagen misma, que es fija y en iOS cambia de alto con las
+// barras del navegador.
+const HERO_TACTIL_QUERY = '(max-width: 639px), (min-height: 520px)';
+// La mitad del alto chico de la ventana (50svh), donde el título iba antes.
+// Se mide con una sonda invisible: en iOS no coincide con innerHeight.
 let sondaDeMitad = null;
 const mitadDeLaVentanaChica = () => {
   if (!sondaDeMitad || !sondaDeMitad.isConnected) {
@@ -118,23 +119,30 @@ const mitadDeLaVentanaChica = () => {
   }
   return sondaDeMitad.offsetHeight;
 };
-const CABINA_TELEFONO_ANCHO = 1080;
-const CABINA_TELEFONO_ALTO = 1920;
-const CABINA_TELEFONO_ESFERA_Y = 242;
-const CABINA_TELEFONO_OREJAS_Y = 664;
-const CABINA_TELEFONO_DESPLAZAMIENTO = 0.075;
-const yEnLaCabinaDelTelefono = (yDeLaImagen) => {
+const CABINA_DE_TELEFONO = { ancho: 1080, alto: 1920, esfera: 242, orejas: 664 };
+const CABINA_ANCHA = { ancho: CABINA_ANCHO, alto: CABINA_ALTO, esfera: CABINA_ESFERA_Y, orejas: CABINA_OREJAS_Y };
+// Devuelve, en la ventana, dónde caen la esfera y las orejas de la cabina.
+const laCabinaEnLaVentana = () => {
   const imagen = document.querySelector('img.hero-guest-cabina');
-  const anchoCaja = imagen?.offsetWidth || document.documentElement.clientWidth;
-  const altoCaja = imagen?.offsetHeight || document.documentElement.clientHeight;
-  const escala = Math.max(anchoCaja / CABINA_TELEFONO_ANCHO, altoCaja / CABINA_TELEFONO_ALTO);
-  const y = (altoCaja - CABINA_TELEFONO_ALTO * escala) * CABINA_POSICION_Y + yDeLaImagen * escala;
+  const raiz = document.documentElement;
+  const esDeTelefono = imagen?.currentSrc
+    ? /mobile/.test(imagen.currentSrc)
+    : window.matchMedia('(max-width: 767px)').matches;
+  const cabina = esDeTelefono ? CABINA_DE_TELEFONO : CABINA_ANCHA;
+  const anchoCaja = imagen?.offsetWidth || raiz.clientWidth;
+  const altoCaja = imagen?.offsetHeight || raiz.clientHeight;
+  const escala = Math.max(anchoCaja / cabina.ancho, altoCaja / cabina.alto);
+  const arriba = (altoCaja - cabina.alto * escala) * CABINA_POSICION_Y;
+  let enLaVentana;
   if (imagen && imagen.offsetHeight > 0) {
     // La caja ya trae su translateY y su scale(1.1): se lee de su rectángulo.
     const caja = imagen.getBoundingClientRect();
-    return caja.top + y * (caja.height / altoCaja);
+    enLaVentana = (y) => caja.top + (arriba + y * escala) * (caja.height / altoCaja);
+  } else {
+    const desplazamiento = raiz.clientWidth >= 769 ? CABINA_DESPLAZAMIENTO : 0.075;
+    enLaVentana = (y) => altoCaja / 2 + CABINA_ESCALA * (arriba + y * escala - altoCaja / 2) + desplazamiento * altoCaja;
   }
-  return altoCaja / 2 + CABINA_ESCALA * (y - altoCaja / 2) + CABINA_TELEFONO_DESPLAZAMIENTO * altoCaja;
+  return { esfera: enLaVentana(cabina.esfera), orejas: enLaVentana(cabina.orejas) };
 };
 
 const leerTranslateY = (elemento) => Number.parseFloat(
@@ -648,13 +656,20 @@ const Hero = () => {
         // centro entre la orbe y las letras del título. Todo con `translate`,
         // sin tocar el layout ni el centrado del título (useHeroTituloAlCentro).
         const esEscritorio = window.matchMedia(HERO_ESCRITORIO_QUERY).matches;
-        const esTelefono = !esEscritorio && window.matchMedia(HERO_TELEFONO_QUERY).matches;
+        const esTactil = !esEscritorio && window.matchMedia(HERO_TACTIL_QUERY).matches;
+        // index.css lee esta marca (transición de la orbe, el hero sin recorte).
+        const seccionHero = document.getElementById('hero');
+        if (seccionHero) {
+          if (esTactil) seccionHero.setAttribute('data-hero-tactil', '');
+          else seccionHero.removeAttribute('data-hero-tactil');
+        }
         const filaSubtitulo = content.querySelector('.hero-subtitle-row');
-        if (esTelefono) {
+        if (esTactil) {
           const raiz = document.documentElement;
           // En la página (no en la ventana): la cabina es fija.
-          const yEsfera = yEnLaCabinaDelTelefono(CABINA_TELEFONO_ESFERA_Y) + window.scrollY;
-          const yOrejas = yEnLaCabinaDelTelefono(CABINA_TELEFONO_OREJAS_Y) + window.scrollY;
+          const cabinaEnLaVentana = laCabinaEnLaVentana();
+          const yEsfera = cabinaEnLaVentana.esfera + window.scrollY;
+          const yOrejas = cabinaEnLaVentana.orejas + window.scrollY;
           const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
           const abajoDeLaOrbe = yEsfera + imagenOrbe.offsetHeight / 2;
           // El título, a la mitad entre la orbe y las orejas (su maqueta).

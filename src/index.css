@@ -8102,28 +8102,25 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   letter-spacing: 0.06em;
 }
 
-/* La distribución de escritorio, en teléfono (Carlos, 23 nov 2026): la orbe
-   sube a la esfera de la cabina (Hero.jsx, HERO_TELEFONO_QUERY) y el hero ya
-   no recorta lo que asoma sobre su borde, bajo la cabecera: dejaba una franja
-   de orilla recta. Igual que en escritorio. */
-@media (max-width: 639px) {
-  #hero {
-    overflow: visible;
-    overflow-x: clip;
-  }
+/* La distribución de escritorio, en teléfono y tableta (Carlos, 23 nov 2026):
+   Hero.jsx marca el hero con data-hero-tactil cuando la orbe sube a la esfera
+   de la cabina (no en escritorio con mouse ni en el teléfono acostado).
+   1. El hero ya no recorta lo que asoma sobre su borde, bajo la cabecera:
+      dejaba una franja de orilla recta. Igual que en escritorio.
+   2. Al encender la escena la orbe sube desde el centro de la cinta hasta la
+      esfera: Hero.jsx le cambia el `translate`; el fundido de entrada (0.9 s)
+      lo hace Framer al mismo tiempo. */
+#hero[data-hero-tactil] {
+  overflow: visible;
+  overflow-x: clip;
 }
 
-/* Al encender la escena en teléfono la orbe sube desde el centro de la cinta
-   hasta la esfera de la cabina (Carlos, 23 nov 2026). Hero.jsx le cambia el
-   `translate`; el fundido de entrada (0.9 s) lo hace Framer al mismo tiempo. */
-@media (max-width: 639px) {
-  #hero .hero-logo--portal {
-    transition: translate 1.9s cubic-bezier(0.5, 0, 0.2, 1);
-  }
+#hero[data-hero-tactil] .hero-logo--portal {
+  transition: translate 1.9s cubic-bezier(0.5, 0, 0.2, 1);
 }
 
-@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
-  #hero .hero-logo--portal {
+@media (prefers-reduced-motion: reduce) {
+  #hero[data-hero-tactil] .hero-logo--portal {
     transition: none;
   }
 }
