@@ -6997,8 +6997,12 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
     color: rgba(226, 232, 240, 0.86);
   }
 
+  /* Desde el 22 nov 2026 va al centro de su caja, como en teléfono (Carlos
+     eligió «subtítulo centrado»): apoyado abajo le quedaban unos 50 px de aire
+     con la orbe y 20 con el título; centrado queda equidistante (37 y 35 en
+     1440 × 900) sin mover la orbe, la espiral ni el [#]. */
   #hero .hero-subtitle-copy {
-    align-items: flex-end;
+    align-items: center;
   }
 }
 
