@@ -83,12 +83,19 @@ const CABINA_ESFERA_Y = 178.5;
 const CABINA_POSICION_Y = 0.28;
 const CABINA_DESPLAZAMIENTO = 0.1025;
 const CABINA_ESCALA = 1.1;
-const yDeLaEsferaDeLaCabina = (ancho, alto) => {
+const yEnLaVentana = (yDeLaImagen, ancho, alto) => {
   const escala = Math.max(ancho / CABINA_ANCHO, alto / CABINA_ALTO);
   const arriba = (alto - CABINA_ALTO * escala) * CABINA_POSICION_Y;
-  const y = arriba + CABINA_ESFERA_Y * escala;
+  const y = arriba + yDeLaImagen * escala;
   return alto / 2 + CABINA_ESCALA * (y - alto / 2) + CABINA_DESPLAZAMIENTO * alto;
 };
+const yDeLaEsferaDeLaCabina = (ancho, alto) => yEnLaVentana(CABINA_ESFERA_Y, ancho, alto);
+// Las puntas de las orejas del gato, en y = 498 de la imagen (43 % del alto en
+// 1440 × 900): el título se apoya justo encima para no taparle la cara
+// (Carlos, 22 nov 2026: «ya no soportaba ver que el título le tapara la cara
+// al gato»).
+const CABINA_OREJAS_Y = 498;
+const yDeLasOrejasDelGato = (ancho, alto) => yEnLaVentana(CABINA_OREJAS_Y, ancho, alto);
 // Solo pantallas con mouse: el iPad en horizontal conserva su hero de antes.
 const HERO_ESCRITORIO_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
 
@@ -599,6 +606,24 @@ const Hero = () => {
         if (esEscritorio) {
           const raiz = document.documentElement;
           const yEsfera = yDeLaEsferaDeLaCabina(raiz.clientWidth, raiz.clientHeight);
+          // El título se apoya justo encima de las orejas del gato, en vez de
+          // ir a la mitad de la pantalla. Se reescribe el desplazamiento que
+          // useHeroTituloAlCentro calcula (--hero-titulo-al-centro) en el
+          // contenedor, que lo heredan el título y la orbe; si aún no hay
+          // medida del título, el respaldo deja el desplazamiento en cero.
+          const capaTitulo = content.querySelector('.hero-title-stage .hero-title');
+          const fuenteTitulo = capaTitulo ? Number.parseFloat(window.getComputedStyle(capaTitulo).fontSize) || 0 : 0;
+          if (fuenteTitulo > 0) {
+            const yOrejas = yDeLasOrejasDelGato(raiz.clientWidth, raiz.clientHeight);
+            // Las letras bajan hasta tocar apenas las puntas de las orejas
+            // (1.5 % del alto): la cara queda libre y entre la orbe y el
+            // título hay aire para el subtítulo.
+            const centroDelTitulo = yOrejas + raiz.clientHeight * 0.015 - 0.375 * fuenteTitulo;
+            content.style.setProperty(
+              '--hero-titulo-al-centro',
+              `calc(${centroDelTitulo.toFixed(1)}px - var(--hero-titulo-y0, ${centroDelTitulo.toFixed(1)}px))`
+            );
+          }
           const arribaDelContenido = content.getBoundingClientRect().top + window.scrollY;
           const subeLaOrbe = yEsfera - (arribaDelContenido + nextCenterY);
           logo.style.translate = `0 ${subeLaOrbe.toFixed(1)}px`;
@@ -615,10 +640,9 @@ const Hero = () => {
           const textoSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-copy');
           const imagenOrbe = logo.querySelector('.hero-logo-img') ?? logo;
           if (filaSubtitulo && textoSubtitulo && titulo && capa) {
-            // El subtítulo, arriba del título y en un renglón, más cerca de la
-            // orbe que del título: a un tercio del camino (Carlos, 22 nov
-            // 2026). Se lee como el pie de la orbe y el aire de abajo queda
-            // para el título.
+            // El subtítulo, en un renglón, al centro entre la orbe y el título
+            // (Carlos, 22 nov 2026): con el título sobre las orejas del gato,
+            // la orbe, el subtítulo y el título se leen como una sola pieza.
             // La caja del texto (no la fila, que trae margen abajo): su centro
             // no cambia con la frase.
             const caja = textoSubtitulo.getBoundingClientRect();
@@ -629,12 +653,13 @@ const Hero = () => {
             // captura), centradas en su caja.
             const arribaDeLasLetras = cajaTitulo.top + (cajaTitulo.height - 0.75 * fuente) / 2;
             const abajoDeLaOrbe = yEsfera - window.scrollY + imagenOrbe.offsetHeight / 2;
-            const bajaLaFila = abajoDeLaOrbe + (arribaDeLasLetras - abajoDeLaOrbe) / 3 - centroFila;
+            const bajaLaFila = (abajoDeLaOrbe + arribaDeLasLetras) / 2 - centroFila;
             filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
           }
         } else {
           logo.style.translate = '';
           content.style.removeProperty('--hero-signal-frame-h');
+          content.style.removeProperty('--hero-titulo-al-centro');
           if (filaSubtitulo) filaSubtitulo.style.translate = '';
         }
         setHeroSignalCenterY((current) =>
