@@ -197,18 +197,14 @@ const HERO_BACKGROUND_VARIANTS = {
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
 const HERO_GUEST_CABINA_IDLE_OPACITY = 0;
-const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.33;
-const HERO_GUEST_CABINA_REVEALED_FILTER = 'contrast(78%) brightness(78%) saturate(74%)';
-// En teléfono el gato de la cabina se veía muy oscuro (Carlos, 22 nov 2026).
-// El sitio no lee la luz del entorno: es el teléfono, con el brillo automático
-// y las pantallas que tragan los tonos oscuros. Ahí la cabina sale con más
-// luz. Mismo corte que la imagen de teléfono. Desde el 23 nov 2026 el
-// escritorio con mouse sube igual («que el gato en la cabina también aumente
-// el mismo brillo en escritorio»); las tabletas quedan como estaban.
-const HERO_GUEST_CABINA_PHONE_QUERY =
-  '(max-width: 767px), (min-width: 1024px) and (hover: hover) and (pointer: fine)';
-const HERO_GUEST_CABINA_REVEALED_OPACITY_PHONE = 0.52;
-const HERO_GUEST_CABINA_REVEALED_FILTER_PHONE = 'contrast(86%) brightness(100%) saturate(82%)';
+// El gato de la cabina encendida se veía muy oscuro en teléfono (Carlos,
+// 22 nov 2026): el sitio no lee la luz del entorno, y el brillo automático y
+// las pantallas que tragan los tonos oscuros lo apagaban. Se le dio más luz
+// (antes 0.33 y contrast(78%) brightness(78%) saturate(74%)). Desde el 23 nov
+// 2026 la misma luz en todas las pantallas: «que el brillo que le aumentamos
+// se mantenga homogéneo en todas las pantallas».
+const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.52;
+const HERO_GUEST_CABINA_REVEALED_FILTER = 'contrast(86%) brightness(100%) saturate(82%)';
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
@@ -220,28 +216,16 @@ const HeroBackground = ({ isAuthenticated = false }) => {
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
     : HERO_BACKGROUND_VARIANTS.guest;
-  const [isPhoneCabina, setIsPhoneCabina] = useState(() => (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia(HERO_GUEST_CABINA_PHONE_QUERY).matches
-  ));
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const query = window.matchMedia(HERO_GUEST_CABINA_PHONE_QUERY);
-    const onChange = (event) => setIsPhoneCabina(event.matches);
-    query.addEventListener?.('change', onChange);
-    return () => query.removeEventListener?.('change', onChange);
-  }, []);
   const isGuestCabina = !isAuthenticated;
   const guestCabinaOpacity = isHeroSceneRevealed
-    ? isPhoneCabina ? HERO_GUEST_CABINA_REVEALED_OPACITY_PHONE : HERO_GUEST_CABINA_REVEALED_OPACITY
+    ? HERO_GUEST_CABINA_REVEALED_OPACITY
     : HERO_GUEST_CABINA_IDLE_OPACITY;
   const backgroundImageOpacity = isGuestCabina
     ? guestCabinaOpacity
     : backgroundVariant.style.opacity;
   const backgroundImageFilter = isGuestCabina
     ? isHeroSceneRevealed
-      ? isPhoneCabina ? HERO_GUEST_CABINA_REVEALED_FILTER_PHONE : HERO_GUEST_CABINA_REVEALED_FILTER
+      ? HERO_GUEST_CABINA_REVEALED_FILTER
       : 'contrast(68%) brightness(46%) saturate(58%) blur(1px)'
     : backgroundVariant.style.filter;
   const stageVeilOpacity = isGuestCabina
