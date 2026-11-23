@@ -15,9 +15,9 @@ import { CATALOG, momentoDeLaForma, readResonanceProgress } from './bitacoraShar
 import { safeGetItem } from './safeStorage.js';
 
 export const FRASE_DEL_UMBRAL = {
-  volvio: 'Si algo volvió a ti, pulsa el gato',
-  'te-escucha': 'La obra también te escucha. Pulsa el gato',
-  'queda-escena': 'Aún queda escena. Pulsa el gato',
+  volvio: 'Si algo volvió a ti, pulsa el gato.',
+  'te-escucha': 'La obra también te escucha…',
+  'queda-escena': 'Aún queda escena…',
 };
 
 // Una sola por visita: la que va primero aquí gana.
