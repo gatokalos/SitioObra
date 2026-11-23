@@ -7988,25 +7988,4 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   #hero .hero-logo--portal {
     --hero-portal-logo-size: clamp(96px, 13.33vh, 260px);
   }
-
-  /* Umbral en contorno (Carlos, 22 nov 2026). El título y los umbrales que
-     lo siguen (LAS NUEVE FORMAS, LA RÉPLICA) son letras transparentes con
-     contorno claro y sombras de color: Chrome pintaba esas sombras también
-     dentro de la letra (una casi negra la rellenaba) y Safari no las pintaba,
-     así que en Safari solo quedaba el contorno. Ahora, igual en los dos: el
-     contorno con el interior transparente, como en Safari, y el halo con
-     tintes de Chrome como un resplandor que sigue el contorno (morado y el
-     vino del sitio), que los dos navegadores dibujan. */
-  #hero .hero-title--scene-active,
-  .provoca-act-title--section {
-    text-shadow: none;
-  }
-
-  #hero .hero-title--scene-active > span,
-  .provoca-act-title--section > span {
-    filter:
-      drop-shadow(0 0 1px rgba(255, 228, 250, 0.45))
-      drop-shadow(0 0 7px rgba(139, 92, 246, 0.55))
-      drop-shadow(0 0 20px rgba(161, 49, 72, 0.32));
-  }
 }
