@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { markIntermedioVisto } from '@/lib/intermedio';
 import { vigilarAppInstalada } from '@/lib/registroSitio';
+import { agrandarLaVentanaDeLaApp } from '@/lib/pwaDetection';
 import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
@@ -569,6 +570,8 @@ function App() {
   // 2026): Primer Contacto lo cuenta. Va aquí, en la raíz, porque el aviso de
   // instalación solo llega mientras la página está abierta.
   useEffect(() => vigilarAppInstalada(), []);
+  // La app instalada en escritorio intenta ocupar toda la pantalla la primera vez.
+  useEffect(() => { agrandarLaVentanaDeLaApp(); }, []);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleActivated = () => setIsHeroActivated(true);
