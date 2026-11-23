@@ -10,8 +10,8 @@ import useScrambleText from '@/hooks/useScrambleText';
 // - «Visitar archivo» revela la obra fundacional (con las temporadas como
 //   última tarjeta) y sus créditos, y baja a ella;
 // - «Antes de irte» revela la taquilla.
-// El título y el copy son de Carlos; el nombre puede cambiar. El emblema es
-// provisional hasta que llegue el suyo (.aplauso-emblema-provisional).
+// El título y el copy son de Carlos; el nombre puede cambiar. El emblema,
+// «El anillo que vuelve al punto», contiene a la vez despedida y origen.
 // Conserva el id #next-show para los enlaces del Programa de mano.
 const TITLE_FIRST_LINE = 'El aplauso…';
 const TITLE_SECOND_LINE = 'decirnos adiós';
@@ -64,7 +64,13 @@ const NextShow = () => {
           </div>
 
           <div className="narrative-transition-content relative z-10">
-            <div aria-hidden="true" className="narrative-section-logo aplauso-emblema-provisional mx-auto mb-5" />
+            <img
+              src="/assets/AplausoLogo.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              className="narrative-section-logo mx-auto mb-5 object-contain"
+            />
             <h3 ref={titleRef} aria-label={TITLE} className="narrative-transition-title relative font-display text-3xl font-medium text-slate-100 mb-6 text-center">
               <span aria-hidden="true" className="invisible">{TITLE_FIRST_LINE}<br />{TITLE_SECOND_LINE}</span>
               <span aria-hidden="true" className="titulo-perlado absolute inset-0">
