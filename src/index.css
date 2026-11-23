@@ -7981,4 +7981,12 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   #hero .hero-logo--portal {
     --hero-portal-logo-size: clamp(96px, 13.33vh, 260px);
   }
+
+  /* La orbe, sin resplandor por fuera (Carlos, 22 nov 2026: «quitarle el
+     glow que tiene por fuera», solo en escritorio). Teléfono y tableta
+     conservan su drop-shadow lila. */
+  #hero .hero-logo-img {
+    -webkit-filter: none;
+    filter: none;
+  }
 }
