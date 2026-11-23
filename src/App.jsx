@@ -202,8 +202,11 @@ const HERO_GUEST_CABINA_REVEALED_FILTER = 'contrast(78%) brightness(78%) saturat
 // En teléfono el gato de la cabina se veía muy oscuro (Carlos, 22 nov 2026).
 // El sitio no lee la luz del entorno: es el teléfono, con el brillo automático
 // y las pantallas que tragan los tonos oscuros. Ahí la cabina sale con más
-// luz; en escritorio queda igual. Mismo corte que la imagen de teléfono.
-const HERO_GUEST_CABINA_PHONE_QUERY = '(max-width: 767px)';
+// luz. Mismo corte que la imagen de teléfono. Desde el 23 nov 2026 el
+// escritorio con mouse sube igual («que el gato en la cabina también aumente
+// el mismo brillo en escritorio»); las tabletas quedan como estaban.
+const HERO_GUEST_CABINA_PHONE_QUERY =
+  '(max-width: 767px), (min-width: 1024px) and (hover: hover) and (pointer: fine)';
 const HERO_GUEST_CABINA_REVEALED_OPACITY_PHONE = 0.52;
 const HERO_GUEST_CABINA_REVEALED_FILTER_PHONE = 'contrast(86%) brightness(100%) saturate(82%)';
 

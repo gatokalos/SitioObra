@@ -738,7 +738,14 @@ const Hero = () => {
             // Las letras bajan hasta tocar apenas las puntas de las orejas
             // (1.5 % del alto): la cara queda libre y entre la orbe y el
             // título hay aire para el subtítulo.
-            const centroDelTitulo = yOrejas + raiz.clientHeight * 0.015 - 0.375 * fuenteTitulo;
+            const sobreLasOrejas = yOrejas + raiz.clientHeight * 0.015 - 0.375 * fuenteTitulo;
+            // En pantallas casi cuadradas (Carlos, 23 nov 2026, 1640 × 1290)
+            // las orejas quedan lejos de la orbe y sobraba aire. Tope: del pie
+            // de la orbe a las letras, a lo sumo una letra del título (en 16:9
+            // es 0.84; en 16:10, 1.0: ahí no cambia nada).
+            const imagenDeLaOrbe = logo.querySelector('.hero-logo-img') ?? logo;
+            const pieDeLaOrbe = yEsfera + imagenDeLaOrbe.offsetHeight / 2;
+            const centroDelTitulo = Math.min(sobreLasOrejas, pieDeLaOrbe + 1.475 * fuenteTitulo);
             content.style.setProperty(
               '--hero-titulo-al-centro',
               `calc(${centroDelTitulo.toFixed(1)}px - var(--hero-titulo-y0, ${centroDelTitulo.toFixed(1)}px))`
