@@ -203,6 +203,12 @@ const HeroInactiveSignal = ({
             <stop offset="0.72" stopColor="black" stopOpacity="0.36" />
             <stop offset="1" stopColor="black" stopOpacity="0" />
           </radialGradient>
+          <radialGradient id="hero-inactive-signal-tail-fade" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="black" stopOpacity="0.9" />
+            <stop offset="0.3" stopColor="black" stopOpacity="0.78" />
+            <stop offset="0.68" stopColor="black" stopOpacity="0.3" />
+            <stop offset="1" stopColor="black" stopOpacity="0" />
+          </radialGradient>
           <mask
             id="hero-inactive-signal-mask"
             maskUnits="userSpaceOnUse"
@@ -217,6 +223,16 @@ const HeroInactiveSignal = ({
               cy="378"
               r="92"
               fill="url(#hero-inactive-signal-tip-fade)"
+            />
+            {/* La cola se disuelve al llegar al [#] en vez de cortarse letra
+                por letra (Carlos, 22 nov 2026: «se come una letra por
+                letra»). Centrada en la punta del trazo; deja un rastro
+                tenue que toca al [#]. */}
+            <circle
+              cx="304"
+              cy="667"
+              r="88"
+              fill="url(#hero-inactive-signal-tail-fade)"
             />
           </mask>
           <mask
