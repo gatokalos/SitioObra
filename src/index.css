@@ -8125,6 +8125,13 @@ textarea.tu-texto__titulo-propio { resize: none; overflow: hidden; line-height: 
   transition: translate 1.9s cubic-bezier(0.5, 0, 0.2, 1);
 }
 
+/* En vertical el subtítulo va debajo del título (maqueta de Carlos, 23 nov
+   2026): la frase se apoya arriba de su caja, pegada a las letras, y la de un
+   renglón no queda flotando a media caja. Hero.jsx lo coloca. */
+#hero[data-hero-tactil][data-hero-vertical] .hero-subtitle-copy {
+  align-items: flex-start;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #hero[data-hero-tactil] .hero-logo--portal {
     transition: none;

@@ -389,8 +389,10 @@ const Contact = () => {
     : null;
 
   return (
-    <section id="contact" className="py-24 relative min-h-[880px]">
-      <div className="section-divider mb-24"></div>
+    <section id="contact" className="relative min-h-[880px] pt-28 pb-24 md:pt-36 lg:pt-40">
+      {/* La ceja y el título a la altura de las otras vistas que se abren
+          (la obra fundacional, About.jsx), sin línea divisoria (Carlos, 23
+          nov 2026). */}
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

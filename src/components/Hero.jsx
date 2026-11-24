@@ -657,10 +657,15 @@ const Hero = () => {
         const esEscritorio = window.matchMedia(HERO_ESCRITORIO_QUERY).matches;
         const esTactil = !esEscritorio && window.matchMedia(HERO_TACTIL_QUERY).matches;
         // index.css lee esta marca (transición de la orbe, el hero sin recorte).
+        // En vertical (teléfonos y tabletas) el subtítulo va DEBAJO del título
+        // (maqueta de Carlos, 23 nov 2026); acostado sigue entre la orbe y él.
+        const esVertical = esTactil && window.matchMedia('(orientation: portrait)').matches;
         const seccionHero = document.getElementById('hero');
         if (seccionHero) {
           if (esTactil) seccionHero.setAttribute('data-hero-tactil', '');
           else seccionHero.removeAttribute('data-hero-tactil');
+          if (esVertical) seccionHero.setAttribute('data-hero-vertical', '');
+          else seccionHero.removeAttribute('data-hero-vertical');
         }
         const filaSubtitulo = content.querySelector('.hero-subtitle-row');
         if (esTactil) {
@@ -686,13 +691,25 @@ const Hero = () => {
             : 0;
           // La caja (track) existe desde antes de encender la escena; la frase no.
           const altoDelSubtitulo = filaSubtitulo?.querySelector('.hero-subtitle-track')?.offsetHeight || 0;
-          const centroDelTitulo = Math.min(
-            yOrejas - 0.375 * fuenteDelTitulo,
-            Math.max(
-              (abajoDeLaOrbe + yOrejas) / 2,
-              abajoDeLaOrbe + altoDelSubtitulo + 2 * 10 + 0.375 * fuenteDelTitulo
+          // En vertical el subtítulo ya no va entre ambos: el título queda a
+          // la mitad y, si la caja del subtítulo (debajo, a 10 px; guarda
+          // lugar para dos renglones) pasara de las orejas, sube lo justo,
+          // sin acercarse a la orbe a menos de 10 px.
+          const centroDelTitulo = esVertical
+            ? Math.max(
+              abajoDeLaOrbe + 10 + 0.375 * fuenteDelTitulo,
+              Math.min(
+                (abajoDeLaOrbe + yOrejas) / 2,
+                yOrejas - altoDelSubtitulo - 10 - 0.375 * fuenteDelTitulo + 10
+              )
             )
-          );
+            : Math.min(
+              yOrejas - 0.375 * fuenteDelTitulo,
+              Math.max(
+                (abajoDeLaOrbe + yOrejas) / 2,
+                abajoDeLaOrbe + altoDelSubtitulo + 2 * 10 + 0.375 * fuenteDelTitulo
+              )
+            );
           content.style.setProperty(
             '--hero-titulo-al-centro',
             `calc(${centroDelTitulo.toFixed(1)}px - var(--hero-titulo-y0, ${centroDelTitulo.toFixed(1)}px))`
@@ -737,7 +754,13 @@ const Hero = () => {
               '--eje-del-titulo',
               `${(arribaDeLasLetras + window.scrollY).toFixed(1)}px`
             );
-            const bajaLaFila = (abajoDeLaOrbe - window.scrollY + arribaDeLasLetras) / 2 - centroFila;
+            // Acostado, al centro entre la orbe y las letras. En vertical, la
+            // caja (que guarda lugar para dos renglones y apoya la frase
+            // arriba: index.css) empieza 10 px bajo las letras.
+            const caja0 = filaSubtitulo.querySelector('.hero-subtitle-track')?.getBoundingClientRect();
+            const bajaLaFila = esVertical && caja0
+              ? arribaDeLasLetras + 0.75 * fuente + 10 - (caja0.top - leerTranslateY(filaSubtitulo))
+              : (abajoDeLaOrbe - window.scrollY + arribaDeLasLetras) / 2 - centroFila;
             filaSubtitulo.style.translate = `0 ${bajaLaFila.toFixed(1)}px`;
           }
         } else if (esEscritorio) {

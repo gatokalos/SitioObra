@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Sparkle, Heart } from 'lucide-react';
+import { Sparkle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
@@ -223,12 +223,12 @@ const MiniverseInlineSection = () => {
           About/Blog/Team/Contact/etc. entre secciones) marca el corte con
           Créditos ahora que el título ya no lleva el tratamiento de
           text-gradient que antes lo distinguía visualmente. */}
-      <section id="conoce-sistema" className="pt-0 pb-10 relative overflow-hidden">
-        <div className="miniverse-inline-threshold" aria-hidden="true">
-          <span className="miniverse-inline-threshold__mark">
-            <Heart size={26} strokeWidth={1.6} />
-          </span>
-        </div>
+      <section id="conoce-sistema" className="pt-28 pb-10 md:pt-32 lg:pt-36 relative overflow-hidden">
+        {/* Sin el corazón ni su franja luminosa (Carlos, 23 nov 2026). La
+            pieza sigue en La Réplica (.provoca-stage-entry), que la comparte.
+            El aire de arriba deja «Espera, no te vayas todavía…» en la línea
+            de los títulos de las vistas que se abren (la obra fundacional y
+            Contacto: ceja + título), al llegar con «La salida». */}
         <div
           className={`container relative z-10 mx-auto ${
             isMobileViewport ? 'px-2' : 'px-4'

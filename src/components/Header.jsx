@@ -30,6 +30,7 @@ import {
 import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
 import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
+import { abrirContacto } from '@/lib/contacto';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
 // El Programa de mano va en la barra de arriba en escritorio con mouse y en
@@ -853,9 +854,31 @@ const Header = ({
       }
       return;
     }
+    // Contacto y Créditos están escondidos hasta que se abren (el recorrido
+    // corto, 23 nov 2026): si aún no existen, el Programa de mano los abre y
+    // baja a ellos cuando ya están montados.
+    if (href === '#contact') {
+      abrirContacto();
+      return;
+    }
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (href === '#team') {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-creditos'));
+      let intentos = 0;
+      const bajar = () => {
+        const creditos = document.getElementById('team');
+        if (creditos) {
+          creditos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+        intentos += 1;
+        if (intentos < 25) window.setTimeout(bajar, 100);
+      };
+      window.setTimeout(bajar, 120);
       return;
     }
     if (href === '#instagram') {
