@@ -206,6 +206,11 @@ const MiniverseInlineSection = () => {
     setInitialTabId(resolveInitialTab(location.search, readAvailableGat()));
     setIsOpen(true);
     writeMiniverseInlineOpenToSession();
+    // Al abrirse, la taquilla sube hasta quedar como las otras vistas
+    // (index.css, «La llegada»; Carlos, 24 nov 2026).
+    window.setTimeout(() => {
+      document.getElementById('conoce-sistema')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
   }, [location.search]);
   // No-op a propósito: MiniverseModal llama onClose() ANTES de hacer scroll
   // a #apoya (su propio botón "cómo dejar mi huella"/"cómo funciona"
@@ -223,7 +228,7 @@ const MiniverseInlineSection = () => {
           About/Blog/Team/Contact/etc. entre secciones) marca el corte con
           Créditos ahora que el título ya no lleva el tratamiento de
           text-gradient que antes lo distinguía visualmente. */}
-      <section id="conoce-sistema" className="pt-28 pb-10 md:pt-32 lg:pt-36 relative overflow-hidden">
+      <section id="conoce-sistema" className={`pt-28 pb-10 md:pt-32 lg:pt-36 relative overflow-hidden ${isOpen ? 'taquilla-abierta' : ''}`}>
         {/* Sin el corazón ni su franja luminosa (Carlos, 23 nov 2026). La
             pieza sigue en La Réplica (.provoca-stage-entry), que la comparte.
             El aire de arriba deja «Espera, no te vayas todavía…» en la línea

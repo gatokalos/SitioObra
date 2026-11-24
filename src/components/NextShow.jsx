@@ -26,6 +26,8 @@ const NextShow = () => {
 
   const handleVisitarArchivo = useCallback(() => {
     if (typeof window === 'undefined') return;
+    // Solo las dos tarjetas: si los créditos quedaron abiertos, se recogen.
+    window.dispatchEvent(new CustomEvent('gatoencerrado:recoger-creditos'));
     window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
     window.setTimeout(() => {
       document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

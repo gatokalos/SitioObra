@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
+import FormasDelProtagonista from '@/components/FormasDelProtagonista';
 
 const MobileMenuOverlay = ({
   isOpen,
@@ -244,7 +245,9 @@ const MobileMenuOverlay = ({
               {/* Dos hileras (Carlos, 12 nov 2026): arriba el saludo y el correo
                   completos, sin recortar; abajo «Cerrar sesión» como texto
                   discreto, alineado con el saludo y no con el foquito. */}
-              <div className="flex flex-col gap-2.5 rounded-xl px-3 py-3">
+              {/* A la derecha, las formas que lleva la persona (Carlos, 24 nov 2026). */}
+              <div className="flex items-center gap-3 rounded-xl px-3 py-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-2.5">
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 font-display text-[1.02rem] leading-tight text-slate-100">
                     <span
@@ -264,6 +267,8 @@ const MobileMenuOverlay = ({
                 >
                   Cerrar sesión
                 </button>
+              </div>
+              <FormasDelProtagonista variante="telefono" className="shrink-0" />
               </div>
             </section>
           ) : null}

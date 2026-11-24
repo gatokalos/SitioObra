@@ -31,6 +31,7 @@ import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraSh
 import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
 import { abrirContacto } from '@/lib/contacto';
+import FormasDelProtagonista from '@/components/FormasDelProtagonista';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
 // El Programa de mano va en la barra de arriba en escritorio con mouse y en
@@ -1752,6 +1753,7 @@ const Header = ({
                       className="pantallita-de-la-cabina pantallita-de-la-cabina--panel absolute right-0 top-full mt-2 flex min-w-full flex-col items-start gap-2 rounded-xl border px-4 py-3 backdrop-blur-md"
                     >
                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/80">Protagonista</p>
+                      <FormasDelProtagonista variante="barra" className="my-0.5" />
                       {user?.email ? (
                         <p className="whitespace-nowrap text-[11px] text-slate-400/85">{user.email}</p>
                       ) : null}

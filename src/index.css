@@ -8261,3 +8261,52 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
     left: calc(50% - 2rem);
   }
 }
+
+/* La llegada (Carlos, 24 nov 2026): el Segundo acto, el Camerino y la taquilla
+   abierta empiezan más arriba. Al llegar a ellas (Programa de mano, botones,
+   enlaces), la línea tenue que abre la sección queda pegada al header en
+   escritorio (79 px, su orilla de abajo) y, en teléfono y tableta, a la
+   altura donde empieza el [#]. Se hace con scroll-margin: la sección no
+   cambia, solo dónde se detiene el desplazamiento (html lleva
+   scroll-padding-top de 5rem + el área segura).
+   scroll-margin = llegada − scroll-padding − lo que hay de la orilla de la
+   sección a su línea. */
+:root {
+  --llegada-de-la-linea: calc(env(safe-area-inset-top, 0px) + 1rem);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --llegada-de-la-linea: 79px;
+  }
+}
+
+/* Segundo acto: su línea está tras pt-[clamp(3.5rem,8vh,6rem)] (Transmedia.jsx). */
+#transmedia {
+  scroll-margin-top: calc(var(--llegada-de-la-linea) - 5rem - env(safe-area-inset-top, 0px) - clamp(3.5rem, 8vh, 6rem));
+}
+
+/* El Camerino: su línea está tras py-24 (Blog.jsx). */
+#dialogo-critico {
+  scroll-margin-top: calc(var(--llegada-de-la-linea) - 5rem - env(safe-area-inset-top, 0px) - 6rem);
+}
+
+/* La taquilla abierta no tiene línea: su ceja queda donde queda la del
+   Camerino (6rem + 1px bajo la llegada). Su relleno de arriba es 7rem, 8rem
+   desde md y 9rem desde lg (MiniverseInlineSection.jsx). Cerrada («Espera, no
+   te vayas todavía…») sigue llegando como ayer. */
+#conoce-sistema.taquilla-abierta {
+  scroll-margin-top: calc(var(--llegada-de-la-linea) + 6rem + 1px - 7rem - 5rem - env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 768px) {
+  #conoce-sistema.taquilla-abierta {
+    scroll-margin-top: calc(var(--llegada-de-la-linea) + 6rem + 1px - 8rem - 5rem - env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  #conoce-sistema.taquilla-abierta {
+    scroll-margin-top: calc(var(--llegada-de-la-linea) + 6rem + 1px - 9rem - 5rem - env(safe-area-inset-top, 0px));
+  }
+}

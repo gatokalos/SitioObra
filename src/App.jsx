@@ -641,22 +641,28 @@ function App() {
     window.addEventListener(CONTACTO_EVENTO, handleReveal);
     return () => window.removeEventListener(CONTACTO_EVENTO, handleReveal);
   }, []);
+  // Los créditos ya no se quedan abiertos toda la sesión (Carlos, 24 nov
+  // 2026): al recargar o al pulsar «Cómo empezó» se ven solo las dos tarjetas,
+  // sin los créditos entre ellas. Se abren con su botón, el Programa de mano o
+  // #team.
   const [isCreditosVisible, setIsCreditosVisible] = useState(() => {
     try {
-      return window.sessionStorage.getItem(CREDITOS_SESION) === '1'
-        || window.location.hash.startsWith('#team');
+      window.sessionStorage.removeItem(CREDITOS_SESION);
+      return window.location.hash.startsWith('#team');
     } catch {
       return false;
     }
   });
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const handleReveal = () => {
-      setIsCreditosVisible(true);
-      try { window.sessionStorage.setItem(CREDITOS_SESION, '1'); } catch { /* sin sesión */ }
-    };
+    const handleReveal = () => setIsCreditosVisible(true);
+    const handleRecoger = () => setIsCreditosVisible(false);
     window.addEventListener('gatoencerrado:reveal-creditos', handleReveal);
-    return () => window.removeEventListener('gatoencerrado:reveal-creditos', handleReveal);
+    window.addEventListener('gatoencerrado:recoger-creditos', handleRecoger);
+    return () => {
+      window.removeEventListener('gatoencerrado:reveal-creditos', handleReveal);
+      window.removeEventListener('gatoencerrado:recoger-creditos', handleRecoger);
+    };
   }, []);
   useEffect(() => {
     if (location.hash.startsWith('#team')) {
