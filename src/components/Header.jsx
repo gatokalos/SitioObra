@@ -494,6 +494,11 @@ const Header = ({
     && window.matchMedia(PROGRAMA_EN_BARRA_QUERY).matches
   ));
   const [isBarraAbierta, setIsBarraAbierta] = useState(false);
+  // La caja «Bajo el foco» de la barra despliega el correo y «Cerrar sesión».
+  const [isSesionDeBarraAbierta, setIsSesionDeBarraAbierta] = useState(false);
+  useEffect(() => {
+    if (!isBarraAbierta) setIsSesionDeBarraAbierta(false);
+  }, [isBarraAbierta]);
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const consulta = window.matchMedia(PROGRAMA_EN_BARRA_QUERY);
@@ -794,7 +799,7 @@ const Header = ({
     station(showPerspectivasNav, {
       name: 'Tercer acto',
       href: '#provoca',
-      description: '#TeToca',
+      description: '#LaRéplica',
     }),
     station(showIntermedioNav, {
       name: 'Bajar el telón',
@@ -813,7 +818,7 @@ const Header = ({
     // "Antes de irte" no es una estación de la función, es un apéndice: se
     // mantiene condicional en vez de aparecer bloqueado para todos.
     ...(showBeforeLeavingNav
-      ? [{ name: 'La salida', href: '#conoce-sistema', description: '#NuestroModelo' }]
+      ? [{ name: 'La salida', href: '#conoce-sistema', description: '#AntesDeIrte' }]
       : []),
     { name: 'Contacto', href: '#contact', description: '#CuriosidadGatuna' },
   ];
@@ -1661,9 +1666,13 @@ const Header = ({
                   visible: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07 } },
                   oculto: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.04, staggerDirection: -1 } },
                 }}
-                className="programa-de-mano-barra"
+                className={`programa-de-mano-barra ${user ? 'programa-de-mano-barra--con-sesion' : ''}`}
               >
-                {mobileMenuItems.map((item) => {
+                {mobileMenuItems
+                  // Con sesión, Contacto deja la fila: su lugar en la orilla
+                  // derecha es la caja «Bajo el foco» (Carlos, 23 nov 2026).
+                  .filter((item) => !(user && item.href === '#contact'))
+                  .map((item) => {
                   const isHere = activeSectionHref === item.href;
                   const entrada = {
                     oculto: prefersReducedMotion
@@ -1707,6 +1716,56 @@ const Header = ({
               </motion.div>
             ) : null}
           </AnimatePresence>
+          {/* Con sesión, la orilla derecha de la barra lleva «Bajo el foco»,
+              en espejo del [#] (Carlos, 23 nov 2026): el foquito, el saludo y,
+              al tocarla, el correo y «Cerrar sesión», como en el Programa de
+              mano del teléfono (MobileMenuOverlay). */}
+          <AnimatePresence>
+            {esBarraDeEscritorio && isBarraAbierta && !isGatLinktreeOpen && user ? (
+              <motion.div
+                key="programa-de-mano-sesion"
+                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)', transition: { duration: prefersReducedMotion ? 0.1 : 0.55, delay: prefersReducedMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] } }}
+                exit={{ opacity: 0, filter: 'blur(6px)', transition: { duration: 0.25 } }}
+                className="absolute right-0 top-1/2 z-10 -translate-y-1/2"
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsSesionDeBarraAbierta((prev) => !prev)}
+                  aria-expanded={isSesionDeBarraAbierta}
+                  className="flex items-center gap-2 rounded-md border border-slate-200/35 bg-[rgba(15,12,30,0.45)] px-3 py-1.5 font-display text-[1.02rem] leading-tight text-slate-50/95 transition-colors hover:border-slate-200/60"
+                >
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]" aria-hidden="true" />
+                  {greetingLabel}
+                </button>
+                <AnimatePresence>
+                  {isSesionDeBarraAbierta ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 flex min-w-full flex-col items-start gap-2 rounded-xl border border-white/10 bg-black/80 px-4 py-3 backdrop-blur-md"
+                    >
+                      {user?.email ? (
+                        <p className="whitespace-nowrap text-[11px] text-slate-400/85">{user.email}</p>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSesionDeBarraAbierta(false);
+                          handleLogout();
+                        }}
+                        className="text-xs text-slate-400 underline-offset-4 transition hover:text-slate-100 hover:underline focus-visible:text-slate-100 focus-visible:underline focus-visible:outline-none"
+                      >
+                        Cerrar sesión
+                      </button>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
             <div className="flex items-center gap-3 text-white">
               {!isGatLinktreeOpen ? (
               <motion.button
@@ -1743,7 +1802,9 @@ const Header = ({
                     indicador de hardware; y se apaga mientras el programa de
                     mano está abierto, que trae su propio foquito, para que no
                     haya dos a la vez. */}
-                {user && !isMenuOpen ? (
+                {/* Lo mismo con la barra de escritorio abierta: ahí el foquito
+                    va en «Bajo el foco» (Carlos, 23 nov 2026). */}
+                {user && !isMenuOpen && !(esBarraDeEscritorio && isBarraAbierta) ? (
                   <span
                     className="pointer-events-none absolute -left-2.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]"
                     aria-hidden="true"

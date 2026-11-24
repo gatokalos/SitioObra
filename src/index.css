@@ -8213,3 +8213,13 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
   column-gap: clamp(1rem, 2.2vw, 2.4rem);
   white-space: nowrap;
 }
+
+/* Con sesión, la caja «Bajo el foco» ocupa la orilla derecha y es más ancha
+   que el [#]: en pantallas de menos de 1360 px la fila se corre a la izquierda
+   para quedar al centro entre los dos y no chocar con la caja (con «La salida»
+   la fila mide unos 790 px). */
+@media (max-width: 1359px) {
+  .programa-de-mano-barra--con-sesion {
+    left: calc(50% - 3.5rem);
+  }
+}
