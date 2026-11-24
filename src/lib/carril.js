@@ -1,17 +1,10 @@
-// La prueba del carril de las vitrinas (Carlos, 24 nov 2026). Se enciende con
-// ?carril=1 y se apaga con ?carril=0; se recuerda en este navegador (no solo
-// en la pestaña), para que siga encendida al abrir otra pestaña o al llegar
-// por otro camino.
-const CLAVE = 'gatoencerrado:carril';
-
+// El carril de las vitrinas (Carlos, 24 nov 2026). Empezó como prueba detrás
+// de ?carril=1; Carlos lo aprobó el mismo día y desde entonces es el de
+// siempre, para todos. Se deja la función para no tocar a quien la llama, y se
+// borra la marca vieja que guardaba el navegador.
 export const leerCarril = () => {
-  if (typeof window === 'undefined') return false;
-  try {
-    const marca = new URLSearchParams(window.location.search).get('carril');
-    if (marca === '1') window.localStorage.setItem(CLAVE, '1');
-    if (marca === '0') window.localStorage.removeItem(CLAVE);
-    return window.localStorage.getItem(CLAVE) === '1';
-  } catch {
-    return false;
+  if (typeof window !== 'undefined') {
+    try { window.localStorage.removeItem('gatoencerrado:carril'); } catch { /* sin almacenamiento */ }
   }
+  return true;
 };
