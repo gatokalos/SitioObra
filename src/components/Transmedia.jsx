@@ -496,6 +496,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // al dorso hay un formulario y apretado da fricción).
   const [carrilDeUna, setCarrilDeUna] = useState(false);
   const [tarjetaVisible, setTarjetaVisible] = useState(0);
+  // Los puntitos van arriba, a la altura del [#] y al centro de la pantalla
+  // (referencia de Carlos, 24 nov 2026): no tapan la tarjeta. Siguen al [#]
+  // (la cabecera del teléfono se esconde al bajar) y solo están mientras el
+  // carril está a la vista.
+  const [puntitosY, setPuntitosY] = useState(null);
   // El carril da la vuelta (paso 3, Carlos, 24 nov 2026): las nueve van tres
   // veces y la de en medio es la original; las copias de los extremos son
   // solo de vista (frente de la tarjeta, sin formulario ni marcas). Al
@@ -591,7 +596,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const conTexto = texto && texto.getBoundingClientRect().height > 0 ? window.innerHeight - piso(texto) - resto : -1;
       // Con el botón pulsado, en escritorio las flechas van a los costados
       // (no ocupan alto); en teléfono la galería llena la pantalla bajo el [#].
-      const deUna = !esEscritorio && window.matchMedia('(max-width: 389px)').matches;
+      // Todos los teléfonos van una a la vez (Carlos, 24 nov 2026): el
+      // formulario del dorso necesita el ancho completo.
+      const deUna = !esEscritorio && window.matchMedia('(max-width: 767px)').matches;
       setCarrilDeUna(deUna);
       // Donde empieza la tarjeta en el SE: 4 px bajo el pie del [#]. Se mide
       // su lugar de siempre (offsetTop), no el del momento: en teléfono la
@@ -652,9 +659,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         const altoUna = Math.min(window.innerHeight - arribaDeUna - 16, Math.round(ancho * 478 / 428 + pie));
         seccion.style.setProperty('--carril-ancho-una', `${ancho}px`);
         seccion.style.setProperty('--carril-alto-una', `${altoUna}px`);
-        // Los puntitos, encima de la imagen pero fuera de la cabecera (que
-        // recibe los toques hasta los 74 px).
-        seccion.style.setProperty('--una-puntitos-arriba', `${Math.max(26, 78 - (arribaDeUna - 14))}px`);
       }
       seccion.style.setProperty('--carril-alto-medido', `${Math.round(Math.max(300, Math.min(720, alto)))}px`);
     };
@@ -764,6 +768,29 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     });
     return () => limpiezas.forEach((limpiar) => limpiar());
   }, [enCarril, copiasDelCarril, muestraElCarril, modoCarril, recommendedShowcaseId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!enCarril || !carrilDeUna || !muestraElCarril) { setPuntitosY(null); return undefined; }
+    const pista = carrilMovilRef.current;
+    if (!pista || typeof IntersectionObserver === 'undefined') return undefined;
+    let cuadro = 0;
+    let aLaVista = false;
+    const seguir = () => {
+      const marca = document.getElementById('header-index-hashtag')?.getBoundingClientRect();
+      const y = marca && marca.bottom > 4 ? Math.round(marca.top + marca.height / 2) : null;
+      setPuntitosY((antes) => (antes === y ? antes : y));
+      if (aLaVista) cuadro = window.requestAnimationFrame(seguir);
+    };
+    const vigia = new IntersectionObserver(([entrada]) => {
+      aLaVista = Boolean(entrada?.isIntersecting);
+      window.cancelAnimationFrame(cuadro);
+      if (aLaVista) seguir(); else setPuntitosY(null);
+    }, { threshold: 0.5 });
+    vigia.observe(pista);
+    return () => {
+      vigia.disconnect();
+      window.cancelAnimationFrame(cuadro);
+    };
+  }, [enCarril, carrilDeUna, muestraElCarril]);
   const moverElCarril = useCallback((sentido) => {
     if (focusLockShowcaseId) releaseDesktopFocusLock();
     const pista = carrilRef.current;
@@ -6719,13 +6746,12 @@ const renderDramaFeaturedWork = () => (
                         </div>
                       ))}
                     </div>
-                    {/* Los puntitos van encima de la imagen, bajo la cabecera
-                        (que tapa los toques hasta los 74 px): no le quitan alto
-                        a la tarjeta. Con la tarjeta volteada (el formulario) se
-                        esconden (Carlos, 24 nov 2026). */}
-                    {carrilDeUna && tarjetaGiradaId !== formats[tarjetaVisible]?.id && tarjetaConLoginId !== formats[tarjetaVisible]?.id ? (
-                      <div className="pointer-events-none absolute inset-x-0 z-20 flex justify-center" style={{ top: 'var(--una-puntitos-arriba, 26px)' }} aria-label="Formas">
-                      <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-black/45 px-2.5 py-1.5 backdrop-blur-sm">
+                    {carrilDeUna && puntitosY !== null && typeof document !== 'undefined' && tarjetaGiradaId !== formats[tarjetaVisible]?.id && tarjetaConLoginId !== formats[tarjetaVisible]?.id ? createPortal(
+                      <div
+                        className="fixed left-1/2 z-[9999] flex -translate-x-1/2 -translate-y-1/2 items-center gap-2"
+                        style={{ top: puntitosY }}
+                        aria-label="Formas"
+                      >
                         {formats.map((f, i) => (
                           <button
                             key={f.id}
@@ -6733,12 +6759,14 @@ const renderDramaFeaturedWork = () => (
                             aria-label={`Ir a ${f.title}`}
                             aria-current={i === tarjetaVisible ? 'true' : undefined}
                             onClick={() => carrilMovilRef.current?.scrollTo({ left: i * pasoDeUna(), behavior: 'smooth' })}
-                            className={`h-2 w-2 rounded-full transition ${i === tarjetaVisible ? 'bg-purple-200' : 'bg-white/35'}`}
-                          />
+                            className="flex h-6 w-4 items-center justify-center"
+                          >
+                            <span className={`h-2 w-2 rounded-full transition ${i === tarjetaVisible ? 'bg-purple-200' : 'bg-white/35'}`} />
+                          </button>
                         ))}
-                      </div>
-                      </div>
-                    ) : null}
+                      </div>,
+                      document.body
+                                        ) : null}
                   </div>
                 );
               }
