@@ -46,13 +46,18 @@ const leerFormas = () => {
 const FormasDelProtagonista = ({ variante = 'telefono', className = '' }) => {
   const formas = leerFormas();
   if (formas.length === 0) return null;
-  const tam = variante === 'barra' ? 15 : 18;
-  const caja = tam + 10;
+  // Con más de seis formas, más chicos en el teléfono: en el iPhone SE las
+  // nueve apretaban el nombre y el correo. En la barra van de cinco en cinco
+  // (nueve = cinco y cuatro, sin una sola en el último renglón).
+  const tam = variante === 'barra' ? 15 : formas.length > 6 ? 14 : 18;
+  const caja = tam + (formas.length > 6 && variante !== 'barra' ? 8 : 10);
   const enRejilla = variante === 'telefono';
   return (
     <div
-      className={`${enRejilla ? 'grid gap-1.5' : 'flex max-w-[15rem] flex-wrap gap-1.5'} ${className}`}
-      style={enRejilla ? { gridTemplateColumns: `repeat(${formas.length > 4 ? 3 : 2}, ${caja}px)` } : undefined}
+      className={`${enRejilla ? 'grid gap-1.5' : 'flex flex-wrap gap-1.5'} ${className}`}
+      style={enRejilla
+        ? { gridTemplateColumns: `repeat(${formas.length > 4 ? 3 : 2}, ${caja}px)` }
+        : { width: `${Math.min(formas.length, 5) * caja + (Math.min(formas.length, 5) - 1) * 6}px` }}
       aria-label="Tus formas"
     >
       {formas.map(({ key, nombre, color, Icono, estado }) => (
