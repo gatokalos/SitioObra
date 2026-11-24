@@ -8214,12 +8214,34 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
   white-space: nowrap;
 }
 
-/* Con sesión, la caja «Bajo el foco» ocupa la orilla derecha y es más ancha
-   que el [#]: en pantallas de menos de 1360 px la fila se corre a la izquierda
-   para quedar al centro entre los dos y no chocar con la caja (con «La salida»
-   la fila mide unos 790 px). */
+/* Con sesión, la caja del saludo («Hola, nombre») ocupa la orilla derecha y
+   es más ancha que el [#]: en pantallas de menos de 1360 px la fila se corre a
+   la izquierda para quedar al centro entre los dos y no chocar con la caja
+   (con «La salida» la fila mide unos 770 px). */
+/* La caja del saludo y su panel, del color de la pantallita de la cabina (el
+   recuadro de los íconos de las nueve formas: rgb(27, 76, 96), medido en
+   gato-cabina-mobile-crt-v1.webp), con líneas de barrido tenues (Carlos, 24
+   nov 2026). */
+.pantallita-de-la-cabina {
+  border-color: rgba(125, 196, 214, 0.38);
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
+    rgba(27, 76, 96, 0.62);
+  box-shadow: inset 0 0 12px rgba(6, 20, 28, 0.55);
+}
+
+.pantallita-de-la-cabina:hover {
+  border-color: rgba(125, 196, 214, 0.6);
+}
+
+.pantallita-de-la-cabina--panel {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px),
+    rgba(20, 58, 74, 0.88);
+}
+
 @media (max-width: 1359px) {
   .programa-de-mano-barra--con-sesion {
-    left: calc(50% - 3.5rem);
+    left: calc(50% - 2rem);
   }
 }

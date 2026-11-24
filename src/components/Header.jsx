@@ -401,7 +401,11 @@ const Header = ({
     user?.user_metadata?.full_name ||
     (user?.email ? user.email.split('@')[0] : '');
   const simplifiedName = profileName ? profileName.trim().split(/\s+/)[0] : '';
-  const greetingLabel = user ? `Bajo el foco: ${simplifiedName || 'gato'}` : '';
+  // «Protagonista» en vez de «Bajo el foco» (Carlos, 24 nov 2026). En la barra
+  // de escritorio la caja solo saluda («Hola, nombre») y «Protagonista» va
+  // dentro de su panel; el foquito se queda como está.
+  const greetingLabel = user ? `Protagonista: ${simplifiedName || 'gato'}` : '';
+  const saludoDeBarra = user ? `Hola, ${simplifiedName || 'gato'}` : '';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
@@ -494,7 +498,7 @@ const Header = ({
     && window.matchMedia(PROGRAMA_EN_BARRA_QUERY).matches
   ));
   const [isBarraAbierta, setIsBarraAbierta] = useState(false);
-  // La caja «Bajo el foco» de la barra despliega el correo y «Cerrar sesión».
+  // La caja del saludo en la barra despliega «Protagonista», el correo y «Cerrar sesión».
   const [isSesionDeBarraAbierta, setIsSesionDeBarraAbierta] = useState(false);
   useEffect(() => {
     if (!isBarraAbierta) setIsSesionDeBarraAbierta(false);
@@ -1716,7 +1720,7 @@ const Header = ({
               </motion.div>
             ) : null}
           </AnimatePresence>
-          {/* Con sesión, la orilla derecha de la barra lleva «Bajo el foco»,
+          {/* Con sesión, la orilla derecha de la barra lleva el saludo,
               en espejo del [#] (Carlos, 23 nov 2026): el foquito, el saludo y,
               al tocarla, el correo y «Cerrar sesión», como en el Programa de
               mano del teléfono (MobileMenuOverlay). */}
@@ -1733,10 +1737,10 @@ const Header = ({
                   type="button"
                   onClick={() => setIsSesionDeBarraAbierta((prev) => !prev)}
                   aria-expanded={isSesionDeBarraAbierta}
-                  className="flex items-center gap-2 rounded-md border border-slate-200/35 bg-[rgba(15,12,30,0.45)] px-3 py-1.5 font-display text-[1.02rem] leading-tight text-slate-50/95 transition-colors hover:border-slate-200/60"
+                  className="pantallita-de-la-cabina flex items-center gap-2 rounded-md border px-3 py-1.5 font-display text-[1.02rem] leading-tight text-slate-50/95 transition-colors"
                 >
                   <span className="h-2 w-2 shrink-0 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]" aria-hidden="true" />
-                  {greetingLabel}
+                  {saludoDeBarra}
                 </button>
                 <AnimatePresence>
                   {isSesionDeBarraAbierta ? (
@@ -1745,8 +1749,9 @@ const Header = ({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 flex min-w-full flex-col items-start gap-2 rounded-xl border border-white/10 bg-black/80 px-4 py-3 backdrop-blur-md"
+                      className="pantallita-de-la-cabina pantallita-de-la-cabina--panel absolute right-0 top-full mt-2 flex min-w-full flex-col items-start gap-2 rounded-xl border px-4 py-3 backdrop-blur-md"
                     >
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/80">Protagonista</p>
                       {user?.email ? (
                         <p className="whitespace-nowrap text-[11px] text-slate-400/85">{user.email}</p>
                       ) : null}
@@ -1803,7 +1808,7 @@ const Header = ({
                     mano está abierto, que trae su propio foquito, para que no
                     haya dos a la vez. */}
                 {/* Lo mismo con la barra de escritorio abierta: ahí el foquito
-                    va en «Bajo el foco» (Carlos, 23 nov 2026). */}
+                    va en el saludo de la orilla derecha (Carlos, 23 nov 2026). */}
                 {user && !isMenuOpen && !(esBarraDeEscritorio && isBarraAbierta) ? (
                   <span
                     className="pointer-events-none absolute -left-2.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]"
