@@ -1974,7 +1974,7 @@ const About = () => {
 
   return (
     <>
-    {/* Se abre con «Visitar archivo» en El aplauso (Carlos, 23 nov 2026):
+    {/* Se abre con «Cómo empezó» en Bajar el telón (Carlos, 23 nov 2026):
         sin línea divisoria, la ceja llega a la altura de la de La Réplica y
         después vienen los créditos y la galería, y al final las temporadas
         (App.jsx, TemporadasEscenicas). */}
@@ -1990,7 +1990,7 @@ const About = () => {
         >
 
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  Archivo Escénico
+  El origen
 </p>
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             Es un gato encerrado

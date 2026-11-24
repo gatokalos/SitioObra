@@ -7,7 +7,7 @@ import useScrambleText from '@/hooks/useScrambleText';
 // del recorrido corto, de la misma familia que Tercera llamada y «Hacemos una
 // pausa…» (emblema en el eje de la orbe, título, poco texto y el botón como
 // ancla). Cada botón abre algo ahí mismo:
-// - «Visitar archivo» revela la obra fundacional (con las temporadas como
+// - «Cómo empezó» (antes «Visitar archivo») revela «El origen» (con las temporadas como
 //   última tarjeta) y sus créditos, y baja a ella;
 // - «Antes de irte» revela la taquilla.
 // El título y el copy son de Carlos; el nombre puede cambiar. El emblema,
@@ -91,7 +91,7 @@ const NextShow = () => {
                 onClick={handleVisitarArchivo}
                 className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary"
               >
-                Visitar archivo
+                Cómo empezó
               </Button>
               <Button
                 type="button"

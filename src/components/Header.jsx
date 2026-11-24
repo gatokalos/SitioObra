@@ -740,7 +740,7 @@ const Header = ({
     ...(showIntermedioNav ? [{ name: 'El intermedio', href: '#blog-contribuye' }] : []),
     ...(showPerspectivasNav ? [{ name: 'Tercer acto', href: '#provoca' }] : []),
     ...(showIntermedioNav ? [{ name: 'Bajar el telón', href: '#next-show' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'El origen', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showBeforeLeavingNav ? [{ name: 'La salida', href: '#conoce-sistema' }] : []),
@@ -803,7 +803,7 @@ const Header = ({
       ...(showObraDestacadaNav
         ? {
             secondary: [
-              { label: 'Obra fundacional', href: '#about' },
+              { label: 'El origen', href: '#about' },
               { label: 'Créditos del estreno escénico', href: '#team' },
               { label: 'Galería fractal', href: '#instagram' },
             ],
