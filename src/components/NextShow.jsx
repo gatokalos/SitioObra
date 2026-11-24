@@ -13,7 +13,9 @@ import useScrambleText from '@/hooks/useScrambleText';
 // El título y el copy son de Carlos; el nombre puede cambiar. El emblema,
 // «El anillo que vuelve al punto», contiene a la vez despedida y origen.
 // Conserva el id #next-show para los enlaces del Programa de mano.
-const TITLE_FIRST_LINE = 'El aplauso…';
+// «Bajar el telón…» en vez de «El aplauso…» (Carlos, 23 nov 2026): la parte
+// fija dice lo mismo que el Programa de mano; la segunda línea sigue siendo suya.
+const TITLE_FIRST_LINE = 'Bajar el telón…';
 const TITLE_SECOND_LINE = '¿y después?';
 const TITLE = `${TITLE_FIRST_LINE} ${TITLE_SECOND_LINE}`;
 

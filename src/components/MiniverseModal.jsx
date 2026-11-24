@@ -1998,6 +1998,13 @@ const MiniverseModal = ({
             ) : null}
        
 
+            {/* La ceja de la taquilla (Carlos, 23 nov 2026), como «Contacto»
+                y las otras vistas que se abren en el sitio. */}
+            {isInlineMode ? (
+              <p className="mb-3 text-center text-xs uppercase tracking-[0.4em] text-slate-400/70">
+                Taquilla
+              </p>
+            ) : null}
             <h2
               id="miniverse-modal-title"
               className={`${isInlineMode ? `hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em] ${shouldPlaceInlineTabsOnTop ? 'mt-0.5' : ''} ${!isMobileViewport ? 'hero-inline-title-desktop' : ''}` : 'font-display text-3xl'} text-slate-50`}

@@ -733,13 +733,13 @@ const Header = ({
   }, []);
 
   const menuItems = [
-    { name: 'Proscenio', href: '#hero' },
+    { name: 'El proscenio', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Primer acto', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Segundo acto', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Acto final', href: '#provoca' }] : []),
-    ...(showIntermedioNav ? [{ name: 'El aplauso', href: '#next-show' }] : []),
+    ...(showIntermedioNav ? [{ name: 'El intermedio', href: '#blog-contribuye' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Tercer acto', href: '#provoca' }] : []),
+    ...(showIntermedioNav ? [{ name: 'Bajar el telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
@@ -756,12 +756,15 @@ const Header = ({
     isOpen ? item : { ...item, locked: true, secondary: undefined }
   );
 
+  // 23 nov 2026 (Carlos): «El proscenio», «El intermedio», «Tercer acto» (la
+  // cuenta pareja; antes «Acto final») y «Bajar el telón» con #ElComienzo
+  // (antes «El aplauso»): el final de la obra es el comienzo del universo.
   // Nombres de las estaciones (Carlos, 9 nov 2026): «Proscenio» en vez de «Primera
   // fila», porque la persona deja la butaca y pasa al borde del escenario; «Primer
   // acto» en vez de «Tercera llamada», porque la llamada es la voz que se oye dentro
   // de la escena («Tercera llamada, tercera... ¿Comenzamos?»), no el nombre del lugar.
   const mobileMenuItems = [
-    { name: 'Proscenio', href: '#hero', description: '#AnteLaDuda' },
+    { name: 'El proscenio', href: '#hero', description: '#AnteLaDuda' },
     station(showTerceraLlamadaNav, {
       name: 'Primer acto',
       href: '#bienvenida-creador',
@@ -774,7 +777,7 @@ const Header = ({
       secondary: TRANSMEDIA_SECONDARY_ITEMS,
     }),
     station(showIntermedioNav, {
-      name: 'Intermedio',
+      name: 'El intermedio',
       href: '#blog-contribuye',
       description: '#EnElCamerino',
       ...(showCuradoriaNav
@@ -789,14 +792,14 @@ const Header = ({
         : {}),
     }),
     station(showPerspectivasNav, {
-      name: 'Acto final',
+      name: 'Tercer acto',
       href: '#provoca',
       description: '#TeToca',
     }),
     station(showIntermedioNav, {
-      name: 'El aplauso',
+      name: 'Bajar el telón',
       href: '#next-show',
-      description: '#ArchivoEscénico',
+      description: '#ElComienzo',
       ...(showObraDestacadaNav
         ? {
             secondary: [
