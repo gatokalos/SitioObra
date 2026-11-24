@@ -238,7 +238,9 @@ const MobileMenuOverlay = ({
           </section>
 
           {sessionGreeting ? (
-            <section className="mt-2 rounded-2xl border border-white/10 bg-black/35 p-2" aria-label="Sesión">
+            <section className="pantallita-de-la-cabina mt-2 rounded-2xl border p-2" aria-label="Sesión">
+              {/* Con el color y las franjas de la pantallita de la cabina,
+                  como la caja del saludo en la barra (24 nov 2026). */}
               {/* Dos hileras (Carlos, 12 nov 2026): arriba el saludo y el correo
                   completos, sin recortar; abajo «Cerrar sesión» como texto
                   discreto, alineado con el saludo y no con el foquito. */}

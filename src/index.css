@@ -1545,6 +1545,16 @@ body {
   height: clamp(64.5px, 9vh, 100px);
 }
 
+/* Sin emblemas en las tres escenas mínimas (Tercera llamada, la pausa y Bajar
+   el telón; Carlos, 24 nov 2026), pero sin que se mueva nada: la caja se
+   queda invisible en su lugar, y hooks/useTransicionesAlEje.js la sigue
+   midiendo para poner el título y el botón donde estaban. */
+#bienvenida-creador .narrative-section-logo,
+#blog-contribuye .narrative-section-logo,
+#next-show .narrative-section-logo {
+  visibility: hidden;
+}
+
 /* Primer acto e Intermedio se comportan como escenas autónomas al entrar
    desde el Programa de mano en escritorio. La altura es mínima, no rígida:
    si el contenido necesita más espacio, la escena crece y conserva el scroll
