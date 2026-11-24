@@ -1596,8 +1596,10 @@ body {
     line-height: 1.5;
   }
 
+  /* Era la versión compacta del margen de «¿Qué obra ocurre en ti?» en la
+     pausa; desde el 24 nov 2026 esa línea va pegada al título (Carlos). */
   .narrative-transition-copy > span {
-    margin-top: 1rem !important;
+    margin-top: 0 !important;
   }
 
   .narrative-transition-copy > :not([hidden]) ~ :not([hidden]) {
@@ -8199,8 +8201,12 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-tit
   margin-top: var(--transicion-titulo-aire, 0px);
 }
 
+/* Desde el 24 nov 2026 el texto va pegado al título en las tres escenas y
+   todo el aire sobrante queda entre el texto y el botón (que sigue anclado).
+   Antes un tercio iba arriba del texto («más aire abajo que arriba»), pero
+   sin emblemas ese tercio se leía como un renglón vacío (Carlos). */
 html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-copy {
-  margin-top: calc(var(--transicion-sobra, 0px) / 3);
+  margin-top: 0;
 }
 
 html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content > .narrative-transition-cta {

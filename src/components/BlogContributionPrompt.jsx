@@ -106,8 +106,10 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     </span>
   </h3>
 
+  {/* La primera línea ya no trae margen propio arriba (Carlos, 24 nov 2026):
+      dejaba un renglón vacío entre el título y el texto. */}
   <p className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
-    <span className="block mt-8">
+    <span className="block">
     <em>¿Qué obra ocurre en ti?</em>
   </span>
   <span className="whitespace-pre-line">
