@@ -177,7 +177,7 @@ const HERO_ROTATING_SUBTITLES = [
   'Es la obra que ocurre en ti',                  // canónico, intacto
   'Basada en emociones que aún no tienen nombre', // intacto
   'Nueve formas. Una manera de encontrarse',      // intacto
-  'Lo que digas hoy, vuelve días después',          // intacto
+  'Lo que digas hoy vuelve días después',          // intacto
   ];
 
 const HERO_GHOST_SUBTITLES = [

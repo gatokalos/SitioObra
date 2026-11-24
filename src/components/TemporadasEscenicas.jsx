@@ -16,7 +16,7 @@ const SHOW_HISTORY = [
     description: [
       'Aquí comenzó la temporada escénica de Es un gato encerrado.',
       'Camafeo fue el espacio que hizo posible el montaje, las primeras funciones abiertas y privadas, y el encuentro directo con el público.',
-      'El drama tomó forma aquí.',
+      
     ],
   },
   {
@@ -27,8 +27,6 @@ const SHOW_HISTORY = [
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/Cecut_diciembre.JPG',
     description: [
       'En diciembre, la obra tuvo una función especial en un momento inédito: por primera vez, en más de 25 años del CECUT, se presentó teatro durante la última semana del año.',
-      'La obra cerró el 2025 en escena.',
-      'La conversación sigue abierta.',
     ],
   },
 ];

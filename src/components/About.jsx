@@ -40,8 +40,7 @@ const aboutParagraphs = [
     key: 'sinopsis-obra',
     text: (
       <>
-        A través de la escena, los sueños lúcidos y la autoficción compartida, la obra{' '}
-        <em className="italic">Es un gato encerrado</em> explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+        Esta obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
         <br />
         <br />
         Su protagonista, el Chivis, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.
@@ -2073,7 +2072,7 @@ const About = () => {
                 </span>
               </h3>
               <p className="text-slate-50/50 leading-relaxed mb-8 font-light">
-                El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Allá arriba, un tigre de fuego encarna por un instante su devenir.
+                El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Quizá reconozcas en él algo que creías encerrado solo en ti.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button
@@ -2096,7 +2095,7 @@ const About = () => {
                   className="ge-chip-action ge-chip-action--secondary"
                 >
                   <Camera size={20} />
-                  Galería
+                  Fotos
                 </Button>
               </div>
             </div>
