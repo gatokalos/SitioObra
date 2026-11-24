@@ -31,6 +31,7 @@ import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraSh
 import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
 import { abrirContacto } from '@/lib/contacto';
+import { leerCarril } from '@/lib/carril';
 import FormasDelProtagonista from '@/components/FormasDelProtagonista';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
@@ -499,6 +500,7 @@ const Header = ({
     && window.matchMedia(PROGRAMA_EN_BARRA_QUERY).matches
   ));
   const [isBarraAbierta, setIsBarraAbierta] = useState(false);
+  const [enCarril] = useState(leerCarril);
   // La caja del saludo en la barra despliega «Protagonista», el correo y «Cerrar sesión».
   const [isSesionDeBarraAbierta, setIsSesionDeBarraAbierta] = useState(false);
   useEffect(() => {
@@ -784,7 +786,9 @@ const Header = ({
       name: 'Segundo acto',
       href: '#transmedia',
       description: '#LaObraTomaForma',
-      secondary: TRANSMEDIA_SECONDARY_ITEMS,
+      // Con el carril de las vitrinas, sin el índice de las nueve formas
+      // (Carlos, 24 nov 2026): «Segundo acto» lleva al botón y ya.
+      secondary: enCarril ? undefined : TRANSMEDIA_SECONDARY_ITEMS,
     }),
     station(showIntermedioNav, {
       name: 'El intermedio',

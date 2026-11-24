@@ -8310,3 +8310,193 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
     scroll-margin-top: calc(var(--llegada-de-la-linea) + 6rem + 1px - 9rem - 5rem - env(safe-area-inset-top, 0px));
   }
 }
+
+/* El carril de las vitrinas (prueba de Carlos, 24 nov 2026; solo con
+   ?carril=1, Transmedia.jsx). Las nueve vitrinas en fila: se desliza con el
+   trackpad o el dedo y cada una se detiene al centro (scroll-snap). Sin
+   recortarlas: el alto que deja la pantalla decide el tamaño de la tarjeta y
+   su ancho sale de su proporción de siempre (428 × 720 en escritorio; 340 ×
+   728 en teléfono). Caben las que quepan y la siguiente asoma en la orilla. */
+.carril-de-vitrinas {
+  /* El alto lo mide Transmedia.jsx (--carril-alto-medido): lo que deja la
+     pantalla debajo del texto (o del título, si hizo falta el botón), sin
+     pasar de 720 px, el tamaño de siempre. */
+  --carril-alto: var(--carril-alto-medido, 600px);
+  position: relative;
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  /* De orilla a orilla de la ventana (Carlos, 24 nov 2026), aunque el
+     contenedor sea más angosto: la primera tarjeta empieza donde empieza el
+     texto y las demás corren hasta la orilla. El aire de arriba y abajo es
+     para el brillo y la sombra de las tarjetas, que el carril cortaría. */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: 14px calc(50vw - 50% + 1.5rem) 22px;
+  scroll-padding-inline: calc(50vw - 50% + 1.5rem);
+  scroll-margin-top: -14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(216, 180, 254, 0.3) transparent;
+}
+
+.carril-de-vitrinas > * {
+  flex: 0 0 auto;
+  height: var(--carril-alto);
+  /* nunca tan angosta que el texto de la tarjeta se parta (280 px) */
+  width: max(calc(var(--carril-alto) * 428 / 720), 280px);
+  scroll-snap-align: center;
+}
+
+/* La tarjeta llena su lugar cuando va envuelta (el dorso, o el lugar del
+   teléfono); en escritorio la tarjeta ES el lugar y toma el alto del carril. */
+.carril-de-vitrinas .vitrina-pozo-glass {
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.carril-de-vitrinas .vitrina-pozo-glass__media {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.carril-de-vitrinas .vitrina-pozo-glass__meta {
+  flex: 0 0 auto;
+  min-height: 0 !important;
+}
+
+.carril-de-vitrinas > * .vitrina-pozo-glass,
+.carril-de-vitrinas__lugar > * {
+  height: 100%;
+}
+
+/* En teléfono y tableta: la tarjeta entera cabe en la pantalla al bajar a
+   ella (menos el [#] de arriba), y la siguiente asoma a la derecha. */
+.carril-de-vitrinas--movil {
+  gap: 1rem;
+}
+
+/* En teléfono la tarjeta no se angosta tanto que el texto se parta: si el
+   alto es poco, se queda al menos de 260 px de ancho (sigue siendo vertical). */
+.carril-de-vitrinas--movil > * {
+  width: max(calc(var(--carril-alto) * 340 / 728), min(260px, 78vw));
+}
+
+/* Con el botón pulsado en pantallas bajas, las flechas van a los costados,
+   encima de las tarjetas, para dejarle a la galería todo el alto. */
+.carril-flechas-a-los-lados {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.75rem;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.carril-flechas-a-los-lados > button {
+  pointer-events: auto;
+  background: rgba(5, 5, 12, 0.72) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* La tarjeta del carril, a prueba de pantallas (Carlos, 24 nov 2026): las nueve
+   miden igual. El pie mide lo justo para el nombre y el verso (sin el hueco
+   invisible del botón, que solo ocupa lugar en la tarjeta que lo tiene: esa
+   crece y se destaca) y la imagen toma el resto. El verso va siempre en sus
+   tres renglones: no se parte; si la tarjeta es más angosta que su renglón
+   más largo («que hagas algo sin pensarlo mucho.», 229 px a 14 px), la letra
+   baja lo justo. */
+.carril-de-vitrinas .vitrina-pozo-glass {
+  container-type: inline-size;
+}
+
+.carril-de-vitrinas .vitrina-pozo-glass__meta p.whitespace-pre-line {
+  white-space: pre;
+  font-size: min(0.875rem, calc((100cqi - 3rem) * 14 / 238));
+}
+
+.carril-de-vitrinas .vitrina-pozo-glass__meta h3 {
+  white-space: nowrap;
+}
+
+/* iPhone SE (hasta 389 px): una tarjeta a la vez, de orilla a orilla con 16 px
+   a cada lado; las vecinas no asoman (los puntitos dicen que hay más). */
+.carril-de-vitrinas--una {
+  --una-ancho: var(--carril-ancho-una, calc(100vw - 2rem));
+  --una-orilla: calc((100vw - var(--una-ancho)) / 2);
+  align-items: flex-start;
+  gap: calc(var(--una-orilla) + 0.75rem);
+  padding-inline: var(--una-orilla);
+  scroll-padding-inline: var(--una-orilla);
+}
+
+/* La tarjeta no se aplasta y las nueve miden igual por fuera (Carlos, 24 nov
+   2026): el contorno es el de la tarjeta con botón, con su imagen en la
+   proporción de escritorio (428 × 478). En esa el pie crece hacia arriba; en
+   las demás la imagen toma ese aire y queda más alta. Transmedia.jsx calcula
+   el ancho para que quepa entera bajo el [#]. */
+.carril-de-vitrinas--una > *,
+.carril-de-vitrinas--una .carril-de-vitrinas__lugar > *,
+.carril-de-vitrinas--una .vitrina-pozo-glass {
+  width: var(--una-ancho);
+  height: var(--carril-alto-una, auto) !important;
+}
+
+.carril-de-vitrinas--una .carril-de-vitrinas__lugar > *,
+.carril-de-vitrinas--una .carril-de-vitrinas__lugar .vitrina-pozo-glass {
+  width: 100%;
+  height: 100% !important;
+}
+
+/* «Forma parte del tuyo» con su adorno (Carlos, 24 nov 2026): la misma
+   familia que la entrada de La Réplica (.provoca-stage-entry), pero también en
+   escritorio. Mientras espera el botón, la cabecera ocupa la pantalla y el
+   botón queda al centro del aire bajo el texto. */
+[data-carril-espera] {
+  /* llega con su línea a la altura de siempre (--llegada-de-la-linea); de
+     ahí al pie de la pantalla: la línea, su aire, el margen de abajo del
+     bloque y el relleno inferior de la sección */
+  min-height: calc(100svh - var(--llegada-de-la-linea) - 1px - clamp(2.5rem, 6vh, 5.25rem) - 1rem - 6rem) !important;
+}
+
+.carril-entrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 23rem);
+  margin-inline: auto;
+}
+
+.carril-entrada .miniverse-inline-threshold {
+  width: 100%;
+  height: 7.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.carril-entrada .provoca-share-cta {
+  width: min(calc(100% - 2rem), 23rem) !important;
+  min-height: 2.9rem;
+}
+
+/* La recomendada destacada en el carril (paso 3, Carlos, 24 nov 2026): las
+   vecinas quedan apagadas (como en la vitrina de siempre con la recomendada al
+   centro) y se encienden al pasarles el cursor o al enfocarlas. Solo con
+   filtro: Framer escribe la opacidad de la tarjeta en su estilo. */
+.carril-vecina {
+  filter: saturate(0.55) brightness(0.62);
+  transition: filter 0.35s ease;
+}
+
+.carril-vecina:hover,
+.carril-vecina:focus-visible,
+.carril-vecina:focus-within {
+  filter: none;
+}

@@ -36,6 +36,7 @@ import {
   X,
   PawPrint,
   QrCode,
+  GalleryHorizontalEnd,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -63,6 +64,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { fichaEnPasado } from '@/lib/fichaEnPasado';
+import { leerCarril } from '@/lib/carril';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarEscenaSinGesto, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
@@ -482,6 +484,293 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [movementPendingAction, setMovementPendingAction] = useState(null);
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
+
+  // ── El carril de las vitrinas (prueba de Carlos, 24 nov 2026) ──────────────
+  // Solo con ?carril=1 (se recuerda en la sesión; ?carril=0 lo apaga). Las nueve
+  // vitrinas en un carril horizontal que se desliza solo, del alto que deja la
+  // pantalla y sin recortarlas (index.css, .carril-de-vitrinas). Sin la marca,
+  // las vitrinas siguen como siempre.
+  const [enCarril] = useState(leerCarril);
+  // En pantallas angostas (iPhone SE, 375 px) va una tarjeta a la vez, de
+  // orilla a orilla, con los nueve puntitos de galería (Carlos, 24 nov 2026:
+  // al dorso hay un formulario y apretado da fricción).
+  const [carrilDeUna, setCarrilDeUna] = useState(false);
+  const [tarjetaVisible, setTarjetaVisible] = useState(0);
+  // El carril da la vuelta (paso 3, Carlos, 24 nov 2026): las nueve van tres
+  // veces y la de en medio es la original; las copias de los extremos son
+  // solo de vista (frente de la tarjeta, sin formulario ni marcas). Al
+  // detenerse cerca de una orilla, el carril salta en silencio a la posición
+  // equivalente del juego de en medio: siempre hay vecinas a los dos lados y
+  // la recomendada queda al centro. El SE (una a la vez, con puntitos) no da
+  // la vuelta.
+  const copiasDelCarril = enCarril && !carrilDeUna ? 3 : 1;
+  const listaDelCarril = useMemo(
+    () => Array.from({ length: copiasDelCarril }, (_, c) => formats.map((f) => ({ ...f, __copia: copiasDelCarril === 3 ? c : 1 }))).flat(),
+    [copiasDelCarril]
+  );
+  const irALaOriginal = useCallback((copia, pista) => {
+    if (copia === 1 || !pista || !pista.children[formats.length]) return;
+    const vuelta = pista.children[formats.length].offsetLeft - pista.children[0].offsetLeft;
+    pista.scrollLeft += copia === 0 ? vuelta : -vuelta;
+  }, []);
+  // Dos modos, según la pantalla (Carlos, 24 nov 2026):
+  // - 'junto': el texto y las tarjetas caben juntos al llegar (las tarjetas
+  //   no bajan de 440 px de alto ni pasan de 720): se ven así, sin botón.
+  // - 'boton': no caben. Al llegar solo están el título, el texto y «Forma
+  //   parte del tuyo»; el botón quita el texto y deja la ceja, el título y la
+  //   galería juntos en la pantalla. Nunca una vitrina cortada.
+  // null mientras se mide (un cuadro): ni tarjetas ni botón.
+  const [modoCarril, setModoCarril] = useState(null);
+  const [carrilRevelado, setCarrilRevelado] = useState(false);
+  const bajarAlCarrilRef = useRef(false);
+  const carrilRef = useRef(null);
+  const carrilMovilRef = useRef(null);
+  const yaCentroElCarrilRef = useRef({ escritorio: false, movil: false });
+  const centrarEnElCarril = useCallback((pista, formaId, cual) => {
+    if (!pista || !formaId) return;
+    const tarjeta = pista.querySelector(`[data-tarjeta-forma="${formaId}"]`);
+    const lugar = tarjeta ? [...pista.children].find((hijo) => hijo.contains(tarjeta)) : null;
+    if (!lugar) return;
+    const izquierda = lugar.offsetLeft - (pista.clientWidth - lugar.offsetWidth) / 2;
+    const suave = cual !== 'nuevo' && yaCentroElCarrilRef.current[cual];
+    pista.scrollTo({ left: Math.max(0, izquierda), behavior: suave ? 'smooth' : 'auto' });
+    if (cual !== 'nuevo') yaCentroElCarrilRef.current[cual] = true;
+  }, []);
+  // Lo que antes movía el carrusel (la recomendada, el salto a la tarjeta, el
+  // regreso) ahora centra esa forma en el carril.
+  useEffect(() => {
+    if (!enCarril) return undefined;
+    const cuadro = window.requestAnimationFrame(() => {
+      centrarEnElCarril(carrilRef.current, formats[(showcaseCarouselIndex + 1) % formats.length]?.id, 'escritorio');
+    });
+    return () => window.cancelAnimationFrame(cuadro);
+  }, [enCarril, carrilRevelado, showcaseCarouselIndex, centrarEnElCarril]);
+  useEffect(() => {
+    if (!enCarril) return undefined;
+    const cuadro = window.requestAnimationFrame(() => {
+      centrarEnElCarril(carrilMovilRef.current, formats[mobileShowcaseIndex % formats.length]?.id, 'movil');
+    });
+    return () => window.cancelAnimationFrame(cuadro);
+  }, [enCarril, carrilRevelado, mobileShowcaseIndex, centrarEnElCarril]);
+  // Después del botón, la sección vuelve a su llegada: la ceja y el título
+  // arriba y la galería debajo, en la misma pantalla.
+  useEffect(() => {
+    if (!enCarril || !carrilRevelado || !bajarAlCarrilRef.current) return undefined;
+    bajarAlCarrilRef.current = false;
+    const espera = window.setTimeout(() => {
+      // En escritorio, la ceja y el título con la galería; en teléfono, la
+      // galería llena la pantalla (con el título encima la imagen se aplasta).
+      if (window.matchMedia('(min-width: 1024px)').matches) {
+        transmediaSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        carrilMovilRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 80);
+    return () => window.clearTimeout(espera);
+  }, [enCarril, carrilRevelado]);
+  // La medida: cuánto alto le queda a la tarjeta debajo del texto (o, ya con
+  // el botón pulsado, debajo del título) cuando la sección llega a su lugar
+  // (su línea pegada al header en escritorio, a 16 px en teléfono; index.css).
+  useEffect(() => {
+    if (!enCarril || allianceOnlyMode) return undefined;
+    const medir = () => {
+      const seccion = transmediaSectionRef.current;
+      const linea = seccion?.querySelector(':scope > .section-divider');
+      const bloque = seccion?.querySelector('[data-carril-cabecera]');
+      const titulo = bloque?.querySelector('h2');
+      const texto = bloque?.querySelector('[data-carril-texto]');
+      if (!seccion || !linea || !titulo) return;
+      const esEscritorio = window.matchMedia('(min-width: 1024px)').matches;
+      const llegada = esEscritorio ? 79 : 16;
+      // el bloque entra con un desplazamiento (Framer): se descuenta
+      let corrimiento = 0;
+      try { corrimiento = new DOMMatrixReadOnly(window.getComputedStyle(bloque).transform).m42 || 0; } catch { corrimiento = 0; }
+      const base = linea.getBoundingClientRect().top;
+      const piso = (el) => llegada + (el.getBoundingClientRect().bottom - corrimiento - base);
+      const resto = 16 + 14 + 22 + (esEscritorio ? 64 : 0) + 16;
+      const conTexto = texto && texto.getBoundingClientRect().height > 0 ? window.innerHeight - piso(texto) - resto : -1;
+      // Con el botón pulsado, en escritorio las flechas van a los costados
+      // (no ocupan alto); en teléfono la galería llena la pantalla bajo el [#].
+      const deUna = !esEscritorio && window.matchMedia('(max-width: 389px)').matches;
+      setCarrilDeUna(deUna);
+      // Donde empieza la tarjeta en el SE: 4 px bajo el pie del [#]. Se mide
+      // su lugar de siempre (offsetTop), no el del momento: en teléfono la
+      // cabecera se esconde al bajar.
+      const hashtag = document.getElementById('header-index-hashtag');
+      let pieDelHashtag = 62;
+      if (hashtag && hashtag.offsetHeight > 0) {
+        let y = 0;
+        for (let el = hashtag; el; el = el.offsetParent) y += el.offsetTop;
+        pieDelHashtag = y + hashtag.offsetHeight;
+      }
+      const arribaDeUna = Math.round(pieDelHashtag + 4);
+      const sinTexto = esEscritorio
+        ? window.innerHeight - piso(titulo) - (resto - 64)
+        : Math.min(728, window.innerHeight - 80 - 14 - 22 - 16);
+      // En teléfonos, siempre el botón: la tarjeta llena la pantalla (al dorso
+      // se contesta varios minutos). Texto y tarjetas juntos solo en tabletas y
+      // escritorio, si caben (Carlos, 24 nov 2026).
+      const esTelefono = window.matchMedia('(max-width: 767px)').matches;
+      const modo = carrilRevelado || esTelefono ? 'boton' : conTexto >= 440 ? 'junto' : 'boton';
+      // Mientras espera el botón: el adorno queda al centro de la pantalla
+      // (como el de La Réplica), sin acercarse al texto a menos de 12 px.
+      const entrada = bloque.querySelector('.carril-entrada');
+      if (entrada && texto) {
+        const margenActual = Number.parseFloat(entrada.style.marginTop) || 0;
+        const arribaHoy = llegada + (entrada.getBoundingClientRect().top - margenActual - corrimiento - base);
+        const pieDelTexto = piso(texto);
+        const franja = entrada.querySelector('.miniverse-inline-threshold')?.getBoundingClientRect().height || 120;
+        const deseado = Math.max(pieDelTexto + 12, window.innerHeight / 2 - franja / 2);
+        entrada.style.marginTop = `${Math.max(0, Math.round(deseado - arribaHoy))}px`;
+      }
+      setModoCarril((antes) => (carrilRevelado && antes ? antes : modo));
+      const alto = modo === 'junto' ? conTexto : sinTexto;
+      // En teléfono, con la galería abierta, llegar a la sección (Programa de
+      // mano, enlaces) deja la tarjeta entera bajo el [#], no el título con la
+      // tarjeta cortada.
+      const pistaMovil = carrilMovilRef.current;
+      if (!esEscritorio && modo === 'boton' && pistaMovil && pistaMovil.getBoundingClientRect().height > 0) {
+        const hastaLaPista = pistaMovil.getBoundingClientRect().top - seccion.getBoundingClientRect().top;
+        // En el SE la tarjeta sube hasta rozar el [#] (Carlos, 24 nov 2026).
+        const corrimiento = deUna ? arribaDeUna - 14 - 80 : -14;
+        seccion.style.scrollMarginTop = `${Math.round(corrimiento - hastaLaPista)}px`;
+        pistaMovil.style.scrollMarginTop = `${Math.round(corrimiento)}px`;
+      } else {
+        seccion.style.removeProperty('scroll-margin-top');
+        pistaMovil?.style.removeProperty('scroll-margin-top');
+      }
+      // Una a la vez (SE, Carlos, 24 nov 2026): de orilla a orilla (16 px a
+      // cada lado) y las nueve con el mismo contorno. Si cabe, la imagen va en
+      // su proporción (428 × 478); en el SE no cabe por unos 40 px: la tarjeta
+      // toma todo el alto bajo la cabecera y solo la del botón cede imagen
+      // (crece su pie); las demás conservan su proporción.
+      if (deUna) {
+        const pies = [...(carrilMovilRef.current?.querySelectorAll('.vitrina-pozo-glass__meta') ?? [])]
+          .map((pie) => pie.getBoundingClientRect().height);
+        const pie = pies.length ? Math.max(...pies) : 230;
+        const ancho = window.innerWidth - 32;
+        const altoUna = Math.min(window.innerHeight - arribaDeUna - 16, Math.round(ancho * 478 / 428 + pie));
+        seccion.style.setProperty('--carril-ancho-una', `${ancho}px`);
+        seccion.style.setProperty('--carril-alto-una', `${altoUna}px`);
+        // Los puntitos, encima de la imagen pero fuera de la cabecera (que
+        // recibe los toques hasta los 74 px).
+        seccion.style.setProperty('--una-puntitos-arriba', `${Math.max(26, 78 - (arribaDeUna - 14))}px`);
+      }
+      seccion.style.setProperty('--carril-alto-medido', `${Math.round(Math.max(300, Math.min(720, alto)))}px`);
+    };
+    const cuadro = window.requestAnimationFrame(medir);
+    const espera = window.setTimeout(medir, 900);
+    window.addEventListener('resize', medir);
+    // La sección cambia de alto después (la tarjeta se voltea, cargan las
+    // imágenes): la llegada se vuelve a medir para no quedar corrida.
+    let cuadroRo = 0;
+    const vigia = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+        window.cancelAnimationFrame(cuadroRo);
+        cuadroRo = window.requestAnimationFrame(medir);
+      })
+      : null;
+    if (transmediaSectionRef.current) vigia?.observe(transmediaSectionRef.current);
+    return () => {
+      window.cancelAnimationFrame(cuadro);
+      window.cancelAnimationFrame(cuadroRo);
+      window.clearTimeout(espera);
+      window.removeEventListener('resize', medir);
+      vigia?.disconnect();
+    };
+  }, [enCarril, carrilRevelado, allianceOnlyMode]);
+  const muestraElCarril = enCarril && (modoCarril === 'junto' || (modoCarril === 'boton' && carrilRevelado));
+  // La rueda del mouse (que solo sube y baja) también mueve el carril, una
+  // tarjeta por muesca. El trackpad, que ya desliza hacia los lados, no se toca;
+  // y en las orillas del carril la rueda vuelve a mover la página.
+  useEffect(() => {
+    if (!enCarril) return undefined;
+    const pista = carrilRef.current;
+    if (!pista) return undefined;
+    let espera = 0;
+    const alGirar = (evento) => {
+      if (evento.ctrlKey || Math.abs(evento.deltaX) >= Math.abs(evento.deltaY)) return;
+      const esRueda = evento.deltaMode === 1 || (Math.abs(evento.deltaY) >= 50 && Number.isInteger(evento.deltaY) && evento.deltaX === 0);
+      if (!esRueda) return;
+      const tope = pista.scrollWidth - pista.clientWidth;
+      if ((evento.deltaY < 0 && pista.scrollLeft <= 1) || (evento.deltaY > 0 && pista.scrollLeft >= tope - 1)) return;
+      evento.preventDefault();
+      if (espera) return;
+      const paso = (pista.firstElementChild?.getBoundingClientRect().width ?? 300) + 32;
+      pista.scrollBy({ left: evento.deltaY > 0 ? paso : -paso, behavior: 'smooth' });
+      espera = window.setTimeout(() => { espera = 0; }, 320);
+    };
+    pista.addEventListener('wheel', alGirar, { passive: false });
+    return () => {
+      pista.removeEventListener('wheel', alGirar);
+      window.clearTimeout(espera);
+    };
+  }, [enCarril, carrilRevelado, allianceOnlyMode]);
+  useEffect(() => {
+    if (!enCarril || copiasDelCarril !== 3) return undefined;
+    const pistas = [carrilRef.current, carrilMovilRef.current].filter(Boolean);
+    // La forma que va al centro: la recomendada o, sin ella, la que marca el
+    // carrusel de siempre.
+    const formaDelCentro = (pista) => (
+      recommendedShowcaseId
+      ?? (pista === carrilMovilRef.current
+        ? formats[mobileShowcaseIndex % formats.length]?.id
+        : formats[(showcaseCarouselIndex + 1) % formats.length]?.id)
+    );
+    const limpiezas = pistas.map((pista) => {
+      // Si el carril se volvió a armar (vuelve al principio, con el hueco de
+      // su orilla), regresa a la forma del centro. Y cada vez que se llega a
+      // él (entra a la vista después de no estarlo), la recomendada vuelve al
+      // centro (Carlos, 24 nov 2026: «que siempre esté en medio»).
+      const primera0 = pista.children[0];
+      const otra0 = pista.children[formats.length];
+      if (primera0 && otra0 && pista.scrollLeft < (otra0.offsetLeft - primera0.offsetLeft) / 2) {
+        centrarEnElCarril(pista, formaDelCentro(pista), 'nuevo');
+      }
+      let estabaFuera = false;
+      const vigia = typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(([entrada]) => {
+          if (!entrada) return;
+          if (!entrada.isIntersecting) { estabaFuera = true; return; }
+          if (estabaFuera && recommendedShowcaseId) {
+            estabaFuera = false;
+            const anterior = pista.style.scrollBehavior;
+            pista.style.scrollBehavior = 'auto';
+            centrarEnElCarril(pista, recommendedShowcaseId, 'nuevo');
+            pista.style.scrollBehavior = anterior;
+          }
+        }, { threshold: 0 })
+        : null;
+      vigia?.observe(pista);
+      let espera = 0;
+      const alMover = () => {
+        window.clearTimeout(espera);
+        espera = window.setTimeout(() => {
+          const primera = pista.children[0];
+          const otraVuelta = pista.children[formats.length];
+          if (!primera || !otraVuelta) return;
+          const vuelta = otraVuelta.offsetLeft - primera.offsetLeft;
+          const centro = pista.scrollLeft + pista.clientWidth / 2 - primera.offsetLeft;
+          if (centro < vuelta) pista.scrollLeft += vuelta;
+          else if (centro >= 2 * vuelta) pista.scrollLeft -= vuelta;
+        }, 160);
+      };
+      pista.addEventListener('scroll', alMover, { passive: true });
+      return () => {
+        pista.removeEventListener('scroll', alMover);
+        window.clearTimeout(espera);
+        vigia?.disconnect();
+      };
+    });
+    return () => limpiezas.forEach((limpiar) => limpiar());
+  }, [enCarril, copiasDelCarril, muestraElCarril, modoCarril, recommendedShowcaseId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const moverElCarril = useCallback((sentido) => {
+    if (focusLockShowcaseId) releaseDesktopFocusLock();
+    const pista = carrilRef.current;
+    if (!pista) return;
+    const paso = (pista.firstElementChild?.getBoundingClientRect().width ?? 300) + 32;
+    pista.scrollBy({ left: sentido * paso, behavior: 'smooth' });
+  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
   useEffect(() => {
     if (isMiniverseOpen) setHasLoadedMiniverseModal(true);
@@ -1102,6 +1391,14 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setFocusIncomingGAT(null);
       setFocusAppMetadata(metadata);
       focusShowcaseCard(showcaseId, isRecommendationFocus);
+      // En el carril: quien llega a una forma concreta no pasa por el botón.
+      // En teléfono cae en la tarjeta completa, no en el título.
+      setCarrilRevelado(true);
+      window.setTimeout(() => {
+        if (!window.matchMedia('(min-width: 1024px)').matches) {
+          carrilMovilRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 450);
     };
 
     // Fallback inmediato para evitar latencia perceptible en deep-link.
@@ -1766,6 +2063,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // acto y activar la animación del flip y empezar de nuevo»). Si esa forma ya
   // tiene la ficha revelada, se abre la ficha como siempre.
   const [saltoALaTarjetaId, setSaltoALaTarjetaId] = useState(null);
+  useEffect(() => {
+    if (enCarril && saltoALaTarjetaId) setCarrilRevelado(true);
+  }, [enCarril, saltoALaTarjetaId]);
   const saltarALaTarjeta = (formatId) => {
     if (!laTarjetaTieneDorso(formatId)) {
       handleFormatClick(formatId);
@@ -6034,19 +6334,9 @@ const renderDramaFeaturedWork = () => (
           allianceOnlyMode
             ? 'pt-10 min-h-[900px] md:pt-14 md:min-h-[980px]'
             : 'pt-[clamp(3.5rem,8vh,6rem)]'
-        }`}
+        } ${enCarril && !muestraElCarril && !allianceOnlyMode ? 'min-h-[calc(100svh-5rem)]' : ''}`}
       >
-        {import.meta.env?.DEV ? (
-          <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleResetCredits}
-              className="rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-amber-500/20"
-            >
-              Reset créditos
-            </button>
-          </div>
-        ) : null}
+        {/* Sin el chip «Reset créditos» (Carlos, 24 nov 2026: ya no se usa). */}
         {!allianceOnlyMode ? (
           <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
         ) : null}
@@ -6058,7 +6348,9 @@ const renderDramaFeaturedWork = () => (
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
+              className={`text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px] ${enCarril ? '!mb-4 !min-h-0' : ''} ${enCarril && carrilRevelado ? 'max-lg:!mb-24' : ''}`}
+              data-carril-cabecera={enCarril ? '' : undefined}
+              data-carril-espera={enCarril && modoCarril === 'boton' && !carrilRevelado ? '' : undefined}
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Segundo acto</p>
               {/* 1 nov 2026 (Carlos): el acto uno cierra con «La obra toma forma»
@@ -6070,9 +6362,34 @@ const renderDramaFeaturedWork = () => (
               >
                 <span aria-hidden="true">LAS NUEVE FORMAS</span>
               </h2>
-              <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    Este universo cabe en nueve versos. De cada uno, nace un <em>miniverso</em>. <strong>Forma parte del tuyo.</strong>
+              {enCarril && carrilRevelado ? null : (
+              <p data-carril-texto="" className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
+    Este universo cabe en nueve versos. De cada uno, nace un <em>miniverso</em>.{enCarril && modoCarril === 'boton' ? null : <> <strong>Forma parte del tuyo.</strong></>}
            </p>
+              )}
+              {/* En el carril, «Forma parte del tuyo» es el botón del gran
+                  revelado (Carlos, 24 nov 2026): baja hasta las vitrinas, que
+                  llenan la pantalla. */}
+              {/* El botón, con un adorno de la familia del de La Réplica (la
+                  franja de luz y el recuadro), al centro del aire que queda
+                  bajo el texto (Carlos, 24 nov 2026). */}
+              {enCarril && modoCarril === 'boton' && !carrilRevelado ? (
+                <div className="carril-entrada">
+                  <div className="miniverse-inline-threshold" aria-hidden="true">
+                    <span className="miniverse-inline-threshold__mark"><GalleryHorizontalEnd size={28} strokeWidth={1.5} /></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      bajarAlCarrilRef.current = true;
+                      setCarrilRevelado(true);
+                    }}
+                    className="ge-chip-action ge-chip-action--primary ge-mobile-cta-width provoca-share-cta"
+                  >
+                    Forma parte del tuyo
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           ) : null}
 
@@ -6080,7 +6397,7 @@ const renderDramaFeaturedWork = () => (
             <>
               <div className="lg:hidden space-y-6 min-[700px]:max-lg:space-y-5">
             {(() => {
-              const format = formats[mobileShowcaseIndex % formats.length];
+              const vitrinaMovil = (format, copia = 1) => {
               const currentIndex = mobileShowcaseIndex % formats.length;
               const prevIndex = (mobileShowcaseIndex - 1 + formats.length) % formats.length;
               const nextIndex = (mobileShowcaseIndex + 1) % formats.length;
@@ -6114,7 +6431,7 @@ const renderDramaFeaturedWork = () => (
                 (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId);
               return (
                 <>
-                  {isRecommendedTile ? (
+                  {isRecommendedTile && !enCarril ? (
                     <div className="flex justify-center py-1">
                       <motion.svg
                         width="36"
@@ -6144,8 +6461,8 @@ const renderDramaFeaturedWork = () => (
                     const tarjeta = (
                   <motion.div
                     key={format.id}
-                    data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
-                    data-tarjeta-forma={format.id}
+                    data-tarjeta-recomendada={isRecommendedTile && copia === 1 ? '' : undefined}
+                    data-tarjeta-forma={copia === 1 ? format.id : undefined}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
                     animate={
                       isSafari
@@ -6167,12 +6484,13 @@ const renderDramaFeaturedWork = () => (
                     onClick={() => {
                       if (isShowcaseOpenTransitionActive) return;
                       if (mobileSwipeBlockTapRef.current) return;
+                      irALaOriginal(copia, carrilMovilRef.current);
                       entrarPorLaTarjeta(format.id);
                     }}
-                    onTouchStart={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchStart}
-                    onTouchMove={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchMove}
-                    onTouchEnd={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
-                    onTouchCancel={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
+                    onTouchStart={isShowcaseOpenTransitionActive || enCarril ? undefined : handleMobileShowcaseTouchStart}
+                    onTouchMove={isShowcaseOpenTransitionActive || enCarril ? undefined : handleMobileShowcaseTouchMove}
+                    onTouchEnd={isShowcaseOpenTransitionActive || enCarril ? undefined : handleMobileShowcaseTouchEnd}
+                    onTouchCancel={isShowcaseOpenTransitionActive || enCarril ? undefined : handleMobileShowcaseTouchEnd}
                   >
                     <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[360px] min-[700px]:max-lg:h-[620px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
@@ -6297,7 +6615,7 @@ const renderDramaFeaturedWork = () => (
                             aria-hidden="true"
                           />
                         </button>
-                      ) : (
+                      ) : enCarril ? null : (
                         <div
                           aria-hidden="true"
                           className="invisible pointer-events-none inline-flex items-center gap-2 rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold"
@@ -6316,7 +6634,7 @@ const renderDramaFeaturedWork = () => (
                     />
                   </motion.div>
                     );
-                    return tarjetaGiradaId === format.id
+                    return copia === 1 && tarjetaGiradaId === format.id
                       ? renderDorsoDeLaTarjeta(format, tarjeta, 'min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]')
                       : tarjeta;
                   })()}
@@ -6325,6 +6643,7 @@ const renderDramaFeaturedWork = () => (
                       noche): también en la recomendada, porque el título ya dice «LAS NUEVE
                       FORMAS» y quien llega con pase tiene que ver que puede deslizar si la
                       pregunta madre que le tocó no le dice nada. El chevrón queda arriba. */}
+                    {!enCarril ? (
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]">
                       <button
                         type="button"
@@ -6373,12 +6692,62 @@ const renderDramaFeaturedWork = () => (
                         <span aria-hidden="true">→</span>
                       </button>
                     </div>
+                    ) : null}
                 </>
               );
+              };
+              if (enCarril) {
+                if (!muestraElCarril) return null;
+                const pasoDeUna = () => {
+                  const pista = carrilMovilRef.current;
+                  return pista && pista.children[1] ? pista.children[1].offsetLeft - pista.children[0].offsetLeft : 1;
+                };
+                return (
+                  <div className="relative">
+                    <div
+                      ref={carrilMovilRef}
+                      className={`carril-de-vitrinas carril-de-vitrinas--movil ${carrilDeUna ? 'carril-de-vitrinas--una' : ''}`}
+                      aria-label="Las nueve formas"
+                      onScroll={carrilDeUna ? (e) => setTarjetaVisible(Math.round(e.currentTarget.scrollLeft / pasoDeUna())) : undefined}
+                    >
+                      {listaDelCarril.map((f) => (
+                        <div
+                          key={`${f.id}-${f.__copia}`}
+                          className={`carril-de-vitrinas__lugar ${copiasDelCarril === 3 && recommendedShowcaseId && f.id !== recommendedShowcaseId ? 'carril-vecina' : ''}`}
+                        >
+                          {vitrinaMovil(f, f.__copia)}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Los puntitos van encima de la imagen, bajo la cabecera
+                        (que tapa los toques hasta los 74 px): no le quitan alto
+                        a la tarjeta. Con la tarjeta volteada (el formulario) se
+                        esconden (Carlos, 24 nov 2026). */}
+                    {carrilDeUna && tarjetaGiradaId !== formats[tarjetaVisible]?.id && tarjetaConLoginId !== formats[tarjetaVisible]?.id ? (
+                      <div className="pointer-events-none absolute inset-x-0 z-20 flex justify-center" style={{ top: 'var(--una-puntitos-arriba, 26px)' }} aria-label="Formas">
+                      <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-black/45 px-2.5 py-1.5 backdrop-blur-sm">
+                        {formats.map((f, i) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            aria-label={`Ir a ${f.title}`}
+                            aria-current={i === tarjetaVisible ? 'true' : undefined}
+                            onClick={() => carrilMovilRef.current?.scrollTo({ left: i * pasoDeUna(), behavior: 'smooth' })}
+                            className={`h-2 w-2 rounded-full transition ${i === tarjetaVisible ? 'bg-purple-200' : 'bg-white/35'}`}
+                          />
+                        ))}
+                      </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              }
+              return vitrinaMovil(formats[mobileShowcaseIndex % formats.length]);
             })()}
               </div>
-              <div className="hidden lg:block">
-            {isDesktopFocusLockActive ? (
+              <div className={`hidden lg:block ${enCarril ? 'relative' : ''}`}>
+            {enCarril && !muestraElCarril ? null : (<>
+            {isDesktopFocusLockActive && !enCarril ? (
               <div className="flex justify-center mb-5">
                 <motion.svg
                   width="36"
@@ -6404,8 +6773,13 @@ const renderDramaFeaturedWork = () => (
                 </motion.svg>
               </div>
             ) : null}
-            <div className="grid grid-cols-3 gap-8 min-h-[720px]">
-              {visibleShowcases.map((format, index) => {
+            <div
+              ref={enCarril ? carrilRef : undefined}
+              className={enCarril ? 'carril-de-vitrinas' : 'grid grid-cols-3 gap-8 min-h-[720px]'}
+              aria-label={enCarril ? 'Las nueve formas' : undefined}
+            >
+              {(enCarril ? listaDelCarril : visibleShowcases).map((format, index) => {
+                const copia = format.__copia ?? 1;
                 const Icon = format.icon;
                 const iconClass = format.iconClass ?? 'text-purple-200';
                 const tileGradient =
@@ -6418,8 +6792,11 @@ const renderDramaFeaturedWork = () => (
                   // Las vitrinas no compiten (Carlos, 13 nov 2026): si la persona
                   // enciende otra, la recomendada se apaga hasta que la suelte.
                   (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId);
-                const isFocusCenterTile = index === 1;
-                const isFocusSideTile = isDesktopFocusLockActive && !isFocusCenterTile;
+                const isFocusCenterTile = enCarril
+                  ? format.id === (focusLockShowcaseId ?? recommendedShowcaseId)
+                  : index === 1;
+                // En el carril el destaque de la recomendada lo hace .carril-vecina.
+                const isFocusSideTile = !enCarril && isDesktopFocusLockActive && !isFocusCenterTile;
                 const isTransitionTargetTile =
                   isShowcaseOpenTransitionActive && showcaseTransitionTargetId === format.id;
                 const isTransitionDimTile =
@@ -6428,10 +6805,10 @@ const renderDramaFeaturedWork = () => (
                 const deCanto = tarjetaGirandoId === format.id ? 90 : 0;
                 const tarjeta = (
                   <motion.button
-                    key={format.id}
+                    key={`${format.id}-${copia}`}
                     type="button"
-                    data-tarjeta-recomendada={isRecommendedTile ? '' : undefined}
-                    data-tarjeta-forma={format.id}
+                    data-tarjeta-recomendada={isRecommendedTile && copia === 1 ? '' : undefined}
+                    data-tarjeta-forma={copia === 1 ? format.id : undefined}
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={
                       isSafari
@@ -6439,7 +6816,7 @@ const renderDramaFeaturedWork = () => (
                         : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1, rotateY: deCanto }
                     }
                     style={{ transformPerspective: 1400 }}
-                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.32, delay: index * 0.03, ease: 'easeOut' }}
+                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.32, delay: (index % formats.length) * 0.03, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
@@ -6452,9 +6829,12 @@ const renderDramaFeaturedWork = () => (
                       isTransitionTargetTile ? 'border-purple-300/55 shadow-[0_24px_90px_rgba(88,28,135,0.45)]' : ''
                     } ${
                       isShowcaseOpenTransitionActive ? 'pointer-events-none' : ''
+                    } ${
+                      enCarril && copiasDelCarril === 3 && recommendedShowcaseId && !isRecommendedTile ? 'carril-vecina' : ''
                     }`}
                     onClick={() => {
                       if (isShowcaseOpenTransitionActive) return;
+                      if (enCarril) irALaOriginal(copia, carrilRef.current);
                       entrarPorLaTarjeta(format.id);
                     }}
                   >
@@ -6602,15 +6982,15 @@ const renderDramaFeaturedWork = () => (
                     />
                   </motion.button>
                 );
-                if (tarjetaConLoginId === format.id) return renderDorsoDeLogin(format, tarjeta);
-                return tarjetaGiradaId === format.id ? renderDorsoDeLaTarjeta(format, tarjeta) : tarjeta;
+                if (copia === 1 && tarjetaConLoginId === format.id) return renderDorsoDeLogin(format, tarjeta);
+                return copia === 1 && tarjetaGiradaId === format.id ? renderDorsoDeLaTarjeta(format, tarjeta) : tarjeta;
               })}
             </div>
-            <div className="flex items-center justify-center gap-3 mt-6">
+            <div className={enCarril && modoCarril === 'boton' ? 'carril-flechas-a-los-lados' : 'flex items-center justify-center gap-3 mt-6'}>
               <button
                 type="button"
                 disabled={isShowcaseOpenTransitionActive}
-                onClick={handleShowcasePrevBatch}
+                onClick={enCarril ? () => moverElCarril(-1) : handleShowcasePrevBatch}
                 className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition disabled:opacity-45 disabled:pointer-events-none"
                 aria-label="Vitrina anterior"
               >
@@ -6619,13 +6999,14 @@ const renderDramaFeaturedWork = () => (
               <button
                 type="button"
                 disabled={isShowcaseOpenTransitionActive}
-                onClick={handleShowcaseNextBatch}
+                onClick={enCarril ? () => moverElCarril(1) : handleShowcaseNextBatch}
                 className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition disabled:opacity-45 disabled:pointer-events-none"
                 aria-label="Siguiente vitrina"
               >
                 →
               </button>
             </div>
+            </>)}
               </div>
               {showcaseOverlay}
               {showcaseDipToBlackOverlay}
