@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Eye, Flame, Lock, Sparkles } from 'lucide-react';
 import ResonanceModal, {
@@ -53,6 +53,25 @@ const TableroEnLaTarjeta = ({
   const enElFoco = Boolean(registro.l2_escena_terminada || registro.l3_recommendation?.step3);
   const escenaAbierta = Boolean(registro.l2_narrative_opened);
   const sellada = Boolean(registro.experience_ts);
+  // «Aún queda escena» (Carlos, 24 nov 2026): quien vuelve con la escena a
+  // medias llega viendo lo pendiente. Al voltearse, la tarjeta se desliza sola
+  // hasta dejar «Volver a la escena» a la vista; lo ya contestado queda arriba,
+  // a un deslizar de distancia.
+  const tableroRef = useRef(null);
+  const pendienteAbierto = escenaAbierta || sellada;
+  useEffect(() => {
+    if (!pendienteAbierto) return undefined;
+    const espera = window.setTimeout(() => {
+      const caja = tableroRef.current;
+      const boton = caja?.querySelector('[data-tablero="habitar"]');
+      if (!caja || !boton || caja.scrollHeight <= caja.clientHeight + 1) return;
+      const abajo = boton.getBoundingClientRect().bottom - caja.getBoundingClientRect().bottom;
+      if (abajo <= -12) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      caja.scrollTo({ top: caja.scrollTop + abajo + 24, behavior: reduce ? 'auto' : 'smooth' });
+    }, 650);
+    return () => window.clearTimeout(espera);
+  }, [pendienteAbierto]);
 
   const elegir = async (opcion) => {
     if (expectativa || enviando) return;
@@ -103,6 +122,7 @@ const TableroEnLaTarjeta = ({
 
   return (
     <div
+      ref={tableroRef}
       data-tablero-en-la-tarjeta={enElFoco ? 'foco' : 'preparacion'}
       className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 p-6 text-left"
       // El mismo fondo del dorso: el gradiente de la forma con su velo.
