@@ -1396,6 +1396,11 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
 };
 
 
+// Las imágenes de las vitrinas van en WebP dentro del sitio (24 nov 2026):
+// las nueve PNG de Supabase pesaban 4.2 MB y llegaban tarde al segundo acto;
+// en WebP, al mismo tamaño y sin diferencia a la vista, pesan 452 KB. Las
+// originales siguen en Supabase (Merch/posters). lib/precargaVitrinas.js las
+// descarga por detrás mientras se lee la cinta.
 export const formats = [
   {
     id: 'miniversos',
@@ -1405,7 +1410,7 @@ export const formats = [
     vitrinaCopy: 'Es como La pregunta,\nuna que nadie está pensando.\nPero si alguien mira, ocurre.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
+    image: '/assets/vitrinas/poster_obra.webp',
   },
   {
     id: 'lataza',
@@ -1415,7 +1420,7 @@ export const formats = [
     vitrinaCopy: 'Sostiene lo mismo que El drama\nuna emoción que alguien puso ahí.\nPero sin que se derrame.',
 
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
+    image: '/assets/vitrinas/poster_artesanias.webp',
   },
   {
     id: 'miniversoNovela',
@@ -1425,7 +1430,7 @@ export const formats = [
     vitrinaCopy: 'Es como El objeto,\nse puede volver a agarrar.\nPero viaja con el viento.',
 
     iaTokensNote: 'Energía viva: ~150 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
+    image: '/assets/vitrinas/poster_literatura.webp',
   },
   {
     id: 'miniversoGrafico',
@@ -1435,7 +1440,7 @@ export const formats = [
     vitrinaCopy: 'Se parece a La escritura.\nRefleja algo en la superficie.\nPero adentro, no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
+    image: '/assets/vitrinas/poster_graficos.webp',
   },
   {
     id: 'copycats',
@@ -1445,7 +1450,7 @@ export const formats = [
     vitrinaCopy: 'Como La imagen,\nalguien decidió exponerla.\nPero revelando la trama.',
 
     iaTokensNote: 'Requiere ~250 confiados.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
+    image: '/assets/vitrinas/cine.webp',
   },
   {
     id: 'miniversoSonoro',
@@ -1455,7 +1460,7 @@ export const formats = [
     vitrinaCopy: 'Dura lo que La proyección,\nel tiempo justo y se va.\nPero el eco, este sigue y sigue.',
 
     iaTokensNote: 'Requiere ~130 GAT',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
+    image: '/assets/vitrinas/poster_sonoridades.webp',
   },
   {
     id: 'miniversoMovimiento',
@@ -1465,7 +1470,7 @@ export const formats = [
     vitrinaCopy: 'Como La vibración,\npasa y no deja rastro visible.\nPero te cambia de lugar.',
 
     iaTokensNote: '~280 por mapa.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
+    image: '/assets/vitrinas/poster_movimiento.webp',
   },
   {
     id: 'apps',
@@ -1475,7 +1480,7 @@ export const formats = [
     vitrinaCopy: 'Pide lo mismo que El cuerpo:\nque hagas algo sin pensarlo mucho.\nPero sin decidir tú solo.',
 
     iaTokensNote: 'IA marca el ritmo felino.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
+    image: '/assets/vitrinas/poster_juegos.webp',
   },
   {
     id: 'oraculo',
@@ -1485,7 +1490,7 @@ export const formats = [
     vitrinaCopy: 'Es como El riesgo,\nte coloca frente a algo.\nPero aquí la jaula queda abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
+    image: '/assets/vitrinas/poster_oraculo.webp',
   },
 ];
 

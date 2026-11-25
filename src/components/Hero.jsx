@@ -43,6 +43,7 @@ import {
 } from '@/lib/heroActivation';
 import { consumePendingContinuation } from '@/lib/pendingContinuation';
 import { pedirElMomento } from '@/lib/umbralDelRegreso';
+import { precargarVitrinas } from '@/lib/precargaVitrinas';
 import {
   getPwaInstallFlow,
   nextPwaInstallStep,
@@ -478,6 +479,12 @@ const Hero = () => {
   const [hasActivatedAudio, setHasActivatedAudio] = useState(
     () => readSceneStartsActivated()
   );
+  // Mientras se lee la cinta, las vitrinas del segundo acto se descargan por
+  // detrás (lib/precargaVitrinas.js), unos segundos después de que la portada
+  // terminó de cargar, para no competir con ella.
+  useEffect(() => {
+    precargarVitrinas({ demora: 2500 });
+  }, []);
   // El acomodo del hero (más abajo) lee si la escena está encendida sin
   // volver a montarse; al cambiar, se le pide que se acomode otra vez.
   const escenaEncendidaRef = useRef(hasActivatedAudio);

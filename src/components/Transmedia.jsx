@@ -65,6 +65,7 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import { leerCarril } from '@/lib/carril';
+import { precargarVitrinas } from '@/lib/precargaVitrinas';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarEscenaSinGesto, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
@@ -491,6 +492,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // pantalla y sin recortarlas (index.css, .carril-de-vitrinas). Sin la marca,
   // las vitrinas siguen como siempre.
   const [enCarril] = useState(leerCarril);
+  // Si la portada no la empezó (se llegó directo), la precarga arranca aquí.
+  useEffect(() => { precargarVitrinas(); }, []);
   // En pantallas angostas (iPhone SE, 375 px) va una tarjeta a la vez, de
   // orilla a orilla, con los nueve puntitos de galería (Carlos, 24 nov 2026:
   // al dorso hay un formulario y apretado da fricción).
