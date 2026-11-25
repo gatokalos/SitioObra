@@ -16,6 +16,17 @@ const VITRINAS = {
   apps: 'poster_juegos',
   oraculo: 'poster_oraculo',
 };
+const EMBLEMAS = {
+  miniversos: 'la_obra',
+  lataza: 'la_taza',
+  miniversoNovela: 'literatura',
+  miniversoGrafico: 'los_graficos',
+  copycats: 'cortos',
+  miniversoSonoro: 'sonoridades',
+  miniversoMovimiento: 'lasdiosas',
+  apps: 'juegos',
+  oraculo: 'el_oraculo',
+};
 const RECOMENDADA_KEY = 'gatoencerrado:oraculo-recommended-showcase';
 const pedidas = new Set();
 let enMarcha = false;
@@ -35,6 +46,12 @@ export const precargarVitrinas = ({ demora = 0 } = {}) => {
   let recomendada = null;
   try { recomendada = window.localStorage.getItem(RECOMENDADA_KEY); } catch { /* sin almacenamiento */ }
   const orden = Object.keys(VITRINAS).sort((a, b) => (b === recomendada) - (a === recomendada));
+  // Primero, el emblema de la forma recomendada: va en el adorno del botón.
+  if (recomendada && EMBLEMAS[recomendada]) {
+    const emblema = new Image();
+    emblema.decoding = 'async';
+    emblema.src = `/assets/emblemas/${EMBLEMAS[recomendada]}.webp`;
+  }
   const siguiente = () => {
     const id = orden.find((x) => !pedidas.has(x));
     if (!id) return;

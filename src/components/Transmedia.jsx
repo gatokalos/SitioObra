@@ -66,6 +66,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import { leerCarril } from '@/lib/carril';
 import { precargarVitrinas } from '@/lib/precargaVitrinas';
+import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment, enviarPrimeraIntuicion, marcarEscenaAbierta, marcarEscenaSinGesto, marcarRecorridoEnLaTarjeta, marcarFichaRevelada } from '@/components/portal/ResonanceModal';
@@ -6405,7 +6406,16 @@ const renderDramaFeaturedWork = () => (
               {enCarril && modoCarril === 'boton' && !carrilRevelado ? (
                 <div className="carril-entrada">
                   <div className="miniverse-inline-threshold" aria-hidden="true">
-                    <span className="miniverse-inline-threshold__mark"><GalleryHorizontalEnd size={28} strokeWidth={1.5} /></span>
+                    {/* Con forma recomendada, su emblema en esfera, como en la
+                        constelación: un guiño de cuál es «tu carta» antes de
+                        abrir (Carlos, 24 nov 2026). Sin ella, la galería. */}
+                    {recommendedShowcaseId && PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[recommendedShowcaseId]] ? (
+                      <span className="miniverse-inline-threshold__mark carril-entrada__esfera">
+                        <img src={PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[recommendedShowcaseId]]} alt="" decoding="async" />
+                      </span>
+                    ) : (
+                      <span className="miniverse-inline-threshold__mark"><GalleryHorizontalEnd size={28} strokeWidth={1.5} /></span>
+                    )}
                   </div>
                   <button
                     type="button"

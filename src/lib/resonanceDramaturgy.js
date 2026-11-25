@@ -138,17 +138,23 @@ export const RESONANCE_DRAMATURGY_BY_PORTAL = {
 // a la moneda que giraba bajo «Habitar la forma»: el GAToken dejó de ser moneda
 // (22 sep 2026) y la moneda como botón de entrada volvía a leerse como rally
 // (Carlos, 11 oct 2026). Late, no gira.
-const MERCH_BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch';
+// Los emblemas de las esferas van en WebP dentro del sitio (24 nov 2026): los
+// originales de Supabase (Merch/*.png, 1.4 MB los nueve, sin caché) son íconos
+// de esquinas redondeadas con orillas semitransparentes que asomaban como una
+// franja dentro del círculo. Estos van recortados al centro (La imagen, más
+// hondo: su dibujo es un cuadro negro sobre blanco), a 320 px, ~97 KB los
+// nueve. Los originales siguen en Supabase para el Cuaderno, la tarjeta de
+// recuerdo y el Habitar, que muestran el ícono completo.
 export const PORTAL_EMBLEM_URL = {
-  obra:        `${MERCH_BASE}/la_obra.png`,
-  literatura:  `${MERCH_BASE}/literatura.png`,
-  artesanias:  `${MERCH_BASE}/la_taza.png`,
-  grafico:     `${MERCH_BASE}/los_graficos.png`,
-  cine:        `${MERCH_BASE}/cortos.png`,
-  sonoridades: `${MERCH_BASE}/sonoridades.png`,
-  movimiento:  `${MERCH_BASE}/lasdiosas.png`,
-  juegos:      `${MERCH_BASE}/juegos.png`,
-  oraculo:     `${MERCH_BASE}/el_oraculo.png`,
+  obra:        '/assets/emblemas/la_obra.webp',
+  literatura:  '/assets/emblemas/literatura.webp',
+  artesanias:  '/assets/emblemas/la_taza.webp',
+  grafico:     '/assets/emblemas/los_graficos.webp',
+  cine:        '/assets/emblemas/cortos.webp',
+  sonoridades: '/assets/emblemas/sonoridades.webp',
+  movimiento:  '/assets/emblemas/lasdiosas.webp',
+  juegos:      '/assets/emblemas/juegos.webp',
+  oraculo:     '/assets/emblemas/el_oraculo.webp',
 };
 
 // La costura entre el sitio y el dispositivo (Carlos, 11 oct 2026): la última
