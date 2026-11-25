@@ -1055,7 +1055,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ),
     cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
-      'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
+      'Me quedé diseñando,\ncomo si el papel supiera quién soy\nmejor que yo.',
     collaborators: [
       {
         id: 'manuel-sarabia',

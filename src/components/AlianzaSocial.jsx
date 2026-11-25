@@ -252,12 +252,12 @@ const AlianzaSocial = ({ entradaLateral = false }) => {
                   </button>
                 </div>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Déjanos una huella
+                  Déjame una huella
                 </h3>
                 <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
                   <p>
                     <span className="font-semibold text-purple-200">Tu huella sostiene al universo #GatoEncerrado.</span>{' '}
-                    Cada huella activada recorre tres tramos que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
+                    Cada huella activada recorre tres tramos que opero en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
                     cuya confianza hizo posible el inicio de este proyecto.
                   </p>
                   <p className="text-lg font-medium text-white">Primero se sostiene la causa social, y cualquier excedente se destina a nueva obra: un modelo en cascada ✨</p>

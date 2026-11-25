@@ -43,7 +43,7 @@ const GRAFICOS_INTRO = (
 );
 const GRAFICOS_NOTA_AUTORAL = {
   title: '#MirarmeLoQueSoy',
-  verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
+  verse: 'Me quedé diseñando,\ncomo si el papel supiera quién soy\nmejor que yo.',
 };
 const GRAFICOS_TILE = {
   gradient: 'linear-gradient(135deg, rgba(39,16,51,0.95), rgba(79,28,89,0.85), rgba(150,43,127,0.62))',

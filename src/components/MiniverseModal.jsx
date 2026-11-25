@@ -334,7 +334,7 @@ export const MINIVERSE_CARDS = [
     glassTint: '304 65% 60%',
     title: '04 - La imagen',
     titleShort: '🎧 "La imagen de sí" (30 seg)',
-    description: 'Luego me vi dibujando y no supe si estaba creando... o si algo dentro me estaba dibujando a mí.',
+    description: 'Luego me vi diseñando y no supe si estaba creando... o si algo dentro de mí me diseñaba a mí.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
@@ -351,7 +351,7 @@ export const MINIVERSE_CARDS = [
     glassTint: '352 70% 60%',
     title: '05 - La proyección',
     titleShort: '🎧 "El quiebre" (30 seg)',
-    description: 'Por primera vez pensé en detenerme.',
+    description: 'Por primera vez pensé en detenerme. Tal vez no acabaría bien yo.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
@@ -1032,7 +1032,7 @@ const MiniverseModal = ({
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: dramaShowcaseCard?.narrativeVideoUrlDesktop ?? NARRATIVE_VIDEO_URL_DESKTOP,
         fullscreenVideoUrlMobile: dramaShowcaseCard?.narrativeVideoUrl ?? NARRATIVE_VIDEO_URL_MOBILE,
-        eyebrow: 'Una autoficción fragmentada',
+        eyebrow: 'Una autoficción',
         isPrologue: true,
         portalLabel: 'Prólogo',
         customGradient: MINIVERSE_DISCOVER_INTRO_MESH,
@@ -1078,12 +1078,12 @@ const MiniverseModal = ({
   );
   const mobileExploreButtonLabel = useMemo(() => {
     if (!activeShowcaseCard) return 'Navega entre formas';
-    if (activeShowcaseCard.isPrologue) return 'Primera forma: El drama';
-    if (!fictionShowcaseCards.length) return 'Navega entre formas';
+    if (activeShowcaseCard.isPrologue) return 'Primer fragmento: El drama';
+    if (!fictionShowcaseCards.length) return 'Navega entre fragmentos';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente forma: ${nextCard?.portalLabel ?? 'El drama'}`;
+    return `Siguiente fragmento: ${nextCard?.portalLabel ?? 'El drama'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   useEffect(() => {
     if (inlineActNumberScrambleTimerRef.current) {
