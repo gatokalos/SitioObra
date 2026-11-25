@@ -892,10 +892,11 @@ function HolograficoPanel({
           ) : null}
         </div>
         {/* La salida a la ficha (Carlos, 24 nov 2026), con el mismo botón que
-            «Interpretar …» del bloque de otra forma. */}
+            «Interpretar …» del bloque de otra forma. «Conoce este miniverso»
+            y no «Explorar»: explorar exige más energía (Carlos, 24 nov). */}
         {onExplorarMiniverso ? (
           <button type="button" onClick={onExplorarMiniverso} className="ultima-pregunta__salida" data-explorar-miniverso>
-            Explorar miniverso
+            Conoce este miniverso
           </button>
         ) : null}
       </>
@@ -996,7 +997,20 @@ function HolograficoPanel({
                 ) : (
                   <div className="bloque-forma__cabecera">{titulo}</div>
                 )}
-                {cuerpo}
+                {/* Cerrada, la bandeja enseña solo su cabecera: lo de abajo no
+                    se asoma (Carlos, 24 nov 2026). */}
+                {cuerpo ? (
+                  <motion.div
+                    className="flex flex-col gap-3"
+                    initial={false}
+                    animate={{ opacity: abierto ? 1 : 0 }}
+                    transition={{ duration: abierto ? 0.35 : 0.15, delay: abierto ? 0.1 : 0 }}
+                    aria-hidden={abierto ? undefined : 'true'}
+                    style={{ pointerEvents: abierto ? 'auto' : 'none' }}
+                  >
+                    {cuerpo}
+                  </motion.div>
+                ) : null}
               </section>
             </Hoja>
           </>
