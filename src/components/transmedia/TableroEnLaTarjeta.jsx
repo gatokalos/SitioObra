@@ -90,7 +90,9 @@ const TableroEnLaTarjeta = ({
   // tarjeta (Carlos, 15 nov 2026: «quitar el contenedor, usar el contenedor de
   // la tarjeta ya como su contenedor»). En el carrusel (<1024) una caja dentro
   // de otra le quitaba ancho al video y a las filas.
-  const alFrente = 'max-lg:rounded-none max-lg:border-0 max-lg:bg-transparent max-lg:px-0 max-lg:shadow-none';
+  // Desde el 24 nov 2026 también en escritorio: en el carril la tarjeta es la
+  // misma en todas las pantallas y la caja era una tarjeta dentro de otra.
+  const alFrente = 'rounded-none border-0 bg-transparent px-0 shadow-none';
   const eco = 'rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90';
 
   // La palomita sobre la esfera de cada escena ya vivida (Carlos, 15 nov 2026:
@@ -124,7 +126,7 @@ const TableroEnLaTarjeta = ({
     <div
       ref={tableroRef}
       data-tablero-en-la-tarjeta={enElFoco ? 'foco' : 'preparacion'}
-      className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 px-6 pb-6 pt-14 text-left"
+      className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 p-6 text-left"
       // El mismo fondo del dorso: el gradiente de la forma con su velo.
       style={{
         backgroundColor: '#0a0c18',
@@ -134,8 +136,9 @@ const TableroEnLaTarjeta = ({
       }}
     >
       {/* Sin la ceja «#Miniversos · forma»: el retorno es la X de la esquina
-          (BotonDeRetorno, Carlos, 24 nov 2026). El primer recuadro baja lo
-          justo para no quedar debajo de ella. */}
+          (BotonDeRetorno, Carlos, 24 nov 2026). El contenido sube al renglón
+          que dejó; solo el encabezado de la primera escena libra la esquina
+          del botón (index.css). */}
 
       {enElFoco ? (
         <>
