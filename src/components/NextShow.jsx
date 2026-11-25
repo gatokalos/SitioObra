@@ -101,7 +101,7 @@ const NextShow = () => {
                 onClick={handleOpenSystemPreview}
                 className="ge-chip-action ge-mobile-cta-width ge-chip-action--secondary"
               >
-                La salida
+                Antes de irte
               </Button>
             </div>
           </div>
