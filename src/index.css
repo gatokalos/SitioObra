@@ -8481,9 +8481,11 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
   margin-bottom: 0.75rem;
 }
 
+/* En escritorio se ajusta a su texto, como los botones de las otras escenas;
+   en teléfono va del largo común (regla de «Botones del mismo largo»). */
 .carril-entrada .provoca-share-cta {
-  width: min(calc(100% - 2rem), 23rem) !important;
-  min-height: 2.9rem;
+  width: auto;
+  min-width: 0;
 }
 
 /* La recomendada destacada en el carril (paso 3, Carlos, 24 nov 2026): las
@@ -8618,4 +8620,29 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 /* En la bandeja, «Explorar miniverso» entra con ella (en el pozo espera 1.2 s). */
 .bandeja-de-vidrio .tarjeta-del-pozo__salida {
   animation: pozo-llega 0.35s ease-out 0.2s both;
+}
+
+/* Botones del mismo largo en todas las secciones (Carlos, 24 nov 2026):
+   «Forma parte del tuyo» y «Ahora te toca…» heredaban el marco angosto y el
+   alto de 46 px de La Réplica; en teléfono miden lo que «Entra al camerino» y
+   «Cómo empezó» (ge-mobile-cta-width, 40 px de alto). */
+@media (max-width: 639px) {
+  .carril-entrada,
+  .provoca-stage-entry {
+    width: 100%;
+  }
+  /* Su marco es 8 px más ancho que el de las otras escenas: se descuentan. */
+  .carril-entrada .provoca-share-cta,
+  .provoca-stage-entry .provoca-share-cta {
+    width: min(calc(100% - 0.5rem), 23rem) !important;
+    min-width: 0;
+    min-height: 2.5rem;
+  }
+}
+
+/* En la Memoria, un doble toque no acerca la página (Safari en iPhone): la
+   constelación, el bloque y la bandeja responden a toques y deslizamientos. */
+.bloque-forma,
+.bandeja-de-vidrio {
+  touch-action: manipulation;
 }

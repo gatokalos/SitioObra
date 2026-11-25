@@ -1830,9 +1830,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     {souvenirDeliveredAt ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
                     {isSouvenirGenerating ? 'Preparando el recuerdo…' : souvenirDeliveredAt ? 'Recuerdo entregado' : dramaturgy.souvenirCta}
                   </button>
+                  {/* «Hilar mi memoria» (Carlos, 24 nov 2026): primero la Memoria,
+                      con la constelación; de ahí, «Explorar miniverso» lleva a
+                      la ficha. En la tarjeta, la ficha se abre por el revés
+                      (irALaMemoriaDesdeLaTarjeta); dentro de la ficha, la
+                      Memoria se abre aquí mismo. Antes la salida cerraba y
+                      dejaba la ficha. */}
                   <button
                     type="button"
-                    onClick={() => handleClose()}
+                    onClick={() => {
+                      if (enLaTarjeta) { onIrALaMemoria(); return; }
+                      setHolograficoPoster(portal);
+                      setHolograficoOpen(true);
+                    }}
                     disabled={!(bitacoraConsented || souvenirDeliveredAt || bitacoraCompleted)}
                     className="tarjeta-del-pozo__salida"
                     data-salida-de-bambalinas

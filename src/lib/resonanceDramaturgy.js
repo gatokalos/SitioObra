@@ -48,7 +48,10 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // Dice a dónde lleva: la ficha es el miniverso, donde se explica la forma y
   // la obra de la que nace (Carlos, 19 nov 2026, con una captura: «Explorar
   // miniverso»; antes «Continuar»).
-  bambalinasCta: 'Explorar miniverso',
+  // 24 nov 2026 (Carlos): «Hilar mi memoria». El botón ya no lleva a la ficha
+  // sino a la Memoria, con la constelación; «Explorar miniverso» pasó a la
+  // bandeja de la Memoria, que es la que lleva a la ficha.
+  bambalinasCta: 'Hilar mi memoria',
   bambalinasCtaPista: 'Elige al menos una para seguir.',
   avisoCorreoConCuentaHint: 'El de tu cuenta. Un solo correo.',
   avisoWhatsAppTitle: 'Por WhatsApp',

@@ -509,7 +509,27 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
 // el lazo. Cerrado se queda en su lugar; abierto, su contenido sube encima, en
 // vidrio, desde la orilla de abajo, y nada de atrás se mueve. `anclaRef` es el
 // bloque cerrado: la bandeja toma su ancho y su pie.
-function Bandeja({ abierto, nodo, anclaRef, children }) {
+// Deslizar el dedo (Carlos, 24 nov 2026: «le estoy haciendo swipe y no
+// obedece»): hacia arriba sobre el bloque cerrado lo abre; hacia abajo sobre la
+// bandeja la cierra. Un deslizamiento no cuenta como toque.
+const gestosDeDeslizar = ({ alSubir = null, alBajar = null }) => {
+  let inicio = null;
+  return {
+    onTouchStart: (e) => { const t = e.touches[0]; inicio = t ? { x: t.clientX, y: t.clientY } : null; },
+    onTouchEnd: (e) => {
+      const t = e.changedTouches[0];
+      if (!inicio || !t) return;
+      const dy = t.clientY - inicio.y;
+      const dx = t.clientX - inicio.x;
+      inicio = null;
+      if (Math.abs(dy) < 28 || Math.abs(dy) < Math.abs(dx)) return;
+      if (dy < 0 && alSubir) { e.preventDefault(); alSubir(); }
+      if (dy > 0 && alBajar) { e.preventDefault(); alBajar(); }
+    },
+  };
+};
+
+function Bandeja({ abierto, nodo, anclaRef, onCerrar = null, children }) {
   const [caja, setCaja] = useState(null);
   useLayoutEffect(() => {
     if (!abierto || !nodo || !anclaRef.current) return;
@@ -529,6 +549,7 @@ function Bandeja({ abierto, nodo, anclaRef, children }) {
           animate={{ height: 'auto' }}
           exit={{ height: caja.cerrado, opacity: 0 }}
           transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+          {...gestosDeDeslizar({ alBajar: onCerrar })}
         >
           {children}
         </motion.div>
@@ -538,7 +559,7 @@ function Bandeja({ abierto, nodo, anclaRef, children }) {
   );
 }
 
-function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, anclaRef = null, oculto = false, children }) {
+function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, anclaRef = null, oculto = false, alSubir = null, children }) {
   const contenido = (
     <div className="min-w-0">
       {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
@@ -546,7 +567,7 @@ function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onTog
     </div>
   );
   return (
-    <section ref={anclaRef} className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`} style={oculto ? { visibility: 'hidden' } : undefined}>
+    <section ref={anclaRef} className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`} style={oculto ? { visibility: 'hidden' } : undefined} {...(alSubir ? gestosDeDeslizar({ alSubir }) : {})}>
       {onToggle ? (
         <button type="button" onClick={onToggle} aria-expanded={abierto} className="bloque-forma__cabecera bloque-forma__cabecera--plegable" data-al-entrar>
           <span aria-hidden="true" className="bloque-forma__asa" />
@@ -864,10 +885,11 @@ function HolograficoPanel({
                     {/* La salida a la ficha vive en la bandeja (Carlos, 24 nov
                         2026): el botón de «Entre bambalinas» lleva aquí, y de
                         aquí se va al miniverso. */}
-                    {!siempreAbierto && onExplorarMiniverso ? (
-                      <button type="button" onClick={onExplorarMiniverso} className="tarjeta-del-pozo__salida" data-explorar-miniverso>
+                    {/* El mismo botón que «Interpretar …» del bloque de otra
+                        forma (Carlos, 24 nov 2026), en teléfono y escritorio. */}
+                    {onExplorarMiniverso ? (
+                      <button type="button" onClick={onExplorarMiniverso} className="ultima-pregunta__salida" data-explorar-miniverso>
                         Explorar miniverso
-                        <span aria-hidden="true">→</span>
                       </button>
                     ) : null}
                   </>
@@ -879,12 +901,13 @@ function HolograficoPanel({
                       className={`bloque-forma${siempreAbierto ? ' bloque-forma--abierto' : ''}`}
                       style={enBandeja ? { visibility: 'hidden' } : undefined}
                       data-aviso-de-espera
+                      {...(siempreAbierto ? {} : gestosDeDeslizar({ alSubir: () => setAlEntrarAbierto(true) }))}
                     >
                       {cabeceraDeEspera}
                       {siempreAbierto ? contenidoDeEspera : null}
                     </section>
                     {siempreAbierto ? null : (
-                      <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef}>
+                      <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef} onCerrar={() => setAlEntrarAbierto(false)}>
                         <section className="bloque-forma bloque-forma--abierto" data-aviso-de-espera data-en-bandeja>
                           {cabeceraDeEspera}
                           {contenidoDeEspera}
@@ -974,8 +997,8 @@ function HolograficoPanel({
               if (siempreAbierto) return bloque({ abierto: true, conContenido: true });
               return (
                 <>
-                  {bloque({ abierto: false, conContenido: false, anclaRef: bloqueRef, oculto: enBandeja })}
-                  <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef}>
+                  {bloque({ abierto: false, conContenido: false, anclaRef: bloqueRef, oculto: enBandeja, alSubir: conNotas ? () => setAlEntrarAbierto(true) : null })}
+                  <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef} onCerrar={() => { setAlEntrarAbierto(false); setInvitacion(false); }}>
                     {bloque({ abierto: true, conContenido: true })}
                   </Bandeja>
                 </>
@@ -1105,7 +1128,7 @@ const CuadernoHolografico = ({
   }, []);
 
   return (
-    <div ref={scrollContainerRef} className="relative flex h-full flex-col overflow-hidden">
+    <div ref={scrollContainerRef} className="relative flex h-full touch-manipulation flex-col overflow-hidden">
 
       {/* Poster como fondo — mobile: visible, desktop: oculto (el modal ya lo muestra) */}
       <AnimatePresence>
