@@ -375,8 +375,26 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
       ? [{ d: ondas.hilo }, { d: ondas.cierre, tenue: true }].filter((t) => t.d)
       : BRAZOS.map((d, i) => ({ d, tenue: i === 2 }));
 
+  // Al llegar, la figura ya no se dibuja provisional y luego se acomoda: hasta
+  // saber el tamaño de su marco no hay constelación, y la primera colocación
+  // aparece en su lugar, con un fundido; el viaje de las esferas (0.6 s) queda
+  // para cuando se toca otra forma (Carlos, 24 nov 2026: «se acomoda 3 veces»).
+  const medida = W > 0 && H > 0;
+  const [colocada, setColocada] = useState(false);
+  useEffect(() => {
+    if (!medida || colocada) return undefined;
+    const cuadro = window.requestAnimationFrame(() => window.requestAnimationFrame(() => setColocada(true)));
+    return () => window.cancelAnimationFrame(cuadro);
+  }, [medida, colocada]);
+  if (!medida) return <div className="relative w-full h-full" />;
+
   return (
-    <div className="relative w-full h-full">
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
       <svg data-figura={figura} data-estilo={garabato?.estilo} viewBox={enPixeles ? `0 0 ${W0} ${H0}` : '0 0 400 300'} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible pointer-events-none" style={{ zIndex: 1, opacity: sinConstelacion ? 0 : 1, transition: 'opacity 0.9s ease' }} aria-hidden="true">
         <defs>
           <filter id="chHalo" x="-30%" y="-30%" width="160%" height="160%">
@@ -443,7 +461,9 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               cursor: alFrente || apagada ? 'default' : 'pointer',
               opacity: apagada ? 0 : 1,
               pointerEvents: apagada ? 'none' : undefined,
-              transition: 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1), opacity 0.9s ease',
+              transition: colocada
+                ? 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1), opacity 0.9s ease'
+                : 'none',
             }}
             className={`group overflow-hidden rounded-full bg-black ${alFrente
               ? 'ring-2 ring-white/30 shadow-[0_0_60px_rgba(240,190,110,0.28)]'
@@ -469,7 +489,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
           </button>
         );
       })}
-    </div>
+    </motion.div>
   );
 }
 
@@ -1050,6 +1070,14 @@ const CuadernoHolografico = ({
   // El ancho de la caja decide cuándo se vuelve a trazar la figura; el alto,
   // no (18 nov 2026).
   const [anchoDeLaCaja, setAnchoDeLaCaja] = useState(0);
+  // La caja no se anima en su primera medida (pasar de «100 %» a píxeles
+  // estiraba el lazo al llegar); después sí, cuando cambia (24 nov 2026).
+  const [cajaMedida, setCajaMedida] = useState(false);
+  useEffect(() => {
+    if (!lado || cajaMedida) return undefined;
+    const cuadro = window.requestAnimationFrame(() => window.requestAnimationFrame(() => setCajaMedida(true)));
+    return () => window.cancelAnimationFrame(cuadro);
+  }, [lado, cajaMedida]);
   useEffect(() => {
     const el = marcoRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
@@ -1124,7 +1152,7 @@ const CuadernoHolografico = ({
       >
         <div
           className="relative"
-          style={{ width: lado || '100%', height: alto || '100%', transition: 'width 0.3s ease, height 0.3s ease' }}
+          style={{ width: lado || '100%', height: alto || '100%', transition: cajaMedida ? 'width 0.3s ease, height 0.3s ease' : 'none' }}
         >
           <Constellation
             centerKey={centerKey}
