@@ -8574,3 +8574,48 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 [data-escena-al-frente] > :not(:first-child) {
   margin-inline: calc(-1rem - 1px);
 }
+
+/* La bandeja del bloque morado (Carlos, 24 nov 2026): vidrio con el tinte
+   violeta del bloque, el lenguaje de .glass-effect-card; sin velo detrás. Su
+   asa reemplaza al chevrón, abierta y cerrada. */
+.bloque-forma {
+  position: relative;
+}
+.bloque-forma__asa {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 36px;
+  height: 4px;
+  margin-left: -18px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.bandeja-de-vidrio {
+  /* El vidrio va en esta caja exterior y no en el bloque de adentro: Safari
+     no desenfoca lo de atrás desde un hijo de una caja recortada (como en la
+     ficha inclinada, c2bf0ac). */
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background-color: rgba(22, 12, 34, 0.48);
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(190, 120, 220, 0.26), transparent 55%),
+    radial-gradient(circle at 86% 78%, rgba(190, 120, 220, 0.12), transparent 60%),
+    linear-gradient(135deg, rgba(190, 120, 220, 0.08), transparent 60%);
+  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  backdrop-filter: blur(26px) saturate(1.35);
+  box-shadow:
+    0 -14px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 240, 255, 0.22),
+    inset 0 0 0 1px rgba(194, 152, 211, 0.12);
+}
+.bandeja-de-vidrio > .bloque-forma {
+  min-height: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+/* En la bandeja, «Explorar miniverso» entra con ella (en el pozo espera 1.2 s). */
+.bandeja-de-vidrio .tarjeta-del-pozo__salida {
+  animation: pozo-llega 0.35s ease-out 0.2s both;
+}

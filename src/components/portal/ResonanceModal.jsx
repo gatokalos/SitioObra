@@ -2395,6 +2395,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         } : null,
                       } : null}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
+                      /* «Explorar miniverso», en la bandeja del bloque morado:
+                         vuelve a la ficha (Carlos, 24 nov 2026). */
+                      onExplorarMiniverso={handleClose}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
                       onUltimaPregunta={abrirUltimaPregunta}

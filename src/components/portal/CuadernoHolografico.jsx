@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, ChevronDown } from 'lucide-react';
+import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
@@ -483,7 +484,41 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
 // entrar en escena… Y ya así, ya los dos son iguales») la cabecera misma es
 // el renglón que despliega: un solo renglón cerrado, para no apretar la
 // constelación en pantallas chicas. Igual en el bloque de la espera.
-function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, children }) {
+// La bandeja (Carlos, 24 nov 2026): en pantallas chicas el bloque morado ya
+// no se despliega empujando la constelación, que se encogía y volvía a trazar
+// el lazo. Cerrado se queda en su lugar; abierto, su contenido sube encima, en
+// vidrio, desde la orilla de abajo, y nada de atrás se mueve. `anclaRef` es el
+// bloque cerrado: la bandeja toma su ancho y su pie.
+function Bandeja({ abierto, nodo, anclaRef, children }) {
+  const [caja, setCaja] = useState(null);
+  useLayoutEffect(() => {
+    if (!abierto || !nodo || !anclaRef.current) return;
+    const a = anclaRef.current.getBoundingClientRect();
+    const n = nodo.getBoundingClientRect();
+    setCaja({ left: a.left - n.left, width: a.width, bottom: n.bottom - a.bottom, cerrado: a.height });
+  }, [abierto, nodo, anclaRef]);
+  if (!nodo) return null;
+  return createPortal(
+    <AnimatePresence>
+      {abierto && caja ? (
+        <motion.div
+          key="bandeja"
+          className="bandeja-de-vidrio pointer-events-auto absolute overflow-hidden"
+          style={{ left: caja.left, width: caja.width, bottom: caja.bottom }}
+          initial={{ height: caja.cerrado }}
+          animate={{ height: 'auto' }}
+          exit={{ height: caja.cerrado, opacity: 0 }}
+          transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+        >
+          {children}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>,
+    nodo,
+  );
+}
+
+function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, anclaRef = null, oculto = false, children }) {
   const contenido = (
     <div className="min-w-0">
       {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
@@ -491,11 +526,11 @@ function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onTog
     </div>
   );
   return (
-    <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`}>
+    <section ref={anclaRef} className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`} style={oculto ? { visibility: 'hidden' } : undefined}>
       {onToggle ? (
         <button type="button" onClick={onToggle} aria-expanded={abierto} className="bloque-forma__cabecera bloque-forma__cabecera--plegable" data-al-entrar>
+          <span aria-hidden="true" className="bloque-forma__asa" />
           {contenido}
-          <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
         </button>
       ) : (
         <div className="bloque-forma__cabecera">
@@ -590,6 +625,8 @@ function HolograficoPanel({
   souvenirGenerando = false,
   alFondoDelPozo = false,
   soloElTitulo = false,
+  nodoBandeja = null,
+  onExplorarMiniverso = null,
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
@@ -608,6 +645,9 @@ function HolograficoPanel({
   // (Carlos, 18 nov 2026): ahí sobra espacio y abrir y cerrar solo movía la
   // constelación. El chevron queda para pantallas chicas.
   const siempreAbierto = bloqueEnLaCabina;
+  // En pantallas chicas el bloque abierto es la bandeja (ver Bandeja).
+  const enBandeja = !siempreAbierto && alEntrarAbierto;
+  const bloqueRef = useRef(null);
 
   // La invitación a la cuenta (Carlos, 18 nov 2026: «el momento donde un
   // usuario se puede dar cuenta de lo que se trata este método es justo
@@ -694,7 +734,10 @@ function HolograficoPanel({
               )}
               {/* Con el renglón de la espera desplegado, la línea se retira en
                   pantallas chicas, igual que con otra forma al centro. */}
-              <div className={avisoDeEspera && alEntrarAbierto ? 'max-lg:hidden' : undefined} data-linea-de-la-espera>
+              {/* Con la bandeja abierta la línea se desvanece en su lugar (no
+                  se quita: nada se mueve) para que su texto no se lea a
+                  través del vidrio (24 nov 2026). */}
+              <div className={`transition-opacity duration-300 ${avisoDeEspera && enBandeja ? 'pointer-events-none opacity-0' : ''}`} data-linea-de-la-espera>
                 <LineaDeLaForma
                   portal={homeKey}
                   enFoco
@@ -725,14 +768,8 @@ function HolograficoPanel({
                   memoria, para darle el aviso»). Desde el 18 nov 2026 también
                   en escritorio, y el día del regreso el bloque sigue, con la
                   ceja «El Regreso». */}
-              {avisoDeEspera ? (
-                <section className={`bloque-forma${siempreAbierto || alEntrarAbierto ? ' bloque-forma--abierto' : ''}`} data-aviso-de-espera>
-                  {/* Mismo patrón que el bloque de otra forma (Carlos, 16 nov
-                      2026): la ceja y el nombre de la forma en su color. Desde
-                      el 18 nov ese mismo renglón despliega la instrucción y lo
-                      que falte pedir; el renglón de abajo («La obra sigue en
-                      ti…») se fue y su frase abre lo desplegado. */}
-                  {(() => {
+              {avisoDeEspera ? (() => {
+                const cabeceraDeEspera = (() => {
                     const cabecera = (
                     <div className="min-w-0">
                       {/* La ceja dice el momento, con la palabra de la línea:
@@ -752,12 +789,13 @@ function HolograficoPanel({
                         className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
                         data-renglon-de-espera
                       >
+                        <span aria-hidden="true" className="bloque-forma__asa" />
                         {cabecera}
-                        <ChevronDown size={20} className="huella-puerta__flecha shrink-0" aria-hidden="true" />
                       </button>
                     );
-                  })()}
-                  {siempreAbierto || alEntrarAbierto ? (
+                  })();
+                const contenidoDeEspera = (
+                  <>
                     <div className="bloque-forma__abierto" data-espera-desplegada>
                       <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
                       {/* En la espera, la instrucción y el aviso, en teléfono y
@@ -802,9 +840,40 @@ function HolograficoPanel({
                         </button>
                       ) : null}
                     </div>
-                  ) : null}
-                </section>
-              ) : null}
+
+                    {/* La salida a la ficha vive en la bandeja (Carlos, 24 nov
+                        2026): el botón de «Entre bambalinas» lleva aquí, y de
+                        aquí se va al miniverso. */}
+                    {!siempreAbierto && onExplorarMiniverso ? (
+                      <button type="button" onClick={onExplorarMiniverso} className="tarjeta-del-pozo__salida" data-explorar-miniverso>
+                        Explorar miniverso
+                        <span aria-hidden="true">→</span>
+                      </button>
+                    ) : null}
+                  </>
+                );
+                return (
+                  <>
+                    <section
+                      ref={bloqueRef}
+                      className={`bloque-forma${siempreAbierto ? ' bloque-forma--abierto' : ''}`}
+                      style={enBandeja ? { visibility: 'hidden' } : undefined}
+                      data-aviso-de-espera
+                    >
+                      {cabeceraDeEspera}
+                      {siempreAbierto ? contenidoDeEspera : null}
+                    </section>
+                    {siempreAbierto ? null : (
+                      <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef}>
+                        <section className="bloque-forma bloque-forma--abierto" data-aviso-de-espera data-en-bandeja>
+                          {cabeceraDeEspera}
+                          {contenidoDeEspera}
+                        </section>
+                      </Bandeja>
+                    )}
+                  </>
+                );
+              })() : null}
             </div>
             )
           )
@@ -832,51 +901,66 @@ function HolograficoPanel({
             {/* En pantallas chicas la línea se retira mientras el acordeón
                 está desplegado, para que el bloque no aplaste la constelación;
                 al cerrarlo, vuelve (Carlos, 16 nov 2026). */}
-            <div className={alEntrarAbierto || invitacion ? 'max-lg:hidden' : undefined} data-linea-de-otra-forma>
+            <div className={`transition-opacity duration-300 ${enBandeja ? 'pointer-events-none opacity-0' : ''}`} data-linea-de-otra-forma>
               <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
             </div>
-            <BloqueDeForma
-              entry={entry}
-              ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-              abierto={siempreAbierto || alEntrarAbierto}
-              onToggle={!siempreAbierto && showcaseDefinitions[entry.showcase]?.iaProfile ? () => {
+            {(() => {
+              const conNotas = Boolean(showcaseDefinitions[entry.showcase]?.iaProfile);
+              const alternar = !siempreAbierto && conNotas ? () => {
                 if (alEntrarAbierto) { setAlEntrarAbierto(false); setInvitacion(false); }
                 else setAlEntrarAbierto(true);
-              } : null}
-            >
-              {showcaseDefinitions[entry.showcase]?.iaProfile ? (
-                <IAInsightCard
-                  {...showcaseDefinitions[entry.showcase].iaProfile}
-                  compact
-                  onRequireLogin={onRequireLogin}
-                  travelEyebrow={null}
-                  isOpen={siempreAbierto || alEntrarAbierto}
-                  onToggle={() => setAlEntrarAbierto((v) => !v)}
-                  travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
-                  travelFormLabel={entry.form ?? entry.name}
-                  onTravel={() => onOpenVideo(entry.showcase)}
-                  onSinSesion={() => setInvitacion(true)}
-                  /* Texto C, elegido por Carlos (18 nov 2026): la convención
-                     teatral (interpretar, acto final) y lo que de verdad pasa
-                     (se guarda, un texto tuyo). Antes de La Réplica no se dice
-                     «réplica»: la persona todavía no sabe qué es. */
-                  alterno={(
-                    <div className="flex flex-col gap-2">
-                      <p className="text-sm leading-relaxed text-slate-200/90">
-                        Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
-                      </p>
-                      <p className="text-xs leading-relaxed text-slate-400/80">Para guardarlo, tu correo.</p>
-                    </div>
-                  )}
-                  alternoActivo={invitacion}
-                  /* El mismo botón, que cambia (Carlos, 18 nov 2026: «el botón
-                     tiene que ser dinámico… tiene que aparecer ahí adentro,
-                     iniciar sesión»). Al cerrar el bloque, vuelven las notas. */
-                  alternoBoton={{ label: 'Iniciar sesión', onClick: entrarConCorreo }}
-                  enBloque
-                />
-              ) : null}
-            </BloqueDeForma>
+              } : null;
+              const bloque = (props) => (
+              <BloqueDeForma
+                {...props}
+                entry={entry}
+                ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
+                onToggle={alternar}
+              >
+                {props.conContenido && conNotas ? (
+                  <IAInsightCard
+                    {...showcaseDefinitions[entry.showcase].iaProfile}
+                    compact
+                    onRequireLogin={onRequireLogin}
+                    travelEyebrow={null}
+                    isOpen={siempreAbierto || alEntrarAbierto}
+                    onToggle={() => setAlEntrarAbierto((v) => !v)}
+                    travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
+                    travelFormLabel={entry.form ?? entry.name}
+                    onTravel={() => onOpenVideo(entry.showcase)}
+                    onSinSesion={() => setInvitacion(true)}
+                    /* Texto C, elegido por Carlos (18 nov 2026): la convención
+                       teatral (interpretar, acto final) y lo que de verdad pasa
+                       (se guarda, un texto tuyo). Antes de La Réplica no se dice
+                       «réplica»: la persona todavía no sabe qué es. */
+                    alterno={(
+                      <div className="flex flex-col gap-2">
+                        <p className="text-sm leading-relaxed text-slate-200/90">
+                          Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
+                        </p>
+                        <p className="text-xs leading-relaxed text-slate-400/80">Para guardarlo, tu correo.</p>
+                      </div>
+                    )}
+                    alternoActivo={invitacion}
+                    /* El mismo botón, que cambia (Carlos, 18 nov 2026: «el botón
+                       tiene que ser dinámico… tiene que aparecer ahí adentro,
+                       iniciar sesión»). Al cerrar el bloque, vuelven las notas. */
+                    alternoBoton={{ label: 'Iniciar sesión', onClick: entrarConCorreo }}
+                    enBloque
+                  />
+                ) : null}
+              </BloqueDeForma>
+              );
+              if (siempreAbierto) return bloque({ abierto: true, conContenido: true });
+              return (
+                <>
+                  {bloque({ abierto: false, conContenido: false, anclaRef: bloqueRef, oculto: enBandeja })}
+                  <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef}>
+                    {bloque({ abierto: true, conContenido: true })}
+                  </Bandeja>
+                </>
+              );
+            })()}
           </div>
         )}
       </motion.div>
@@ -904,8 +988,10 @@ const CuadernoHolografico = ({
   avisoDeEspera = null,
   alFondoDelPozo = false,
   soloElTitulo = false,
+  onExplorarMiniverso = null,
 }) => {
   const navigate = useNavigate();
+  const [nodoBandeja, setNodoBandeja] = useState(null);
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
   const [centerKey, setCenterKey] = useState(portal);
@@ -1074,8 +1160,14 @@ const CuadernoHolografico = ({
           avisoDeEspera={avisoDeEspera}
           alFondoDelPozo={alFondoDelPozo}
           soloElTitulo={soloElTitulo}
+          nodoBandeja={nodoBandeja}
+          onExplorarMiniverso={onExplorarMiniverso}
         />
       </div>
+
+      {/* Donde se abre la bandeja del bloque morado: encima de todo, sin
+          tapar los toques mientras está cerrada. */}
+      <div ref={setNodoBandeja} className="pointer-events-none absolute inset-0" style={{ zIndex: 20 }} />
 
       <VideoNarrativeAutoplay
         open={videoOpen}
