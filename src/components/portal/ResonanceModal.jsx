@@ -499,6 +499,26 @@ export const marcarEscenaAbierta = (portal) => {
   lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
 
+// El póster de fondo: al cambiar de forma, el nuevo se funde sobre el
+// anterior (24 nov 2026). La opacidad la sigue llevando la caja de afuera.
+function FondoQueSeFunde({ url, className, opacidad, ...resto }) {
+  return (
+    <div aria-hidden="true" className={className} style={{ opacity: opacidad }} {...resto}>
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={url}
+          className="absolute inset-0"
+          style={{ backgroundImage: `url(${url})`, backgroundPosition: 'center top', backgroundSize: 'cover' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.45 }}
+        />
+      </AnimatePresence>
+    </div>
+  );
+}
+
 const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null, onExplorarMiniverso = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
@@ -2148,15 +2168,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           {/* ── Columna izquierda ── */}
           <div className="relative min-w-0 flex-1 overflow-hidden">
             {/* Poster en mobile (fondo con fade) */}
-            <div
-              aria-hidden="true"
+            {/* Con la Memoria abierta, el fondo es el de la forma al centro de
+                la constelación, no el de la propia (Carlos, 24 nov 2026: «cada
+                vez que se cambia el fondo de la constelación, permanece el de
+                la forma inicial»). Se funde al cambiar. */}
+            <FondoQueSeFunde
+              url={holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster}
               className="absolute inset-0 lg:hidden transition-opacity duration-500"
-              style={{
-                backgroundImage: `url(${poster})`,
-                backgroundPosition: 'center top',
-                backgroundSize: 'cover',
-                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.1 : 0.5,
-              }}
+              opacidad={(l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.1 : 0.5}
             />
             {/* Desktop conserva dos columnas: el póster vive detrás del
                 formulario izquierdo, con el mismo oscurecimiento progresivo
@@ -2164,16 +2183,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 constelación se apaga y el póster de la forma sube (Carlos,
                 18 nov 2026: «aparezca más nítida la imagen de fondo que
                 corresponde a la forma»). */}
-            <div
-              aria-hidden="true"
+            <FondoQueSeFunde
+              url={holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster}
               className="absolute inset-0 hidden lg:block transition-opacity duration-1000"
               data-poster-del-pozo={enElPozo ? 'nitido' : undefined}
-              style={{
-                backgroundImage: `url(${holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster})`,
-                backgroundPosition: 'center top',
-                backgroundSize: 'cover',
-                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.08 : enElPozo ? 0.92 : 0.42,
-              }}
+              opacidad={(l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.08 : enElPozo ? 0.92 : 0.42}
             />
             <div
               aria-hidden="true"

@@ -8611,7 +8611,7 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
     inset 0 1px 0 rgba(255, 240, 255, 0.22),
     inset 0 0 0 1px rgba(194, 152, 211, 0.12);
 }
-.bandeja-de-vidrio > .bloque-forma {
+.bandeja-de-vidrio .bloque-forma {
   min-height: 100%;
   border: 0;
   background: transparent;

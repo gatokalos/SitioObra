@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, animate, useMotionValue } from 'framer-motion';
 import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
@@ -529,58 +529,147 @@ const gestosDeDeslizar = ({ alSubir = null, alBajar = null }) => {
   };
 };
 
-function Bandeja({ abierto, nodo, anclaRef, onCerrar = null, children }) {
-  const [caja, setCaja] = useState(null);
+const CURVA = [0.2, 0.8, 0.2, 1];
+
+// El alto de una caja que cambia de contenido: la primera vez se fija sin
+// moverse; después llega a su nuevo alto despacio. Con `animate={{ height }}`
+// framer leía el alto ya cambiado y no animaba nada.
+function useAltoQueRespira() {
+  const alto = useMotionValue('auto');
+  const fijado = useRef(false);
+  const llevarA = (px) => {
+    if (!fijado.current) { fijado.current = true; alto.set(px); return; }
+    animate(alto, px, { duration: 0.4, ease: CURVA });
+  };
+  return [alto, llevarA];
+}
+
+// Un contenido que cambia sin desaparecer (Carlos, 24 nov 2026: «no me gusta
+// que desaparezca el bloque morado y el timeline cada vez que cambia la
+// constelación… que el bloque morado refleje lo que se va cambiando»). La
+// caja se queda; lo de adentro se funde con lo nuevo y la caja toma su nuevo
+// alto despacio, así nada de abajo brinca.
+function Fundido({ k, children }) {
+  const medida = useRef(null);
+  const [alto, llevarA] = useAltoQueRespira();
   useLayoutEffect(() => {
-    if (!abierto || !nodo || !anclaRef.current) return;
-    const a = anclaRef.current.getBoundingClientRect();
-    const n = nodo.getBoundingClientRect();
-    setCaja({ left: a.left - n.left, width: a.width, bottom: n.bottom - a.bottom, cerrado: a.height });
-  }, [abierto, nodo, anclaRef]);
-  if (!nodo) return null;
-  return createPortal(
-    <AnimatePresence>
-      {abierto && caja ? (
-        <motion.div
-          key="bandeja"
-          className="bandeja-de-vidrio pointer-events-auto absolute overflow-hidden"
-          style={{ left: caja.left, width: caja.width, bottom: caja.bottom }}
-          initial={{ height: caja.cerrado }}
-          animate={{ height: 'auto' }}
-          exit={{ height: caja.cerrado, opacity: 0 }}
-          transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-          {...gestosDeDeslizar({ alBajar: onCerrar })}
-        >
-          {children}
-        </motion.div>
-      ) : null}
-    </AnimatePresence>,
-    nodo,
+    const el = medida.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const medir = () => llevarA(el.offsetHeight);
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <motion.div style={{ height: alto }}>
+      <div ref={medida} className="relative">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.div key={k} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
 
-function BloqueDeForma({ entry, chip = null, abierto = false, ceja = null, onToggle = null, anclaRef = null, oculto = false, alSubir = null, children }) {
-  const contenido = (
-    <div className="min-w-0">
-      {ceja ? <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p> : null}
-      <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
-    </div>
-  );
+// El bloque morado en escritorio: siempre abierto, una sola caja que se queda
+// mientras cambia la forma del centro.
+function CajaQueRespira({ k, className, children, ...resto }) {
+  const caja = useRef(null);
+  const contenido = useRef(null);
+  const [alto, llevarA] = useAltoQueRespira();
+  useLayoutEffect(() => {
+    const s = caja.current;
+    const c = contenido.current;
+    if (!s || !c || typeof ResizeObserver === 'undefined') return undefined;
+    const medir = () => {
+      const cs = window.getComputedStyle(s);
+      const orillas = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
+        .reduce((n, p) => n + (parseFloat(cs[p]) || 0), 0);
+      llevarA(c.offsetHeight + orillas);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(c);
+    return () => ro.disconnect();
+  }, []);
   return (
-    <section ref={anclaRef} className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`} style={oculto ? { visibility: 'hidden' } : undefined} {...(alSubir ? gestosDeDeslizar({ alSubir }) : {})}>
-      {onToggle ? (
-        <button type="button" onClick={onToggle} aria-expanded={abierto} className="bloque-forma__cabecera bloque-forma__cabecera--plegable" data-al-entrar>
-          <span aria-hidden="true" className="bloque-forma__asa" />
-          {contenido}
-        </button>
-      ) : (
-        <div className="bloque-forma__cabecera">
-          {contenido}
-          {chip}
+    <motion.section
+      ref={caja}
+      className={className}
+      style={{ overflow: 'hidden', height: alto }}
+      {...resto}
+    >
+      <div ref={contenido} className="relative shrink-0">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.div
+            key={k}
+            className="flex flex-col gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.section>
+  );
+}
+
+// La bandeja en pantallas chicas (Carlos, 24 nov 2026: «debería de verse como
+// una bandeja en realidad que empiece desde afuera del viewport… que se vea la
+// animación en cuanto entre… y que quede abierta desde el inicio, que el
+// usuario pueda bajarla… o incluso si interactúa con otra esfera se vuelve a
+// bajar… no como un botón flotante»). Nace debajo de la orilla de la
+// pantalla y sube; cerrada, enseña solo su cabecera en el lugar del bloque;
+// abierta, sube en vidrio sobre la constelación. `anclaRef` es el bloque
+// cerrado (invisible) que le guarda su lugar en la página.
+const SANGRIA = 28;
+function Hoja({ nodo, anclaRef, abierto, onAbrir = null, onCerrar = null, k, children }) {
+  const [caja, setCaja] = useState(null);
+  useLayoutEffect(() => {
+    const ancla = anclaRef.current;
+    if (!nodo || !ancla || typeof ResizeObserver === 'undefined') return undefined;
+    const medir = () => {
+      const a = ancla.getBoundingClientRect();
+      const n = nodo.getBoundingClientRect();
+      setCaja({ left: a.left - n.left, width: a.width, cerrada: Math.round(n.bottom - a.top) + SANGRIA });
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(ancla);
+    ro.observe(nodo);
+    return () => ro.disconnect();
+  }, [nodo, anclaRef]);
+  if (!nodo || !caja) return null;
+  return createPortal(
+    <motion.div
+      className="bandeja-de-vidrio bandeja-de-vidrio--hoja pointer-events-auto absolute overflow-hidden"
+      style={{ left: caja.left, width: caja.width, bottom: -SANGRIA }}
+      initial={{ y: '100%', height: abierto ? 'auto' : caja.cerrada }}
+      animate={{ y: 0, height: abierto ? 'auto' : caja.cerrada }}
+      transition={{
+        y: { duration: 0.7, ease: CURVA, delay: 0.35 },
+        height: { duration: 0.45, ease: CURVA },
+      }}
+      data-bandeja-abierta={abierto ? 'true' : 'false'}
+      {...gestosDeDeslizar({ alSubir: abierto ? null : onAbrir, alBajar: abierto ? onCerrar : null })}
+    >
+      <div style={{ paddingBottom: `calc(${SANGRIA}px + max(1rem, env(safe-area-inset-bottom, 0px)))` }}>
+        <div className="relative">
+          <AnimatePresence initial={false} mode="popLayout">
+            <motion.div key={k} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      )}
-      {children}
-    </section>
+      </div>
+    </motion.div>,
+    nodo,
   );
 }
 
@@ -677,17 +766,20 @@ function HolograficoPanel({
   const hasL3 = progress.l3Done;
   const hasBitacora = progress.bitacoraDone;
 
-  // El acordeón del bloque morado —«Al entrar en escena…» con otra forma al
-  // centro, el renglón de la espera con la propia—: se cierra al cambiar la
-  // forma del centro.
-  const [alEntrarAbierto, setAlEntrarAbierto] = useState(false);
-  useEffect(() => { setAlEntrarAbierto(false); }, [centerKey]);
+  // El bloque morado —el de la espera con la propia forma al centro, el de
+  // «Al entrar en escena…» con otra—: en pantallas chicas es la bandeja (ver
+  // Hoja), que llega abierta con la espera y se baja al tocar otra esfera.
+  const [alEntrarAbierto, setAlEntrarAbierto] = useState(() => !bloqueEnLaCabina && isHome && Boolean(avisoDeEspera));
+  const claveAnterior = useRef(centerKey);
+  useEffect(() => {
+    if (claveAnterior.current === centerKey) return;
+    claveAnterior.current = centerKey;
+    setAlEntrarAbierto(false);
+  }, [centerKey]);
   // En escritorio el bloque morado va siempre desplegado y sin chevron
   // (Carlos, 18 nov 2026): ahí sobra espacio y abrir y cerrar solo movía la
-  // constelación. El chevron queda para pantallas chicas.
+  // constelación.
   const siempreAbierto = bloqueEnLaCabina;
-  // En pantallas chicas el bloque abierto es la bandeja (ver Bandeja).
-  const enBandeja = !siempreAbierto && alEntrarAbierto;
   const bloqueRef = useRef(null);
 
   // La invitación a la cuenta (Carlos, 18 nov 2026: «el momento donde un
@@ -715,17 +807,215 @@ function HolograficoPanel({
   const homeL3 = homeProgress.l3Done;
   const homeBitacora = homeProgress.bitacoraDone;
 
+  // El recorrido —la espera de la propia forma y las demás formas sin
+  // terminar— comparte la misma línea y el mismo bloque: al cambiar la forma
+  // del centro, la caja se queda y su contenido se funde (24 nov 2026). Lo
+  // demás (la escena terminada, el título del regreso) cambia entero.
+  const esEspera = isHome && !homeBitacora && !soloElTitulo && Boolean(avisoDeEspera);
+  const esOtra = !isHome && !hasBitacora;
+  const familia = esEspera || esOtra ? 'recorrido' : `pieza-${centerKey}`;
+
+  const recorrido = () => {
+    const nombre = entry.form ?? entry.name;
+    const conNotas = esOtra && Boolean(showcaseDefinitions[entry.showcase]?.iaProfile);
+    const conCuerpo = esEspera || conNotas;
+    const abierto = !siempreAbierto && conCuerpo && alEntrarAbierto;
+    const cerrar = () => { setAlEntrarAbierto(false); setInvitacion(false); };
+
+    const linea = esEspera ? (
+      <LineaDeLaForma
+        portal={homeKey}
+        enFoco
+        focoCompleto={homeL3}
+        enEscena={false}
+        regresoAbierto={!!avisoDeEspera?.regreso || momentoDeLaForma(homeKey) === 'regreso'}
+      />
+    ) : (
+      <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
+    );
+
+    // La ceja dice el momento, con la palabra de la línea: esperando, «Entre
+    // bambalinas»; con la pregunta de vuelta, «El Regreso» (18 nov 2026).
+    const ceja = esEspera
+      ? (avisoDeEspera.regreso ? 'El Regreso' : 'Entre bambalinas')
+      : (hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra');
+    const titulo = (
+      <div className="min-w-0">
+        <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{ceja}</p>
+        <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{nombre}</h2>
+      </div>
+    );
+
+    const cuerpoDeEspera = esEspera ? (
+      <>
+        <div className="bloque-forma__abierto" data-espera-desplegada>
+          <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
+          {/* En la espera, la instrucción y el aviso, en teléfono y en
+              escritorio (el globo del gato queda para el regreso, 18 nov
+              2026). El día del regreso ya no hay nada que anunciar: el bloque
+              guarda cómo quedó la escena. */}
+          {avisoDeEspera.instruccion
+            ? <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>
+            : <FraseDeMemoria portal={homeKey} enEscena={false} />}
+          {avisoDeEspera.telefono ? (
+            <form
+              className="caja-de-bambalinas__aviso"
+              data-aviso-en-la-memoria
+              onSubmit={(e) => { e.preventDefault(); avisoDeEspera.telefono.onEnviar(); }}
+            >
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={avisoDeEspera.telefono.valor}
+                onChange={(e) => avisoDeEspera.telefono.onCambio(e.target.value)}
+                placeholder={avisoDeEspera.telefono.placeholder}
+                aria-label={avisoDeEspera.telefono.placeholder}
+                className="caja-de-bambalinas__campo"
+              />
+              <button type="submit" disabled={avisoDeEspera.telefono.valor.trim().length < 8} className="caja-de-bambalinas__avisar">
+                {avisoDeEspera.telefono.boton}
+              </button>
+            </form>
+          ) : null}
+          {avisoDeEspera.recuerdo ? (
+            <button
+              type="button"
+              onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
+              disabled={avisoDeEspera.recuerdo.ocupado}
+              data-recuerdo-en-la-memoria
+              className="caja-de-bambalinas__recuerdo"
+            >
+              <Download size={15} aria-hidden="true" />
+              {avisoDeEspera.recuerdo.titulo}
+            </button>
+          ) : null}
+        </div>
+        {/* La salida a la ficha (Carlos, 24 nov 2026), con el mismo botón que
+            «Interpretar …» del bloque de otra forma. */}
+        {onExplorarMiniverso ? (
+          <button type="button" onClick={onExplorarMiniverso} className="ultima-pregunta__salida" data-explorar-miniverso>
+            Explorar miniverso
+          </button>
+        ) : null}
+      </>
+    ) : null;
+
+    const cuerpoDeOtra = conNotas ? (
+      <IAInsightCard
+        {...showcaseDefinitions[entry.showcase].iaProfile}
+        compact
+        onRequireLogin={onRequireLogin}
+        travelEyebrow={null}
+        isOpen={siempreAbierto || alEntrarAbierto}
+        onToggle={() => setAlEntrarAbierto((v) => !v)}
+        travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${nombre}`}
+        travelFormLabel={nombre}
+        onTravel={() => onOpenVideo(entry.showcase)}
+        onSinSesion={() => setInvitacion(true)}
+        /* Texto C, elegido por Carlos (18 nov 2026): la convención teatral
+           (interpretar, acto final) y lo que de verdad pasa (se guarda, un
+           texto tuyo). Antes de La Réplica no se dice «réplica». */
+        alterno={(
+          <div className="flex flex-col gap-2">
+            <p className="text-sm leading-relaxed text-slate-200/90">
+              Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
+            </p>
+            <p className="text-xs leading-relaxed text-slate-400/80">Para guardarlo, tu correo.</p>
+          </div>
+        )}
+        alternoActivo={invitacion}
+        /* El mismo botón, que cambia (Carlos, 18 nov 2026). Al cerrar el
+           bloque, vuelven las notas. */
+        alternoBoton={{ label: 'Iniciar sesión', onClick: entrarConCorreo }}
+        enBloque
+      />
+    ) : null;
+    const cuerpo = esEspera ? cuerpoDeEspera : cuerpoDeOtra;
+    const marcas = esEspera ? { 'data-aviso-de-espera': true } : { 'data-bloque-de-otra-forma': true };
+
+    return (
+      <div className="flex flex-col gap-5">
+        {/* Con la bandeja abierta la línea se desvanece en su lugar (no se
+            quita: nada se mueve) para que su texto no se lea a través del
+            vidrio (24 nov 2026). */}
+        <div
+          className={`transition-opacity duration-300 ${abierto ? 'pointer-events-none opacity-0' : ''}`}
+          {...(esEspera ? { 'data-linea-de-la-espera': true } : { 'data-linea-de-otra-forma': true })}
+        >
+          <Fundido k={centerKey}>{linea}</Fundido>
+        </div>
+        {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo dice
+            el bloque morado. La pregunta y «Es tu turno» aparecen cuando la
+            pregunta ya volvió. */}
+        {esEspera && !readOnly ? (
+          <VitranaQuestionReveal
+            question={HOLISTIC_QUESTION}
+            portal={homeKey}
+            autoReveal
+            l2Done={homeL2}
+            l3Done={homeL3}
+            bitacoraCompleted={homeBitacora}
+            label={null}
+            buttonLabel="Es tu turno"
+            onAnswer={onStartBitacora}
+            showAction={!readOnly}
+          />
+        ) : null}
+        {siempreAbierto ? (
+          <CajaQueRespira k={centerKey} className="bloque-forma bloque-forma--abierto" {...marcas}>
+            <div className="bloque-forma__cabecera">{titulo}</div>
+            {cuerpo}
+          </CajaQueRespira>
+        ) : (
+          <>
+            {/* El lugar de la bandeja cerrada: invisible, guarda su alto. */}
+            <section ref={bloqueRef} className="bloque-forma" style={{ visibility: 'hidden' }} aria-hidden="true">
+              <div className={`bloque-forma__cabecera${conCuerpo ? ' bloque-forma__cabecera--plegable' : ''}`}>{titulo}</div>
+            </section>
+            <Hoja
+              nodo={nodoBandeja}
+              anclaRef={bloqueRef}
+              abierto={abierto}
+              onAbrir={conCuerpo ? () => setAlEntrarAbierto(true) : null}
+              onCerrar={cerrar}
+              k={centerKey}
+            >
+              <section className={`bloque-forma${abierto ? ' bloque-forma--abierto' : ''}`} {...marcas} data-en-bandeja>
+                {conCuerpo ? (
+                  <button
+                    type="button"
+                    onClick={() => (abierto ? cerrar() : setAlEntrarAbierto(true))}
+                    aria-expanded={abierto}
+                    className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
+                    {...(esEspera ? { 'data-renglon-de-espera': true } : { 'data-al-entrar': true })}
+                  >
+                    <span aria-hidden="true" className="bloque-forma__asa" />
+                    {titulo}
+                  </button>
+                ) : (
+                  <div className="bloque-forma__cabecera">{titulo}</div>
+                )}
+                {cuerpo}
+              </section>
+            </Hoja>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={centerKey}
+        key={familia}
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.18 }}
         className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4"
       >
-        {isHome ? (
+        {familia === 'recorrido' ? recorrido() : isHome ? (
           homeBitacora ? (
             <CompletedScenePanel
               portal={homeKey}
@@ -741,56 +1031,31 @@ function HolograficoPanel({
               onNavigateToRecommendation={onNavigateToRecommendation}
               onGoToSite={onGoToSite}
             />
+          ) : soloElTitulo ? (
+            /* El día del regreso, en escritorio, de este lado solo queda el
+               título, como al fondo del pozo pero con el póster todavía oscuro
+               (Carlos, 19 nov 2026). Sin constelación, sin línea y sin bloque
+               morado. */
+            <div data-titulo-de-la-memoria data-titulo-del-regreso>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+              <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
+              <FraseDeMemoria portal={homeKey} enEscena={false} />
+            </div>
           ) : (
-            /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
-            soloElTitulo ? (
-              /* El día del regreso, en escritorio, de este lado solo queda el
-                 título, como al fondo del pozo pero con el póster todavía
-                 oscuro: al contestar, el póster se ilumina (Carlos, 19 nov
-                 2026: que tenga el título «igual como lo tiene» el pozo, «pero
-                 que se mantenga así oscuro para que la transición a
-                 iluminado… siga siendo la propuesta estética»). Sin
-                 constelación, sin línea y sin bloque morado. */
-              <div data-titulo-de-la-memoria data-titulo-del-regreso>
+            /* Sin aviso de la espera: el nombre arriba y la línea. */
+            <div className="flex flex-col gap-5">
+              <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
                 <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
                 <FraseDeMemoria portal={homeKey} enEscena={false} />
               </div>
-            ) : (
-            <div className="flex flex-col gap-5">
-              {/* Con el bloque morado de la espera (teléfono), el nombre de la
-                  forma vive dentro del bloque, igual que cuando hay otra forma
-                  al centro: aquí arriba ya no se repite y la constelación gana
-                  ese espacio (Carlos, 16 nov 2026: «homogeneizar el bloque
-                  morado que sale en la forma que está esperando entre
-                  bambalinas»). */}
-              {avisoDeEspera ? null : (
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
-                  <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
-                    {entry.form ?? entry.name}
-                  </h2>
-                  <FraseDeMemoria portal={homeKey} enEscena={false} />
-                </div>
-              )}
-              {/* Con el renglón de la espera desplegado, la línea se retira en
-                  pantallas chicas, igual que con otra forma al centro. */}
-              {/* Con la bandeja abierta la línea se desvanece en su lugar (no
-                  se quita: nada se mueve) para que su texto no se lea a
-                  través del vidrio (24 nov 2026). */}
-              <div className={`transition-opacity duration-300 ${avisoDeEspera && enBandeja ? 'pointer-events-none opacity-0' : ''}`} data-linea-de-la-espera>
-                <LineaDeLaForma
-                  portal={homeKey}
-                  enFoco
-                  focoCompleto={homeL3}
-                  enEscena={false}
-                  regresoAbierto={!!avisoDeEspera?.regreso || momentoDeLaForma(homeKey) === 'regreso'}
-                />
-              </div>
-              {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo
-                  dice el bloque morado (hasta el 18 nov 2026, el gato en su
-                  globo). La pregunta y «Es tu turno» aparecen cuando la
-                  pregunta ya volvió. */}
+              <LineaDeLaForma
+                portal={homeKey}
+                enFoco
+                focoCompleto={homeL3}
+                enEscena={false}
+                regresoAbierto={momentoDeLaForma(homeKey) === 'regreso'}
+              />
               {readOnly ? null : <VitranaQuestionReveal
                 question={HOLISTIC_QUESTION}
                 portal={homeKey}
@@ -803,124 +1068,9 @@ function HolograficoPanel({
                 onAnswer={onStartBitacora}
                 showAction={!readOnly}
               />}
-              {/* En teléfono el aviso de la espera va aquí, en el bloque
-                  morado, sin gato (Carlos, 15 nov 2026: «vamos a usar el
-                  bloque morado, que está instalado en la parte abajo de la
-                  memoria, para darle el aviso»). Desde el 18 nov 2026 también
-                  en escritorio, y el día del regreso el bloque sigue, con la
-                  ceja «El Regreso». */}
-              {avisoDeEspera ? (() => {
-                const cabeceraDeEspera = (() => {
-                    const cabecera = (
-                    <div className="min-w-0">
-                      {/* La ceja dice el momento, con la palabra de la línea:
-                          esperando, «Entre bambalinas»; con la pregunta de
-                          vuelta, «El Regreso» (18 nov 2026). */}
-                      <p className="huella-puerta__eyebrow" data-ceja-del-bloque>{avisoDeEspera.regreso ? 'El Regreso' : 'Entre bambalinas'}</p>
-                      <h2 className={`min-w-0 font-display text-2xl leading-snug ${entry.color}`}>{entry.form ?? entry.name}</h2>
-                    </div>
-                    );
-                    return siempreAbierto ? (
-                      <div className="bloque-forma__cabecera">{cabecera}</div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setAlEntrarAbierto((v) => !v)}
-                        aria-expanded={alEntrarAbierto}
-                        className="bloque-forma__cabecera bloque-forma__cabecera--plegable"
-                        data-renglon-de-espera
-                      >
-                        <span aria-hidden="true" className="bloque-forma__asa" />
-                        {cabecera}
-                      </button>
-                    );
-                  })();
-                const contenidoDeEspera = (
-                  <>
-                    <div className="bloque-forma__abierto" data-espera-desplegada>
-                      <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
-                      {/* En la espera, la instrucción y el aviso, en teléfono y
-                          en escritorio (el globo del gato queda para el
-                          regreso, 18 nov 2026). El día del regreso ya no hay
-                          nada que anunciar: el bloque guarda cómo quedó la
-                          escena, como antes en escritorio. */}
-                      {avisoDeEspera.instruccion
-                        ? <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">{avisoDeEspera.instruccion}</p>
-                        : <FraseDeMemoria portal={homeKey} enEscena={false} />}
-                      {avisoDeEspera.telefono ? (
-                        <form
-                          className="caja-de-bambalinas__aviso"
-                          data-aviso-en-la-memoria
-                          onSubmit={(e) => { e.preventDefault(); avisoDeEspera.telefono.onEnviar(); }}
-                        >
-                          <input
-                            type="tel"
-                            inputMode="tel"
-                            autoComplete="tel"
-                            value={avisoDeEspera.telefono.valor}
-                            onChange={(e) => avisoDeEspera.telefono.onCambio(e.target.value)}
-                            placeholder={avisoDeEspera.telefono.placeholder}
-                            aria-label={avisoDeEspera.telefono.placeholder}
-                            className="caja-de-bambalinas__campo"
-                          />
-                          <button type="submit" disabled={avisoDeEspera.telefono.valor.trim().length < 8} className="caja-de-bambalinas__avisar">
-                            {avisoDeEspera.telefono.boton}
-                          </button>
-                        </form>
-                      ) : null}
-                      {avisoDeEspera.recuerdo ? (
-                        <button
-                          type="button"
-                          onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
-                          disabled={avisoDeEspera.recuerdo.ocupado}
-                          data-recuerdo-en-la-memoria
-                          className="caja-de-bambalinas__recuerdo"
-                        >
-                          <Download size={15} aria-hidden="true" />
-                          {avisoDeEspera.recuerdo.titulo}
-                        </button>
-                      ) : null}
-                    </div>
-
-                    {/* La salida a la ficha vive en la bandeja (Carlos, 24 nov
-                        2026): el botón de «Entre bambalinas» lleva aquí, y de
-                        aquí se va al miniverso. */}
-                    {/* El mismo botón que «Interpretar …» del bloque de otra
-                        forma (Carlos, 24 nov 2026), en teléfono y escritorio. */}
-                    {onExplorarMiniverso ? (
-                      <button type="button" onClick={onExplorarMiniverso} className="ultima-pregunta__salida" data-explorar-miniverso>
-                        Explorar miniverso
-                      </button>
-                    ) : null}
-                  </>
-                );
-                return (
-                  <>
-                    <section
-                      ref={bloqueRef}
-                      className={`bloque-forma${siempreAbierto ? ' bloque-forma--abierto' : ''}`}
-                      style={enBandeja ? { visibility: 'hidden' } : undefined}
-                      data-aviso-de-espera
-                      {...(siempreAbierto ? {} : gestosDeDeslizar({ alSubir: () => setAlEntrarAbierto(true) }))}
-                    >
-                      {cabeceraDeEspera}
-                      {siempreAbierto ? contenidoDeEspera : null}
-                    </section>
-                    {siempreAbierto ? null : (
-                      <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef} onCerrar={() => setAlEntrarAbierto(false)}>
-                        <section className="bloque-forma bloque-forma--abierto" data-aviso-de-espera data-en-bandeja>
-                          {cabeceraDeEspera}
-                          {contenidoDeEspera}
-                        </section>
-                      </Bandeja>
-                    )}
-                  </>
-                );
-              })() : null}
             </div>
-            )
           )
-        ) : hasBitacora ? (
+        ) : (
           <CompletedScenePanel
             portal={centerKey}
             onDownloadSouvenir={onDownloadSouvenir}
@@ -934,77 +1084,6 @@ function HolograficoPanel({
             onNavigateToRecommendation={onNavigateToRecommendation}
             onGoToSite={onGoToSite}
           />
-        ) : (
-          /* Otra forma: la línea y un solo bloque con su nombre y la fila «Al
-             entrar en escena…», que se despliega con las notas de la forma y
-             el botón de viaje (Carlos, 14 nov 2026: «adaptar el bloque morado
-             con acordeón para mostrar la información de "Al entrar en
-             escena..."»; «no me gustó tener una tarjeta dentro de otra»). */
-          <div className="flex flex-col gap-4">
-            {/* En pantallas chicas la línea se retira mientras el acordeón
-                está desplegado, para que el bloque no aplaste la constelación;
-                al cerrarlo, vuelve (Carlos, 16 nov 2026). */}
-            <div className={`transition-opacity duration-300 ${enBandeja ? 'pointer-events-none opacity-0' : ''}`} data-linea-de-otra-forma>
-              <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} regresoAbierto={momentoDeLaForma(centerKey) === 'regreso'} />
-            </div>
-            {(() => {
-              const conNotas = Boolean(showcaseDefinitions[entry.showcase]?.iaProfile);
-              const alternar = !siempreAbierto && conNotas ? () => {
-                if (alEntrarAbierto) { setAlEntrarAbierto(false); setInvitacion(false); }
-                else setAlEntrarAbierto(true);
-              } : null;
-              const bloque = (props) => (
-              <BloqueDeForma
-                {...props}
-                entry={entry}
-                ceja={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-                onToggle={alternar}
-              >
-                {props.conContenido && conNotas ? (
-                  <IAInsightCard
-                    {...showcaseDefinitions[entry.showcase].iaProfile}
-                    compact
-                    onRequireLogin={onRequireLogin}
-                    travelEyebrow={null}
-                    isOpen={siempreAbierto || alEntrarAbierto}
-                    onToggle={() => setAlEntrarAbierto((v) => !v)}
-                    travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
-                    travelFormLabel={entry.form ?? entry.name}
-                    onTravel={() => onOpenVideo(entry.showcase)}
-                    onSinSesion={() => setInvitacion(true)}
-                    /* Texto C, elegido por Carlos (18 nov 2026): la convención
-                       teatral (interpretar, acto final) y lo que de verdad pasa
-                       (se guarda, un texto tuyo). Antes de La Réplica no se dice
-                       «réplica»: la persona todavía no sabe qué es. */
-                    alterno={(
-                      <div className="flex flex-col gap-2">
-                        <p className="text-sm leading-relaxed text-slate-200/90">
-                          Si interpretas otra forma, guardamos lo que digas en cada una. En el acto final puedes juntarlo en un texto tuyo y decidir si lo compartes.
-                        </p>
-                        <p className="text-xs leading-relaxed text-slate-400/80">Para guardarlo, tu correo.</p>
-                      </div>
-                    )}
-                    alternoActivo={invitacion}
-                    /* El mismo botón, que cambia (Carlos, 18 nov 2026: «el botón
-                       tiene que ser dinámico… tiene que aparecer ahí adentro,
-                       iniciar sesión»). Al cerrar el bloque, vuelven las notas. */
-                    alternoBoton={{ label: 'Iniciar sesión', onClick: entrarConCorreo }}
-                    enBloque
-                  />
-                ) : null}
-              </BloqueDeForma>
-              );
-              if (siempreAbierto) return bloque({ abierto: true, conContenido: true });
-              return (
-                <>
-                  {bloque({ abierto: false, conContenido: false, anclaRef: bloqueRef, oculto: enBandeja, alSubir: conNotas ? () => setAlEntrarAbierto(true) : null })}
-                  <Bandeja abierto={enBandeja} nodo={nodoBandeja} anclaRef={bloqueRef} onCerrar={() => { setAlEntrarAbierto(false); setInvitacion(false); }}>
-                    {bloque({ abierto: true, conContenido: true })}
-                  </Bandeja>
-                </>
-              );
-            })()}
-          </div>
         )}
       </motion.div>
     </AnimatePresence>
