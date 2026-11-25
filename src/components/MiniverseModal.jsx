@@ -984,8 +984,8 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Este universo también se entiende en fragmentos: cada uno muestra una forma de contener la obra y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
+      lead: 'Escribí una obra de teatro sobre salud mental. Cuando dejó el escenario, nació este universo. Nueve fragmentos vuelven a la pregunta:',
+      highlight: '¿qué ocurre cuando una herida emocional toca otras vidas?',
       };
     }
     if (activeTab === 'experiences') {
@@ -1024,15 +1024,15 @@ const MiniverseModal = ({
         icon: Sparkles,
         thumbLabel: 'P',
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
-        title: 'El arte de romperse',
+        title: 'Cómo [no] romperse',
         titleShort: 'Prólogo',
-        ctaLabel: '🎧 "El arte de romperse"',
+        ctaLabel: '🎧 "Cómo [no] romperse"',
         ctaDuration: '5 min',
         description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: dramaShowcaseCard?.narrativeVideoUrlDesktop ?? NARRATIVE_VIDEO_URL_DESKTOP,
         fullscreenVideoUrlMobile: dramaShowcaseCard?.narrativeVideoUrl ?? NARRATIVE_VIDEO_URL_MOBILE,
-        eyebrow: 'Una autoficción en fragmentos',
+        eyebrow: 'Una autoficción fragmentada',
         isPrologue: true,
         portalLabel: 'Prólogo',
         customGradient: MINIVERSE_DISCOVER_INTRO_MESH,
@@ -1078,12 +1078,12 @@ const MiniverseModal = ({
   );
   const mobileExploreButtonLabel = useMemo(() => {
     if (!activeShowcaseCard) return 'Navega entre formas';
-    if (activeShowcaseCard.isPrologue) return 'Primer episodio: El drama';
+    if (activeShowcaseCard.isPrologue) return 'Primera forma: El drama';
     if (!fictionShowcaseCards.length) return 'Navega entre formas';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente episodio: ${nextCard?.portalLabel ?? 'El drama'}`;
+    return `Siguiente forma: ${nextCard?.portalLabel ?? 'El drama'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   useEffect(() => {
     if (inlineActNumberScrambleTimerRef.current) {
@@ -2391,10 +2391,7 @@ const MiniverseModal = ({
                 <div className="md:col-span-2 space-y-4">
                   <div className="flex items-center justify-between text-xs text-slate-400/80">
              
-                    <span>
-                      Microficción {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
-                      {Math.max(showcaseNarrativeCards.length, 1)}
-                    </span>
+       
                   </div>
 
                   {activeShowcaseCard ? (
@@ -2455,7 +2452,7 @@ const MiniverseModal = ({
                               </div>
                               <div className="hero-inline-card-title-frame min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                  {activeShowcaseCard.eyebrow || 'El arte de romperse'}
+                                  {activeShowcaseCard.eyebrow || 'Cómo [no] romperse'}
                                 </p>
                                 <h3
                                   className={`${isInlineMode
