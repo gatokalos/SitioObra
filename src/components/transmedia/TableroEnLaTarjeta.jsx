@@ -91,8 +91,10 @@ const TableroEnLaTarjeta = ({
   // la tarjeta ya como su contenedor»). En el carrusel (<1024) una caja dentro
   // de otra le quitaba ancho al video y a las filas.
   // Desde el 24 nov 2026 también en escritorio: en el carril la tarjeta es la
-  // misma en todas las pantallas y la caja era una tarjeta dentro de otra.
-  const alFrente = 'rounded-none border-0 bg-transparent px-0 shadow-none';
+  // misma en todas las pantallas y la caja era una tarjeta dentro de otra. El
+  // relleno de 16 px se queda (alinea el encabezado con los íconos de las
+  // escenas cerradas); el video y bambalinas lo cruzan (index.css).
+  const alFrente = 'rounded-none border-0 bg-transparent shadow-none';
   const eco = 'rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90';
 
   // La palomita sobre la esfera de cada escena ya vivida (Carlos, 15 nov 2026:

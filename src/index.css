@@ -8557,3 +8557,13 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 [data-tablero-en-la-tarjeta] > section:first-of-type > div:first-child {
   padding-right: 2.75rem;
 }
+
+/* La escena al frente del tablero (Carlos, 24 nov 2026): el video y el bloque
+   de «Tres días · Entre bambalinas» miden lo mismo de ancho que las tarjetas
+   cerradas de abajo («Primera intuición»…); el encabezado se queda alineado
+   con sus íconos. La escena conserva su relleno de 16 px; estos dos bloques
+   lo cruzan. */
+[data-tablero-en-la-tarjeta] > section:first-of-type .caja-de-bambalinas,
+[data-tablero-en-la-tarjeta] > section:first-of-type div.overflow-hidden.rounded-2xl.border {
+  margin-inline: -1rem;
+}
