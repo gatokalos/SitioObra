@@ -8646,3 +8646,45 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 .bandeja-de-vidrio {
   touch-action: manipulation;
 }
+
+/* La línea de la forma dice dónde está la persona, con movimiento (Carlos,
+   24 nov 2026). Esperando entre bambalinas, una luz recorre los puntitos
+   hacia El Regreso; el nodo del momento presente late con una onda. */
+.linea-espera__luz {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-top: 2px dotted rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.75));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%, #000 55%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 45%, #000 55%, transparent);
+  -webkit-mask-size: 28% 100%;
+  mask-size: 28% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation: linea-espera-luz 3.4s cubic-bezier(.45, 0, .55, 1) infinite;
+  pointer-events: none;
+}
+@keyframes linea-espera-luz {
+  0% { -webkit-mask-position: -45% 0; mask-position: -45% 0; opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { -webkit-mask-position: 145% 0; mask-position: 145% 0; opacity: 0; }
+}
+.linea-onda {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  animation: linea-onda 2.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes linea-onda {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .linea-espera__luz { animation: none; opacity: 0; }
+  .linea-onda { animation: none; opacity: 0; }
+}

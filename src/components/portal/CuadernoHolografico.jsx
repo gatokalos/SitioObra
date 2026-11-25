@@ -58,6 +58,12 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena, regresoAbierto
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;
   const regresoVivo = regresoAbierto && !enEscena;
+  // Dónde está la persona ahora, con algo de movimiento (Carlos, 24 nov 2026:
+  // «necesito que haga algo de movimiento… para que refuerce detrás de la
+  // bandeja morada que hay algo atrás. Y cuando lo revele, sepa que… en ese
+  // lugar está ahorita»). Esperando, una luz recorre los puntitos hacia el
+  // regreso; el regreso o la Memoria, cuando es su momento, laten con una onda.
+  const esperando = focoCompleto && !regresoVivo && !enEscena;
   return (
     <div
       className="flex items-start justify-between gap-1 py-3"
@@ -95,7 +101,10 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena, regresoAbierto
       {/* Entre bambalinas — la retención: tres días en los que no pasa nada */}
       <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
         <span className="flex h-12 w-full items-center">
-          <span className={`w-full border-t-2 border-dotted ${focoCompleto ? 'border-white/35' : 'border-white/10'}`} />
+          <span className="relative w-full">
+            <span className={`block w-full border-t-2 border-dotted ${focoCompleto ? 'border-white/35' : 'border-white/10'}`} />
+            {esperando ? <span aria-hidden className="linea-espera__luz" /> : null}
+          </span>
         </span>
         <span className={`${rotulo(focoCompleto)} text-center leading-tight`}>
           Entre bambalinas
@@ -109,7 +118,10 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena, regresoAbierto
       <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
         <span className="relative flex h-12 w-12 items-center justify-center">
           {regresoVivo ? (
-            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+            <>
+              <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+              <span aria-hidden className="linea-onda" />
+            </>
           ) : null}
           <span
             className={`relative flex items-center justify-center rounded-full transition ${
@@ -136,7 +148,10 @@ const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena, regresoAbierto
       <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
         <span className="relative flex h-12 w-12 items-center justify-center">
           {enEscena ? (
-            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+            <>
+              <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+              <span aria-hidden className="linea-onda" />
+            </>
           ) : null}
           <span
             className={`relative flex items-center justify-center rounded-full transition ${
