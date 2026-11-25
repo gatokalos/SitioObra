@@ -984,7 +984,7 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Escribí una obra de teatro sobre salud mental. Cuando dejó el escenario, nació este universo. Nueve fragmentos vuelven a la pregunta:',
+      lead: 'Escribí una obra de teatro sobre salud mental. Cuando dejó el escenario, nació este universo. En nueve fragmentos sigo preguntándome:',
       highlight: '¿qué ocurre cuando una herida emocional toca otras vidas?',
       };
     }
