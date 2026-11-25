@@ -8501,8 +8501,15 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
   filter: none;
 }
 
-/* Teléfonos con alto para todo: la ceja y el título se quedan y los puntitos
-   van en el aire entre el título y la tarjeta (Carlos, 24 nov 2026). */
-.carril-de-vitrinas--una.carril-de-vitrinas--con-titulo {
-  padding-top: 40px;
+/* Una a la vez en teléfono: las vecinas asoman 8 px en el margen de 16 que ya
+   tiene la tarjeta (sin achicarla) y el carril no muestra su barra de
+   desplazamiento: las orillas y los puntitos discretos al pie de la imagen
+   dicen que es una galería (Carlos, 24 nov 2026). */
+.carril-de-vitrinas.carril-de-vitrinas--una {
+  gap: 8px;
+  scrollbar-width: none;
+}
+
+.carril-de-vitrinas.carril-de-vitrinas--una::-webkit-scrollbar {
+  display: none;
 }

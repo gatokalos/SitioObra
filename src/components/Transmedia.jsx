@@ -504,11 +504,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [carrilConTitulo, setCarrilConTitulo] = useState(false);
   const carrilConTituloRef = useRef(false);
   const [tarjetaVisible, setTarjetaVisible] = useState(0);
-  // Los puntitos van arriba, a la altura del [#] y al centro de la pantalla
-  // (referencia de Carlos, 24 nov 2026): no tapan la tarjeta. Siguen al [#]
-  // (la cabecera del teléfono se esconde al bajar) y solo están mientras el
-  // carril está a la vista.
-  const [puntitosY, setPuntitosY] = useState(null);
   // El carril da la vuelta (paso 3, Carlos, 24 nov 2026): las nueve van tres
   // veces y la de en medio es la original; las copias de los extremos son
   // solo de vista (frente de la tarjeta, sin formulario ni marcas). Al
@@ -667,8 +662,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         const anchoPleno = window.innerWidth - 32;
         const ideal = Math.round(anchoPleno * 478 / 428 + pie);
         // Con título: la tarjeta empieza bajo el título (su margen de 16 px y
-        // el aire de 40 px donde van los puntitos) y termina a 16 px del pie.
-        const disponible = window.innerHeight - (piso(titulo) + 16 + 40) - 16;
+        // el aire de 14 px del carril) y termina a 16 px del pie.
+        const disponible = window.innerHeight - (piso(titulo) + 16 + 14) - 16;
         let ancho = anchoPleno;
         let altoUna;
         conTitulo = window.innerWidth > 380 && disponible >= 560;
@@ -797,29 +792,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     });
     return () => limpiezas.forEach((limpiar) => limpiar());
   }, [enCarril, copiasDelCarril, muestraElCarril, modoCarril, recommendedShowcaseId]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!enCarril || !carrilDeUna || !muestraElCarril || carrilConTitulo) { setPuntitosY(null); return undefined; }
-    const pista = carrilMovilRef.current;
-    if (!pista || typeof IntersectionObserver === 'undefined') return undefined;
-    let cuadro = 0;
-    let aLaVista = false;
-    const seguir = () => {
-      const marca = document.getElementById('header-index-hashtag')?.getBoundingClientRect();
-      const y = marca && marca.bottom > 4 ? Math.round(marca.top + marca.height / 2) : null;
-      setPuntitosY((antes) => (antes === y ? antes : y));
-      if (aLaVista) cuadro = window.requestAnimationFrame(seguir);
-    };
-    const vigia = new IntersectionObserver(([entrada]) => {
-      aLaVista = Boolean(entrada?.isIntersecting);
-      window.cancelAnimationFrame(cuadro);
-      if (aLaVista) seguir(); else setPuntitosY(null);
-    }, { threshold: 0.5 });
-    vigia.observe(pista);
-    return () => {
-      vigia.disconnect();
-      window.cancelAnimationFrame(cuadro);
-    };
-  }, [enCarril, carrilDeUna, muestraElCarril, carrilConTitulo]);
   const moverElCarril = useCallback((sentido) => {
     if (focusLockShowcaseId) releaseDesktopFocusLock();
     const pista = carrilRef.current;
@@ -6550,6 +6522,16 @@ const renderDramaFeaturedWork = () => (
                     onTouchCancel={isShowcaseOpenTransitionActive || enCarril ? undefined : handleMobileShowcaseTouchEnd}
                   >
                     <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[360px] min-[700px]:max-lg:h-[620px] bg-slate-500/20 overflow-hidden">
+                      {/* Nueve puntitos discretos al pie de la imagen: dicen que son
+                          nueve y cuál es esta (Carlos, 24 nov 2026). Las orillas de
+                          las vecinas, a los lados, dicen que se desliza. */}
+                      {enCarril && carrilDeUna ? (
+                        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex justify-center gap-1.5">
+                          {formats.map((f) => (
+                            <span key={f.id} className={`h-1 w-1 rounded-full ${f.id === format.id ? 'bg-white/85' : 'bg-white/30'}`} />
+                          ))}
+                        </div>
+                      ) : null}
                       {format.image ? (
                         <img
                           src={format.image}
@@ -6776,45 +6758,6 @@ const renderDramaFeaturedWork = () => (
                         </div>
                       ))}
                     </div>
-                    {carrilDeUna && carrilConTitulo && tarjetaGiradaId !== formats[tarjetaVisible]?.id && tarjetaConLoginId !== formats[tarjetaVisible]?.id ? (
-                      <div className="absolute inset-x-0 top-[8px] z-20 flex justify-center" aria-label="Formas">
-                        <div className="flex items-center gap-2">
-                          {formats.map((f, i) => (
-                            <button
-                              key={f.id}
-                              type="button"
-                              aria-label={`Ir a ${f.title}`}
-                              aria-current={i === tarjetaVisible ? 'true' : undefined}
-                              onClick={() => carrilMovilRef.current?.scrollTo({ left: i * pasoDeUna(), behavior: 'smooth' })}
-                              className="flex h-6 w-4 items-center justify-center"
-                            >
-                              <span className={`h-2 w-2 rounded-full transition ${i === tarjetaVisible ? 'bg-purple-200' : 'bg-white/35'}`} />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {carrilDeUna && puntitosY !== null && typeof document !== 'undefined' && tarjetaGiradaId !== formats[tarjetaVisible]?.id && tarjetaConLoginId !== formats[tarjetaVisible]?.id ? createPortal(
-                      <div
-                        className="fixed left-1/2 z-[9999] flex -translate-x-1/2 -translate-y-1/2 items-center gap-2"
-                        style={{ top: puntitosY }}
-                        aria-label="Formas"
-                      >
-                        {formats.map((f, i) => (
-                          <button
-                            key={f.id}
-                            type="button"
-                            aria-label={`Ir a ${f.title}`}
-                            aria-current={i === tarjetaVisible ? 'true' : undefined}
-                            onClick={() => carrilMovilRef.current?.scrollTo({ left: i * pasoDeUna(), behavior: 'smooth' })}
-                            className="flex h-6 w-4 items-center justify-center"
-                          >
-                            <span className={`h-2 w-2 rounded-full transition ${i === tarjetaVisible ? 'bg-purple-200' : 'bg-white/35'}`} />
-                          </button>
-                        ))}
-                      </div>,
-                      document.body
-                                        ) : null}
                   </div>
                 );
               }
