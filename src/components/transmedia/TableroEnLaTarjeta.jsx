@@ -289,7 +289,7 @@ const TableroEnLaTarjeta = ({
                       <img
                         src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra}
                         alt=""
-                        className="absolute h-[104%] w-[104%] object-cover"
+                        className="absolute h-[104%] w-[104%] max-w-none object-cover"
                         style={{ left: '-2%', top: '-2%' }}
                       />
                       <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />

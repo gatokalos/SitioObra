@@ -2676,7 +2676,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               <img
                                                 src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra}
                                                 alt=""
-                                                className="absolute h-[104%] w-[104%] object-cover"
+                                                className="absolute h-[104%] w-[104%] max-w-none object-cover"
                                                 style={{ left: '-2%', top: '-2%' }}
                                               />
                                               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />
@@ -2709,7 +2709,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             aria-label="Terminar la escena"
                                           >
                                             <span className="relative block h-16 w-16 overflow-hidden rounded-full bg-black ring-2 ring-white/25" style={{ boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}>
-                                              <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" className="absolute h-[104%] w-[104%] object-cover" style={{ left: '-2%', top: '-2%' }} />
+                                              <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" className="absolute h-[104%] w-[104%] max-w-none object-cover" style={{ left: '-2%', top: '-2%' }} />
                                               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-10px_-12px_20px_rgba(0,0,0,0.48),inset_7px_7px_13px_rgba(255,255,255,0.12)]" />
                                             </span>
                                             <span className="text-sm font-semibold tracking-wide text-amber-200">Terminar la escena</span>

@@ -11,6 +11,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress, momentoDeLaForma } from '@/lib/bitacoraShared';
 import { acomodarEnOndas } from '@/lib/constelacionEnOndas';
+import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { trazarGarabato } from '@/lib/constelacionGarabato';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { ensureAnonId } from '@/lib/identity';
@@ -415,7 +416,10 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
         const alFrente = forma.key === centerKey;
         const apagada = sinConstelacion;
         const avance = readResonanceProgress(forma.key);
-        const icono = PORTAL_APP_ICON_URL[forma.key];
+        // Los emblemas recortados de las esferas (lib/resonanceDramaturgy.js,
+        // 24 nov 2026): los originales traen una orilla semitransparente que
+        // asomaba como franja oscura dentro del círculo.
+        const icono = PORTAL_EMBLEM_URL[forma.key] ?? PORTAL_APP_ICON_URL[forma.key];
         return (
           <button
             key={forma.key}
