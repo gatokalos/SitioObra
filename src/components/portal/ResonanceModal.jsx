@@ -499,7 +499,7 @@ export const marcarEscenaAbierta = (portal) => {
   lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
 };
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null, onExplorarMiniverso = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -2407,7 +2407,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       /* «Explorar miniverso», en la bandeja del bloque morado:
                          vuelve a la ficha (Carlos, 24 nov 2026). */
-                      onExplorarMiniverso={handleClose}
+                      onExplorarMiniverso={onExplorarMiniverso ?? handleClose}
                       huellaOpen={huellaOpen}
                       onHuellaOpenChange={setHuellaOpen}
                       onUltimaPregunta={abrirUltimaPregunta}

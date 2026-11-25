@@ -66,6 +66,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import { leerCarril } from '@/lib/carril';
 import BotonDeRetorno from '@/components/transmedia/BotonDeRetorno';
+import MemoriaSola from '@/components/transmedia/MemoriaSola';
 import { precargarVitrinas } from '@/lib/precargaVitrinas';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
@@ -1054,7 +1055,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // pasar por «Sigue donde quedaste» (Carlos, 15 nov 2026: «ahorrarnos el
       // paso»). Es la misma seña con la que el portal abre el método a quien
       // viene de contestar en la tarjeta.
-      const alMetodo = abrirMetodoAlLlegarRef.current === formatId || elRegresoYaVolvio(formatId);
+      // Quien viene de la Memoria («Explorar miniverso») ya vio el método: el
+      // portal abre en la ficha, no otra vez en la Memoria.
+      const vieneDeLaMemoria = vieneDeLaMemoriaRef.current === formatId;
+      vieneDeLaMemoriaRef.current = null;
+      const alMetodo = !vieneDeLaMemoria
+        && (abrirMetodoAlLlegarRef.current === formatId || elRegresoYaVolvio(formatId));
       const aLaObra = irALaObraDestacadaRef.current === formatId;
       abrirMetodoAlLlegarRef.current = null;
       irALaObraDestacadaRef.current = null;
@@ -1914,12 +1920,29 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // se despliegue ahí la acción, que el botón vaya a la pantalla donde se hace
   // eso […] dos de esos botones llevarían a la memoria. Uno de ellos llevaría
   // a la ficha»).
+  // Desde el 24 nov 2026 la Memoria se abre sola (MemoriaSola), sin la ficha
+  // debajo: antes se abría la ficha y encima el método, y la ficha se veía
+  // primero (Carlos). «Explorar miniverso» cierra la Memoria y abre la ficha.
+  const [memoriaSolaId, setMemoriaSolaId] = useState(null);
+  const vieneDeLaMemoriaRef = useRef(null);
   const irALaMemoriaDesdeLaTarjeta = (formatId) => {
     marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
     setTarjetaGiradaId(null);
-    abrirMetodoAlLlegarRef.current = formatId;
-    setRegresoPendienteId(formatId);
-    handleFormatClick(formatId);
+    setMemoriaSolaId(formatId);
+  };
+  const cerrarLaMemoriaSola = () => {
+    setMemoriaSolaId(null);
+    setRegistroDeLaTarjetaTick((n) => n + 1);
+  };
+  const deLaMemoriaALaFicha = () => {
+    const formatId = memoriaSolaId;
+    cerrarLaMemoriaSola();
+    if (!formatId) return;
+    vieneDeLaMemoriaRef.current = formatId;
+    window.setTimeout(() => {
+      handleFormatClick(formatId);
+      vieneDeLaMemoriaRef.current = null;
+    }, 60);
   };
   // Vuelve a leer el registro del método cuando la tarjeta acaba de escribirlo.
   const [registroDeLaTarjetaTick, setRegistroDeLaTarjetaTick] = useState(0);
@@ -7038,6 +7061,20 @@ const renderDramaFeaturedWork = () => (
             </>)}
               </div>
               {showcaseOverlay}
+              <AnimatePresence>
+                {memoriaSolaId ? (
+                  <MemoriaSola
+                    key={memoriaSolaId}
+                    portal={SHOWCASE_TO_PORTAL[memoriaSolaId]}
+                    question={VITRANA_QUESTION_BY_SHOWCASE[memoriaSolaId]}
+                    isMobileViewport={isMobileViewport}
+                    onCerrar={cerrarLaMemoriaSola}
+                    onExplorar={deLaMemoriaALaFicha}
+                    onNavigateToRecommendation={(id) => { cerrarLaMemoriaSola(); saltarALaTarjeta(id); }}
+                    onRequireLogin={() => setShowMobilePortalLogin(true)}
+                  />
+                ) : null}
+              </AnimatePresence>
               {showcaseDipToBlackOverlay}
               {oraculoOverlay}
               {causeSiteOverlay}
