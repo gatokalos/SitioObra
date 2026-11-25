@@ -32,20 +32,8 @@ const DorsoLogin = ({ formaTitle, onVolver, onEntrar, onAntesDeSalir }) => {
         }}
       />
       <div className="relative z-10 flex h-full flex-col gap-3 overflow-y-auto p-6">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[0.65rem] uppercase tracking-[0.4em] text-amber-100/90 drop-shadow">
-            #Miniversos{formaTitle ? ` · ${formaTitle}` : ''}
-          </p>
-          {onVolver ? (
-            <button
-              type="button"
-              onClick={onVolver}
-              className="shrink-0 text-[0.7rem] text-slate-200/80 underline underline-offset-4 transition hover:text-white"
-            >
-              Volver
-            </button>
-          ) : null}
-        </div>
+        {/* Sin la ceja ni «Volver»: el retorno es la X de la esquina
+            (BotonDeRetorno, Carlos, 24 nov 2026). */}
 
         {/* El tigre respira arriba; el acceso, abajo. */}
         <div aria-hidden="true" className="min-h-[5.5rem] flex-1" />

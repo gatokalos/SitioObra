@@ -65,6 +65,7 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { fichaEnPasado } from '@/lib/fichaEnPasado';
 import { leerCarril } from '@/lib/carril';
+import BotonDeRetorno from '@/components/transmedia/BotonDeRetorno';
 import { precargarVitrinas } from '@/lib/precargaVitrinas';
 import { PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
@@ -2277,7 +2278,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 isDevAuth={isDevAuth}
                 onHabitar={() => habitarDesdeLaTarjeta(format.id)}
                 sinArtefacto={!ARTEFACTO_EN_VENTANA.has(format.id)}
-                onVolver={cerrarElDorso}
                 onMientrasTanto={() => revelarLaFicha(format.id)}
                 onIrALaMemoria={() => irALaMemoriaDesdeLaTarjeta(format.id)}
                 onRequireLogin={() => setShowMobilePortalLogin(true)}
@@ -2297,11 +2297,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 formaTitle={format.title}
                 gradiente={MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default}
                 onEnviar={(datos) => enviarDesdeLaTarjeta(format.id, datos)}
-                onVolver={cerrarElDorso}
               />
             </motion.div>
           )}
         </AnimatePresence>
+        <BotonDeRetorno onClick={cerrarElDorso} />
       </motion.div>
     </div>
   );
@@ -2320,11 +2320,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       >
         <DorsoLogin
           formaTitle={format.title}
-          onVolver={() => setTarjetaConLoginId(null)}
           onAntesDeSalir={() => {
             try { window.sessionStorage.setItem(GIRAR_AL_VOLVER_KEY, format.id); } catch { /* sin almacenamiento */ }
           }}
         />
+        <BotonDeRetorno onClick={() => setTarjetaConLoginId(null)} />
       </motion.div>
     </div>
   );

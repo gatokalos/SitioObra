@@ -124,7 +124,7 @@ const TableroEnLaTarjeta = ({
     <div
       ref={tableroRef}
       data-tablero-en-la-tarjeta={enElFoco ? 'foco' : 'preparacion'}
-      className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 p-6 text-left"
+      className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 px-6 pb-6 pt-14 text-left"
       // El mismo fondo del dorso: el gradiente de la forma con su velo.
       style={{
         backgroundColor: '#0a0c18',
@@ -133,20 +133,9 @@ const TableroEnLaTarjeta = ({
           : 'radial-gradient(120% 60% at 20% 0%, rgba(110,60,90,0.55), transparent 60%), linear-gradient(160deg, #0d1022 0%, #151a36 50%, #2a1b3c 100%)',
       }}
     >
-      <div className="flex shrink-0 items-center justify-between gap-3">
-        <p className="text-[0.65rem] uppercase tracking-[0.4em] text-sky-300">
-          #Miniversos{formaTitle ? ` · ${formaTitle}` : ''}
-        </p>
-        {onVolver ? (
-          <button
-            type="button"
-            onClick={onVolver}
-            className="shrink-0 text-[0.7rem] text-slate-400 underline underline-offset-4 transition hover:text-slate-100"
-          >
-            Volver
-          </button>
-        ) : null}
-      </div>
+      {/* Sin la ceja «#Miniversos · forma»: el retorno es la X de la esquina
+          (BotonDeRetorno, Carlos, 24 nov 2026). El primer recuadro baja lo
+          justo para no quedar debajo de ella. */}
 
       {enElFoco ? (
         <>

@@ -63,21 +63,9 @@ const DorsoPrimeraIntuicion = ({ question, formaTitle, gradiente = null, onEnvia
       }}
     >
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[0.65rem] uppercase tracking-[0.4em] text-sky-300">
-            #Miniversos{formaTitle ? ` · ${formaTitle}` : ''}
-          </p>
-          {onVolver ? (
-            <button
-              type="button"
-              onClick={onVolver}
-              className="shrink-0 text-[0.7rem] text-slate-400 underline underline-offset-4 transition hover:text-slate-100"
-            >
-              Volver
-            </button>
-          ) : null}
-        </div>
-        <p className="font-display text-[1.45rem] italic leading-tight question-voice">{question}</p>
+        {/* Sin la ceja «#Miniversos · forma»: el retorno es la X de la esquina
+            (BotonDeRetorno, Carlos, 24 nov 2026); la pregunta le deja su lugar. */}
+        <p className="pr-10 font-display text-[1.45rem] italic leading-tight question-voice">{question}</p>
       </div>
 
       <div aria-hidden="true" className="h-px shrink-0 bg-white/10" />
