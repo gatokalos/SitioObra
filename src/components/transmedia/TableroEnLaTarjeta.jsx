@@ -198,8 +198,11 @@ const TableroEnLaTarjeta = ({
       ) : (
         <>
           {/* Primera escena: ya contestada. Su eco. */}
+          {/* También sin caja (Carlos, 24 nov 2026): las dos escenas abiertas
+              van igual, sobre la tarjeta. */}
           <motion.section
-            className={`${escena} shrink-0 space-y-2 border-white/20 bg-black/50`}
+            data-escena-al-frente=""
+            className={`${escena} ${alFrente} shrink-0 space-y-2`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.1 }}
