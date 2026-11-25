@@ -8193,7 +8193,6 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-car
 html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content {
   display: flex;
   flex-direction: column;
-  min-height: var(--transicion-alto, auto);
   padding-top: 0;
 }
 
@@ -8201,16 +8200,24 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-tit
   margin-top: var(--transicion-titulo-aire, 0px);
 }
 
-/* Desde el 24 nov 2026 el texto va pegado al título en las tres escenas y
-   todo el aire sobrante queda entre el texto y el botón (que sigue anclado).
-   Antes un tercio iba arriba del texto («más aire abajo que arriba»), pero
-   sin emblemas ese tercio se leía como un renglón vacío (Carlos). */
+/* Desde el 24 nov 2026 el texto va pegado al título en las tres escenas
+   (sin emblemas, el aire de arriba se leía como un renglón vacío). Y desde
+   esa noche, en escritorio, el botón ya no es ancla común: cada escena lo
+   lleva en su lugar natural, bajo su último renglón (Carlos: «se ve muy forzada la simetría»;
+   el aire entre texto y botón llegaba a 170 px). */
 html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-copy {
   margin-top: 0;
 }
 
-html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content > .narrative-transition-cta {
-  margin-top: auto;
+/* En teléfono y tableta el botón sigue siendo ancla común (la decisión de
+   Carlos fue para escritorio). */
+@media (max-width: 1023px) {
+  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content {
+    min-height: var(--transicion-alto, auto);
+  }
+  html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-content > .narrative-transition-cta {
+    margin-top: auto;
+  }
 }
 
 

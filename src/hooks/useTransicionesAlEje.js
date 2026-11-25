@@ -7,7 +7,9 @@ import { useEffect } from 'react';
 //    Programa de mano. Hero.jsx publica esa altura en --eje-de-la-orbe.
 // 2. El botón es un ancla: queda a la misma altura en las dos escenas, así
 //    sus tarjetas miden lo mismo y el halo violeta late en el mismo lugar.
-//    Manda la más larga.
+//    Manda la más larga. Desde el 24 nov 2026, solo en teléfono y tableta:
+//    en escritorio cada botón va en su lugar natural (Carlos: «se ve muy
+//    forzada la simetría»); index.css aplica el ancla solo bajo 1024 px.
 // 2b. El título de cada escena no sube de la línea del título del hero
 //    (--eje-del-titulo): entre el emblema y el título se abre el aire que
 //    haga falta (Carlos, 23 nov 2026: «no pueden quedar más arriba que la
