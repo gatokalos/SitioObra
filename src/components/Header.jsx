@@ -32,6 +32,7 @@ import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
 import { abrirContacto } from '@/lib/contacto';
 import { leerCarril } from '@/lib/carril';
+import { apagarPantallita, encenderPantallita } from '@/lib/pantallita';
 import FormasDelProtagonista from '@/components/FormasDelProtagonista';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 
@@ -506,6 +507,42 @@ const Header = ({
   useEffect(() => {
     if (!isBarraAbierta) setIsSesionDeBarraAbierta(false);
   }, [isBarraAbierta]);
+  // El panel se enciende y se apaga como la pantallita de la cabina
+  // (lib/pantallita.js; Carlos, 24 nov 2026). Se apaga al tocar «Hola» otra
+  // vez, con un clic fuera o con Esc; «Cerrar sesión» lo cierra de golpe.
+  const cajaDeSesionRef = useRef(null);
+  const panelDeSesionRef = useRef(null);
+  const apagandoSesionRef = useRef(false);
+  const encenderPanelDeSesion = useCallback((el) => {
+    panelDeSesionRef.current = el;
+    if (el && !el.dataset.encendida) {
+      el.dataset.encendida = '1';
+      encenderPantallita(el);
+    }
+  }, []);
+  const apagarPanelDeSesion = useCallback(async () => {
+    if (apagandoSesionRef.current) return;
+    apagandoSesionRef.current = true;
+    await apagarPantallita(panelDeSesionRef.current);
+    setIsSesionDeBarraAbierta(false);
+    apagandoSesionRef.current = false;
+  }, []);
+  useEffect(() => {
+    if (!isSesionDeBarraAbierta) return undefined;
+    const alTocar = (evento) => {
+      if (cajaDeSesionRef.current?.contains(evento.target)) return;
+      apagarPanelDeSesion();
+    };
+    const alTeclear = (evento) => {
+      if (evento.key === 'Escape') apagarPanelDeSesion();
+    };
+    document.addEventListener('pointerdown', alTocar);
+    document.addEventListener('keydown', alTeclear);
+    return () => {
+      document.removeEventListener('pointerdown', alTocar);
+      document.removeEventListener('keydown', alTeclear);
+    };
+  }, [isSesionDeBarraAbierta, apagarPanelDeSesion]);
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const consulta = window.matchMedia(PROGRAMA_EN_BARRA_QUERY);
@@ -1736,24 +1773,21 @@ const Header = ({
                 initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(6px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)', transition: { duration: prefersReducedMotion ? 0.1 : 0.55, delay: prefersReducedMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] } }}
                 exit={{ opacity: 0, filter: 'blur(6px)', transition: { duration: 0.25 } }}
+                ref={cajaDeSesionRef}
                 className="absolute right-0 top-1/2 z-10 -translate-y-1/2"
               >
                 <button
                   type="button"
-                  onClick={() => setIsSesionDeBarraAbierta((prev) => !prev)}
+                  onClick={() => (isSesionDeBarraAbierta ? apagarPanelDeSesion() : setIsSesionDeBarraAbierta(true))}
                   aria-expanded={isSesionDeBarraAbierta}
                   className="pantallita-de-la-cabina flex items-center gap-2 rounded-md border px-3 py-1.5 font-display text-[1.02rem] leading-tight text-slate-50/95 transition-colors"
                 >
                   <span className="h-2 w-2 shrink-0 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.65)]" aria-hidden="true" />
                   {saludoDeBarra}
                 </button>
-                <AnimatePresence>
-                  {isSesionDeBarraAbierta ? (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
+                {isSesionDeBarraAbierta ? (
+                    <div
+                      ref={encenderPanelDeSesion}
                       className="pantallita-de-la-cabina pantallita-de-la-cabina--panel absolute right-0 top-full mt-2 flex min-w-full flex-col items-start gap-2 rounded-xl border px-4 py-3 backdrop-blur-md"
                     >
                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/80">Protagonista</p>
@@ -1771,9 +1805,8 @@ const Header = ({
                       >
                         Cerrar sesión
                       </button>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+                    </div>
+                ) : null}
               </motion.div>
             ) : null}
           </AnimatePresence>

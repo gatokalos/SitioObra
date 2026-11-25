@@ -8500,3 +8500,9 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-con
 .carril-vecina:focus-within {
   filter: none;
 }
+
+/* Teléfonos con alto para todo: la ceja y el título se quedan y los puntitos
+   van en el aire entre el título y la tarjeta (Carlos, 24 nov 2026). */
+.carril-de-vitrinas--una.carril-de-vitrinas--con-titulo {
+  padding-top: 40px;
+}

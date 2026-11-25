@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
 import FormasDelProtagonista from '@/components/FormasDelProtagonista';
+import { encenderPantallita } from '@/lib/pantallita';
 
 const MobileMenuOverlay = ({
   isOpen,
@@ -69,6 +70,14 @@ const MobileMenuOverlay = ({
     });
   };
 
+  // La franja «Protagonista» se enciende como la pantallita de la cabina
+  // cuando el menú ya entró (lib/pantallita.js; Carlos, 24 nov 2026).
+  const encenderFranja = useCallback((el) => {
+    if (el && !el.dataset.encendida) {
+      el.dataset.encendida = '1';
+      encenderPantallita(el, { demora: 450 });
+    }
+  }, []);
   const handleSignOut = async () => {
     await onSignOut?.();
     onClose?.();
@@ -239,7 +248,7 @@ const MobileMenuOverlay = ({
           </section>
 
           {sessionGreeting ? (
-            <section className="pantallita-de-la-cabina mt-2 rounded-2xl border p-2" aria-label="Sesión">
+            <section ref={encenderFranja} className="pantallita-de-la-cabina mt-2 rounded-2xl border p-2" aria-label="Sesión">
               {/* Con el color y las franjas de la pantallita de la cabina,
                   como la caja del saludo en la barra (24 nov 2026). */}
               {/* Dos hileras (Carlos, 12 nov 2026): arriba el saludo y el correo
