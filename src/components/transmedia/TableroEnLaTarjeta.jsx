@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Eye, Flame, Lock, Sparkles } from 'lucide-react';
 import ResonanceModal, {
   LEVEL2_QUESTIONS,
@@ -73,8 +73,27 @@ const TableroEnLaTarjeta = ({
     return () => window.clearTimeout(espera);
   }, [pendienteAbierto]);
 
+  // Al elegir una respuesta, la pregunta se desvanece, entra su eco y luego
+  // «… entra en escena» con la esfera; cuando la esfera ya está, la tarjeta se
+  // desliza sola hasta dejarla a la vista (Carlos, 24 nov 2026).
+  const recienElegidaRef = useRef(false);
+  useEffect(() => {
+    if (!expectativa || !recienElegidaRef.current) return undefined;
+    recienElegidaRef.current = false;
+    const espera = window.setTimeout(() => {
+      const caja = tableroRef.current;
+      const boton = caja?.querySelector('[data-tablero="habitar"]');
+      if (!caja || !boton) return;
+      const abajo = boton.getBoundingClientRect().bottom - caja.getBoundingClientRect().bottom;
+      if (abajo <= -12) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      caja.scrollTo({ top: caja.scrollTop + abajo + 24, behavior: reduce ? 'auto' : 'smooth' });
+    }, 900);
+    return () => window.clearTimeout(espera);
+  }, [expectativa]);
   const elegir = async (opcion) => {
     if (expectativa || enviando) return;
+    recienElegidaRef.current = true;
     setExpectativa(opcion);
     setEcoExpectativa(buildL2Acknowledgment(portal, opcion));
     setEnviando(true);
@@ -94,7 +113,9 @@ const TableroEnLaTarjeta = ({
   // misma en todas las pantallas y la caja era una tarjeta dentro de otra. El
   // relleno de 16 px se queda (alinea el encabezado con los íconos de las
   // escenas cerradas); el video y bambalinas lo cruzan (index.css).
-  const alFrente = 'rounded-none border-0 bg-transparent shadow-none';
+  // El borde se queda, transparente: así el ícono cae al mismo píxel que el
+  // de las escenas con caja.
+  const alFrente = 'rounded-none border-transparent bg-transparent shadow-none';
   const eco = 'rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90';
 
   // La palomita sobre la esfera de cada escena ya vivida (Carlos, 15 nov 2026:
@@ -200,12 +221,13 @@ const TableroEnLaTarjeta = ({
 
           {/* Segunda escena: la preparación. Primero la pregunta con sus respuestas;
               contestada, su eco y la entrada a la forma. */}
+          {/* Va al frente sin caja propia, como «El foco cambia» (Carlos, 24 nov
+              2026): el encabezado queda alineado con los íconos de arriba y lo
+              demás (la pregunta, las respuestas, el eco y la entrada) mide lo
+              mismo que la escena cerrada de arriba (index.css). */}
           <motion.section
-            className={`${escena} shrink-0 space-y-3 ${
-              expectativa
-                ? 'border-purple-300/45 bg-black/55'
-                : 'border-sky-400/50 bg-sky-500/[0.07] shadow-[0_0_28px_rgba(56,189,248,0.18)]'
-            }`}
+            data-escena-al-frente=""
+            className={`${escena} ${alFrente} shrink-0 space-y-3`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.22 }}
@@ -227,8 +249,13 @@ const TableroEnLaTarjeta = ({
               </div>
             </div>
 
+            <AnimatePresence mode="wait" initial={false}>
             {!expectativa && calibracion ? (
-              <div className="space-y-3">
+              <motion.div
+                key="pregunta"
+                className="space-y-3"
+                exit={{ opacity: 0, y: -6, transition: { duration: 0.25 } }}
+              >
                 <p className="font-display text-[1.3rem] leading-snug question-voice">{calibracion.question}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {calibracion.options.map((opcion) => (
@@ -243,11 +270,17 @@ const TableroEnLaTarjeta = ({
                     </button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ) : null}
 
             {expectativa ? (
-              <>
+              <motion.div
+                key="entrada"
+                className="space-y-3"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
                 <p className={eco} data-tablero="eco-expectativa">
                   {ecoExpectativa || buildL2Acknowledgment(portal, expectativa)}
                 </p>
@@ -299,8 +332,9 @@ const TableroEnLaTarjeta = ({
                     </span>
                   </motion.button>
                 </motion.div>
-              </>
+              </motion.div>
             ) : null}
+            </AnimatePresence>
           </motion.section>
 
           {/* Tercera escena: cerrada. Se abre aquí mismo, al volver del artefacto. */}
