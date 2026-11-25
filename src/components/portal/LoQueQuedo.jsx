@@ -482,7 +482,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                 )}
                 {!cargando && propuesta ? (
                   <button type="button" onClick={pasarAlActoFinal} disabled={!palabra} className="tarjeta-del-pozo__salida">
-                    Contestarle a la obra
+                    Pasar al acto final
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 ) : null}
