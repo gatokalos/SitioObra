@@ -1177,9 +1177,13 @@ export const ProvocaSection = () => {
           </header>
 
           <div className={`provoca-stage-entry${isVoiceInputOpen ? ' provoca-stage-entry--open' : ''}`}>
-            <div className="miniverse-inline-threshold" aria-hidden="true">
-              <span className="miniverse-inline-threshold__mark"><Quote size={28} strokeWidth={1.5} /></span>
-            </div>
+            {/* El adorno de las comillas se va con el botón cuando aparece la
+                réplica (Carlos, 26 nov 2026). */}
+            {!isVoiceInputOpen && (
+              <div className="miniverse-inline-threshold" aria-hidden="true">
+                <span className="miniverse-inline-threshold__mark"><Quote size={28} strokeWidth={1.5} /></span>
+              </div>
+            )}
             {!isVoiceInputOpen && <Button
               type="button"
               variant="outline"
