@@ -349,7 +349,11 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 // primer trazo es un garabato que esquiva ese hueco, con la elegida encima de
 // la esquina del bloque (`vestibulo`: proporciones del marco). El bloque llega
 // como `children`, entre las esferas de atrás y la elegida.
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, children = null }) {
+// `llegada`: la primera vez que se abre en el vestíbulo, la figura se arma a
+// la vista —el hilo se traza de punta a punta y las esferas van llegando por
+// el orden del hilo—, y después el bloque (Carlos, 26 nov 2026: «no nos prives
+// de cómo se arma la primera vez la constelación… solo me toca ver la colita»).
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, children = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -397,6 +401,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
   // se achica, las esferas se achican en la misma medida y no se enciman.
   const escala = W0 > 0 && H0 > 0 ? Math.min(1, W / W0, H / H0) : 1;
   const figura = garabato ? 'garabato' : ondas ? 'en-ondas' : 'acostada';
+  const primera = llegada && vuelta === 0;
   const trazos = garabato
     ? [{ d: garabato.hilo }]
     : ondas
@@ -442,9 +447,11 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
         </defs>
         {trazos.map(({ d, tenue }, i) => {
           // El garabato se dibuja de punta a punta mientras las esferas viajan.
-          const dibujo = garabato
-            ? { initial: { pathLength: 0 }, animate: { pathLength: 1 }, transition: { duration: 1.3, ease: [0.45, 0, 0.2, 1] } }
-            : { initial: false };
+          const dibujo = primera && enPixeles
+            ? { initial: { pathLength: 0 }, animate: { pathLength: 1 }, transition: { duration: 1.9, delay: 0.6, ease: [0.45, 0, 0.2, 1] } }
+            : garabato
+              ? { initial: { pathLength: 0 }, animate: { pathLength: 1 }, transition: { duration: 1.3, ease: [0.45, 0, 0.2, 1] } }
+              : { initial: false };
           return (
             <g key={`${figura}-${vuelta}-${i}`} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={tenue ? 0.45 : 1}>
               {/* Sin engrosarse ni adelgazarse cuando la figura se estira. */}
@@ -493,8 +500,11 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               transition: colocada
                 ? 'left 0.6s cubic-bezier(.5,.05,.2,1), top 0.6s cubic-bezier(.5,.05,.2,1), width 0.6s cubic-bezier(.5,.05,.2,1), opacity 0.9s ease'
                 : 'none',
+              // Llegan por el orden del hilo, la elegida al final.
+              animationDelay: primera ? `${0.8 + (turno === 0 ? N : turno) * 0.17}s` : undefined,
             }}
-            className={`group overflow-hidden rounded-full bg-black ${alFrente
+            data-llega={primera ? '' : undefined}
+            className={`group overflow-hidden rounded-full bg-black ${primera ? 'vestibulo-esfera-llega ' : ''}${alFrente
               ? 'ring-2 ring-white/30 shadow-[0_0_60px_rgba(240,190,110,0.28)]'
               : 'border border-white/25 shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:border-white/45'}`}
             aria-label={alFrente ? (forma.form ?? forma.name) : `Abrir ${forma.form ?? forma.name}`}
@@ -518,7 +528,17 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
           </button>
         );
       })}
-      {children ? <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4 }}>{children}</div> : null}
+      {children ? (
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{ zIndex: 4 }}
+          initial={llegada ? { opacity: 0, y: 8 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: llegada ? 2.5 : 0, ease: 'easeOut' }}
+        >
+          {children}
+        </motion.div>
+      ) : null}
     </motion.div>
   );
 }
@@ -1355,6 +1375,7 @@ const CuadernoHolografico = ({
                 onSelect={handleSelect}
                 marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
                 vestibulo={VESTIBULO_EN_ESCRITORIO}
+                llegada
               >
                 <div className="cuaderno-vestibulo__bloque pointer-events-auto">{panel}</div>
               </Constellation>
@@ -1374,6 +1395,7 @@ const CuadernoHolografico = ({
               onSelect={handleSelect}
               marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
               enOndas={enOndas}
+              llegada
             />
           </div>
         </div>

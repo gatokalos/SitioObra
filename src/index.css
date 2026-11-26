@@ -9031,8 +9031,10 @@ header.fixed {
   position: absolute;
   left: 27%;
   width: 46%;
-  top: 19%;
-  max-height: 54%;
+  /* Apoyado desde abajo, cerca de la elegida, que se le encima en la
+     esquina (Carlos, 26 nov 2026); crece hacia arriba. */
+  bottom: 33.5%;
+  max-height: 56%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -9112,3 +9114,16 @@ header.fixed {
 /* En columna, el lugar de la línea se guarda aunque se vaya (otra forma al
    frente): el bloque no brinca. */
 .cuaderno-vestibulo--columna .cuaderno-vestibulo__linea { min-height: 7.625rem; }
+
+/* La primera vez, la constelación se arma a la vista: las esferas llegan por
+   el orden del hilo; después, el bloque y la línea. */
+.vestibulo-esfera-llega { animation: vestibulo-esfera-llega 0.75s cubic-bezier(0.2, 1.3, 0.3, 1) both; }
+@keyframes vestibulo-esfera-llega {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.cuaderno-vestibulo__linea { animation: vestibulo-linea-llega 0.7s ease 2.8s both; }
+@keyframes vestibulo-linea-llega { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .vestibulo-esfera-llega, .cuaderno-vestibulo__linea { animation: none; }
+}
