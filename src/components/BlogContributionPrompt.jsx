@@ -125,7 +125,7 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
     <Button
       type="button"
       onClick={() => onAskQuestion?.()}
-      className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
+      className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary ge-chip-action--bisagra mx-auto"
     >
       Entra al camerino
     </Button>

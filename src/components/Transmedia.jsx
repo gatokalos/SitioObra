@@ -2358,6 +2358,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         enEspera ? 'vitrina-en-espera' : '',
         curiosa ? 'vitrina-curiosa' : '',
         encendiendose ? 'vitrina-encendiendose' : '',
+        olaDeCuriosidad ? 'vitrina-sin-reflejo' : '',
       ].filter(Boolean).join(' '),
       estilo: { '--ola-retraso': retrasoDeLaOla(format.id) },
       sinDestaque: curiosa || enEspera,
@@ -6611,7 +6612,7 @@ const renderDramaFeaturedWork = () => (
                       bajarAlCarrilRef.current = true;
                       setCarrilRevelado(true);
                     }}
-                    className="ge-chip-action ge-chip-action--primary ge-mobile-cta-width provoca-share-cta"
+                    className="ge-chip-action ge-chip-action--primary ge-chip-action--bisagra ge-mobile-cta-width provoca-share-cta"
                   >
                     Forma parte del tuyo
                   </button>

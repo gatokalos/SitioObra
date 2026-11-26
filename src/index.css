@@ -8699,28 +8699,29 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
 /* ── El carril en dos tiempos (Transmedia.jsx, Carlos 25–26 nov 2026; maqueta
    «Carril en dos tiempos»). Tiempo 1: las vecinas en blanco y negro, verso
    nítido en gris; el hover (escritorio) asoma la pregunta y emborrona el
-   verso; en teléfono la pregunta ya está. El toque: el velo del verso se
-   retira hacia arriba, el color sube por la foto y la pregunta se funde en el
-   aviso; «Si la curiosidad no mata…» cabalga la costura (bisagra). Tiempo 2:
-   el color sube en ola; frentes limpios; en escritorio el hover es el glow por
-   detrás. En espera: de vuelta al gris, con candado. ── */
+   verso; en teléfono la pregunta ya está. El toque no da color: la pregunta
+   se hunde y sube el aviso (bola 8) y nace «Explorar otras formas…» en la
+   costura (bisagra). Tiempo 2: el gris se funde en ola desde la elegida;
+   frentes limpios; en escritorio el hover es el glow por detrás. En espera:
+   de vuelta al gris, con candado. ── */
 .vitrina-dos-tiempos { --curva-curiosidad: cubic-bezier(0.3, 0.7, 0.2, 1); }
 
-/* La foto en blanco y negro va encima de la de color; al encenderse se retira
-   hacia arriba y el color aparece de abajo. */
+/* La foto en blanco y negro va encima de la de color; al encenderse se funde
+   entera y el color aparece debajo. Sin barrido de abajo hacia arriba: se
+   leía como barras de batería que se llenan (Carlos, 26 nov 2026). */
 .vitrina-dos-tiempos .vitrina-curiosidad__gris {
   pointer-events: none;
   filter: grayscale(1) contrast(1.18) brightness(0.8);
-  clip-path: inset(0 0 100% 0);
+  opacity: 0;
   transition:
-    clip-path 1s var(--curva-curiosidad) var(--ola-retraso, 0s),
+    opacity 1.4s ease-in-out var(--ola-retraso, 0s),
     transform 700ms ease,
     object-position 900ms ease;
 }
 .vitrina-apagada .vitrina-curiosidad__gris,
 .vitrina-en-espera .vitrina-curiosidad__gris {
-  clip-path: inset(0 0 0 0);
-  transition: clip-path 0.6s ease, transform 700ms ease, object-position 900ms ease;
+  opacity: 1;
+  transition: opacity 0.8s ease, transform 700ms ease, object-position 900ms ease;
 }
 
 /* El vidrio sobre la foto: la pregunta y, al tocar, el aviso. */
@@ -8780,13 +8781,23 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
   background: rgba(8, 6, 12, 0.32);
   -webkit-backdrop-filter: grayscale(1);
   backdrop-filter: grayscale(1);
-  clip-path: inset(0 0 100% 0);
-  transition: clip-path 0.9s var(--curva-curiosidad) var(--ola-retraso, 0s);
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out var(--ola-retraso, 0s);
 }
 .vitrina-apagada .vitrina-curiosidad__velo,
 .vitrina-en-espera .vitrina-curiosidad__velo {
-  clip-path: inset(0 0 0 0);
-  transition: clip-path 0.6s ease;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+}
+
+/* El reflejo que recorre la foto solo corre con la tarjeta a todo color: en
+   gris distrae, y vuelve a apagarse en espera (Carlos, 26 nov 2026). Durante
+   la ola tampoco; arranca de cero cuando las nueve ya terminaron de encenderse. */
+.vitrina-apagada .vitrina-image-overlay::before,
+.vitrina-en-espera .vitrina-image-overlay::before,
+.vitrina-sin-reflejo .vitrina-image-overlay::before {
+  animation: none;
+  opacity: 0 !important; /* también con el cursor encima */
 }
 .vitrina-dos-tiempos .vitrina-curiosidad__verso { transition: filter 0.4s ease; }
 /* Con el aviso, el verso sigue como en el hover: lo estético no cambia. */
@@ -8814,7 +8825,7 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
   padding: 0.68rem 1.35rem;
   border-radius: 999px;
   border: 1.4px solid rgba(207, 198, 228, 0.9);
-  background: rgba(7, 6, 12, 0.82);
+  background: #0b0a12;
   box-shadow: 0 0 22px rgba(168, 123, 214, 0.35), 0 0 0 1px rgba(201, 160, 240, 0.12);
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
@@ -8855,13 +8866,20 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
 }
 
 /* Los botones de siempre de la tarjeta («Improvisa una respuesta») también
-   van de bisagra en el carril, con su estilo. */
+   van de bisagra en el carril, con su estilo, pero opacos: la costura no se
+   transparenta (Carlos, 26 nov 2026). El tono es el mismo fucsia al 30 % y
+   al 45 % sobre negro, ya mezclado. */
 .vitrina-bisagra__fija {
   position: absolute;
   left: 50%;
   top: 0;
   white-space: nowrap;
   transform: translate(-50%, -50%);
+  background-color: #491b55 !important;
+}
+.vitrina-bisagra__fija:hover,
+.vitrina-bisagra__fija:focus-visible {
+  background-color: #672476 !important;
 }
 
 /* El glow: en el tiempo 2, el hover de escritorio. */
@@ -8895,7 +8913,7 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(10, 8, 16, 0.75);
+  background: #0e0c15;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   color: #e6dff0;
@@ -8914,4 +8932,24 @@ html[data-transiciones-al-eje] .desktop-viewport-scene .narrative-transition-cop
   .vitrina-dos-tiempos .vitrina-curiosidad__verso { transition: none !important; }
   .vitrina-encendiendose,
   .vitrina-espera__chip { animation: none; }
+}
+
+/* Los botones importantes de cada sección, del mismo largo («¿Comenzamos?»,
+   «Cómo empezó», «Ahora te toca…», «Entra al camerino», «Forma parte del
+   tuyo»), con el borde de la bisagra: el trazo del título y el contorno de la
+   tarjeta encendida, fondo opaco. La letra es la de siempre (Carlos, 26 nov
+   2026: «homologarlos en las secciones del sitio, donde el botón es muy
+   importante»). */
+.ge-chip-action.ge-chip-action--bisagra,
+.provoca-stage-entry .ge-chip-action--bisagra.provoca-share-cta {
+  border: 1.4px solid rgba(207, 198, 228, 0.9) !important;
+  background: #0b0a12 !important;
+  color: rgba(248, 250, 252, 0.95) !important;
+  box-shadow: 0 0 22px rgba(168, 123, 214, 0.35), 0 0 0 1px rgba(201, 160, 240, 0.12) !important;
+}
+.ge-chip-action.ge-chip-action--bisagra:hover,
+.ge-chip-action.ge-chip-action--bisagra:focus-visible {
+  border-color: #e6def6 !important;
+  background: #0b0a12 !important;
+  box-shadow: 0 0 30px rgba(168, 123, 214, 0.55), 0 0 0 1px rgba(201, 160, 240, 0.2) !important;
 }

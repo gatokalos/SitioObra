@@ -89,7 +89,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             <Button
               type="button"
               onClick={handleEnter}
-              className="narrative-transition-cta ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
+              className="narrative-transition-cta ge-chip-action ge-mobile-cta-width ge-chip-action--primary ge-chip-action--bisagra mx-auto"
             >
               {hasEnteredUniverse ? '¿Reestrenamos el primer acto?' : '¿Comenzamos?'}
             </Button>

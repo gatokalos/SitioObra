@@ -91,7 +91,7 @@ const NextShow = () => {
               <Button
                 type="button"
                 onClick={handleVisitarArchivo}
-                className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary"
+                className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary ge-chip-action--bisagra"
               >
                 Cómo empezó
               </Button>

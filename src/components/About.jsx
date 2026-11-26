@@ -1187,7 +1187,7 @@ export const ProvocaSection = () => {
               disabled={isSubmittingVoice}
               aria-controls="provoca-replica-card"
               aria-expanded={isVoiceInputOpen}
-              className="ge-chip-action ge-mobile-cta-width provoca-share-cta ge-chip-action--primary"
+              className="ge-chip-action ge-mobile-cta-width provoca-share-cta ge-chip-action--primary ge-chip-action--bisagra"
             >
               Ahora te toca…
             </Button>}
