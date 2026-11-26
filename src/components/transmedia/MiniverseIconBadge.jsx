@@ -9,7 +9,7 @@ const MiniverseIconBadge = ({ formatId, className = '' }) => (
     aria-hidden="true"
     className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/35 bg-white/15 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-[5px] ring-purple-200/30 ${className}`}
   >
-    <span className="h-[46px] w-[46px] overflow-hidden rounded-full">
+    <span className="h-[46px] w-[46px] overflow-hidden rounded-full" data-emblema-de-la-ficha>
       <img
         src={MINIVERSE_ICON_IMAGES[formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
         alt=""

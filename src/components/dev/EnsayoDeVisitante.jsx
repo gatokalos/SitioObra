@@ -178,6 +178,8 @@ const EnsayoDeVisitante = () => {
     const conReplicas = CON_REPLICAS.has(paso);
     try {
       window.sessionStorage.removeItem('gatoencerrado:dorso-cerrado-session');
+      // Al volver del cuaderno solo queda su tarjeta; cada salto la devuelve a todas.
+      window.sessionStorage.removeItem('gatoencerrado:solo-su-tarjeta');
       // El salto aterriza directo en su paso, como siempre: la cinta del
       // umbral se ve con «Volver a entrar por la portada».
       window.sessionStorage.setItem(UMBRAL_CRUZADO_SESSION_KEY, '1');

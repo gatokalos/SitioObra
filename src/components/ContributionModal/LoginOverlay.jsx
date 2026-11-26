@@ -93,7 +93,10 @@ const LOGIN_TIGER_ART_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
 
 
-const LoginOverlay = ({ onClose }) => {
+// Desde el cuaderno del vestíbulo sideral, «Interpretar» sin sesión abre este
+// mismo login con la imagen de la forma arriba y su nombre (maqueta aprobada
+// por Carlos, 26 nov 2026). `arte`, `ceja` y `titulo` son opcionales.
+const LoginOverlay = ({ onClose, arte = null, ceja = null, titulo = null }) => {
   const [email, setEmail] = useState(readPendingClaimEmail);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [step, setStep] = useState('email'); // 'email' | 'otp'
@@ -312,7 +315,7 @@ const LoginOverlay = ({ onClose }) => {
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  `linear-gradient(180deg, rgba(7,4,13,0.18) 0%, rgba(9,5,16,0.84) 42%, rgba(7,4,11,0.96) 100%), url(${LOGIN_TIGER_ART_URL})`,
+                  `linear-gradient(180deg, rgba(7,4,13,0.18) 0%, rgba(9,5,16,0.84) 42%, rgba(7,4,11,0.96) 100%), url(${arte ?? LOGIN_TIGER_ART_URL})`,
                 backgroundPosition: 'center top',
                 backgroundSize: 'cover',
               }}
@@ -334,14 +337,14 @@ const LoginOverlay = ({ onClose }) => {
               <div>
                 <div className="space-y-3">
                   <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                    Login
+                    {ceja ?? 'Login'}
                   </div>
                   <div>
                     <h3
                       id="tracking-overlay-title"
                       className="font-display text-[clamp(2rem,7vw,3rem)] leading-[0.94] tracking-[-0.03em] text-white"
                     >
-                      Para continuar, <br /> hay que cruzar
+                      {titulo ?? (<>Para continuar, <br /> hay que cruzar</>)}
                     </h3>
                     <p
                       id="tracking-overlay-desc"

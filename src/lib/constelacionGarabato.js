@@ -36,9 +36,12 @@ const n1 = (n) => n.toFixed(1);
 
 // 1. Sembrar: cada esfera toma, de varios lugares al azar, el más alejado de
 // las ya puestas. Así llenan el marco sin amontonarse, distinto cada vez.
-const sembrar = (W, H, ancla, d, cuantas, izquierda, azar) => {
+const sembrar = (W, H, ancla, d, cuantas, izquierda, azar, hueco = null) => {
   const cabe = (x, y, puestas) => {
     if (x - d / 2 < 0 || y - d / 2 < 0 || x + d / 2 > W || y + d / 2 > H) return false;
+    // El hueco del bloque morado, en el cuaderno del vestíbulo sideral: ahí
+    // no se siembra nada (las esferas quedarían escondidas detrás).
+    if (hueco && x + d / 2 > hueco.x0 && x - d / 2 < hueco.x1 && y + d / 2 > hueco.y0 && y - d / 2 < hueco.y1) return false;
     if (x + d / 2 > W - ESQUINA && y - d / 2 < ESQUINA) return false;
     if (izquierda > 0 && x - d / 2 < izquierda && y - d / 2 < ESQUINA) return false;
     if (distancia({ x, y }, ancla) < (ancla.d + d) / 2 + AIRE_ENTRE_ESFERAS) return false;
@@ -144,15 +147,17 @@ const curvaCerrada = (puntos, tension, W, H) => {
 
 export const ESTILOS_DE_GARABATO = ['lazo', 'cruce', 'rizos', 'cruce y rizo'];
 
-export const trazarGarabato = (W, H, semilla, { D, d, cuantas = 8, izquierda = 0 }) => {
+// `hueco` (opcional): un rectángulo en pixeles donde no va ninguna esfera.
+// `anclaEn` (opcional): dónde va la elegida, si no es la esquina de abajo.
+export const trazarGarabato = (W, H, semilla, { D, d, cuantas = 8, izquierda = 0, hueco = null, anclaEn = null }) => {
   if (!(W > 0) || !(H > 0)) return null;
   const azar = conSemilla(semilla);
-  const ancla = { x: W - D / 2 - 4, y: H - D / 2 - 4, d: D };
+  const ancla = anclaEn ? { x: anclaEn.x, y: anclaEn.y, d: D } : { x: W - D / 2 - 4, y: H - D / 2 - 4, d: D };
 
   let diametro = d;
   let puestas = null;
   for (let achique = 0; achique < 5 && !puestas; achique += 1) {
-    for (let intento = 0; intento < 30 && !puestas; intento += 1) puestas = sembrar(W, H, ancla, diametro, cuantas, izquierda, azar);
+    for (let intento = 0; intento < 30 && !puestas; intento += 1) puestas = sembrar(W, H, ancla, diametro, cuantas, izquierda, azar, hueco);
     if (!puestas) diametro = Math.round(diametro * 0.94);
   }
   if (!puestas) return null;

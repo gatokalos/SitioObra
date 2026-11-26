@@ -34,6 +34,7 @@ import {
   User,
   Send,
   X,
+  ArrowLeft,
   PawPrint,
   QrCode,
   GalleryHorizontalEnd,
@@ -258,6 +259,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [mobileVitranaRevealId, setMobileVitranaRevealId] = useState(null);
   const [desktopVitranaRevealId, setDesktopVitranaRevealId] = useState(null);
   const [showMobilePortalLogin, setShowMobilePortalLogin] = useState(false);
+  // La ficha que se abre desde el cuaderno del vestíbulo llega ya en su lugar,
+  // sin su animación de entrada: el vestíbulo dibujó el marco y la esfera
+  // viajó a su emblema (26 nov 2026).
+  const [fichaDesdeElVestibulo, setFichaDesdeElVestibulo] = useState(false);
+  // El login que abre «Interpretar» desde el cuaderno lleva la imagen y el
+  // nombre de la forma (26 nov 2026).
+  const [loginDeLaForma, setLoginDeLaForma] = useState(null);
   const [hasLoadedMobilePortalLogin, setHasLoadedMobilePortalLogin] = useState(false);
   const {
     micPromptVisible,
@@ -515,10 +523,26 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // equivalente del juego de en medio: siempre hay vecinas a los dos lados y
   // la recomendada queda al centro. El SE (una a la vez, con puntitos) no da
   // la vuelta.
-  const copiasDelCarril = enCarril && !carrilDeUna ? 3 : 1;
+  // Al volver del cuaderno del vestíbulo sideral solo queda su tarjeta (Carlos,
+  // 26 nov 2026: «solo se vea la tarjeta que está en espera»; «siempre y
+  // cuando sea regresando de cuaderno holográfico. Y no antes»). Dura la
+  // visita.
+  const SOLO_SU_TARJETA_KEY = 'gatoencerrado:solo-su-tarjeta';
+  const [soloSuTarjetaId, setSoloSuTarjetaId] = useState(() => {
+    try { return window.sessionStorage.getItem(SOLO_SU_TARJETA_KEY) || null; } catch { return null; }
+  });
+  const quedarSoloSuTarjeta = (formatId) => {
+    if (!formatId) return;
+    setSoloSuTarjetaId(formatId);
+    try { window.sessionStorage.setItem(SOLO_SU_TARJETA_KEY, formatId); } catch { /* sin almacenamiento */ }
+  };
+  const soloSuTarjeta = enCarril && Boolean(soloSuTarjetaId) && formats.some((f) => f.id === soloSuTarjetaId);
+  const copiasDelCarril = enCarril && !carrilDeUna && !soloSuTarjeta ? 3 : 1;
   const listaDelCarril = useMemo(
-    () => Array.from({ length: copiasDelCarril }, (_, c) => formats.map((f) => ({ ...f, __copia: copiasDelCarril === 3 ? c : 1 }))).flat(),
-    [copiasDelCarril]
+    () => Array.from({ length: copiasDelCarril }, (_, c) => formats
+      .filter((f) => !soloSuTarjeta || f.id === soloSuTarjetaId)
+      .map((f) => ({ ...f, __copia: copiasDelCarril === 3 ? c : 1 }))).flat(),
+    [copiasDelCarril, soloSuTarjeta, soloSuTarjetaId]
   );
   const irALaOriginal = useCallback((copia, pista) => {
     if (copia === 1 || !pista || !pista.children[formats.length]) return;
@@ -904,7 +928,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
 
 
+  // En la espera, el botón del recuadro «Lo que deja la duda» (con la palabra
+  // del momento, «Entre bambalinas») vuelve a abrir el cuaderno en el
+  // vestíbulo sideral (Carlos, 26 nov 2026). Se llena más abajo, cuando ya
+  // existen la ficha y la Memoria.
+  const abrirElCuadernoDesdeLaFichaRef = useRef(null);
   const handleAnswerResonance = useCallback((openResonance) => {
+    if (abrirElCuadernoDesdeLaFichaRef.current?.()) return;
     // La resonancia colectiva es del invitado también: dentro de su vitrina
     // recomendada responde sin cuenta, y el regreso a los tres días igual. La
     // sesión no es la puerta de la obra; es la puerta para cruzar a las otras
@@ -1169,6 +1199,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, []);
 
   const handleCloseShowcase = useCallback(() => {
+    setFichaDesdeElVestibulo(false);
     stopScopedMediaPlayback(true);
     document.body.classList.remove('overflow-hidden');
     resetShowcaseOpenTransition();
@@ -1932,8 +1963,41 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setMemoriaSolaId(formatId);
   };
   const cerrarLaMemoriaSola = () => {
+    quedarSoloSuTarjeta(memoriaSolaId);
     setMemoriaSolaId(null);
     setRegistroDeLaTarjetaTick((n) => n + 1);
+  };
+  // Abrir el miniverso desde el cuaderno del vestíbulo: en escritorio (y
+  // tableta), la ficha se abre de una vez, debajo del vestíbulo, que hace la
+  // transición encima y se retira. En teléfono, el miniverso sigue abriéndose
+  // en su página, como siempre.
+  const abrirLaFichaDesdeElVestibulo = (formatId) => {
+    if (!formatId || isMobileViewport || !showcaseDefinitions[formatId]) return false;
+    const definition = showcaseDefinitions[formatId];
+    if (definition.slug && definition.type !== 'blog-series') {
+      const entry = showcaseContent[formatId];
+      if (!entry || entry.status === 'error') loadShowcaseContent(formatId);
+    }
+    setFichaDesdeElVestibulo(true);
+    openMiniverseById(formatId);
+    return true;
+  };
+  const abrirMiniversoDesdeElVestibulo = (showcaseId) => {
+    const id = showcaseId ?? memoriaSolaId;
+    if (abrirLaFichaDesdeElVestibulo(id)) return true;
+    if (!showcaseId) { deLaMemoriaALaFicha(); return false; }
+    // Otra forma, en teléfono: el cuaderno navega a su página.
+    cerrarLaMemoriaSola();
+    return false;
+  };
+  abrirElCuadernoDesdeLaFichaRef.current = () => {
+    if (!activeShowcase || isMobileViewport) return false;
+    const portalDeLaFicha = SHOWCASE_TO_PORTAL[activeShowcase];
+    if (!portalDeLaFicha || momentoDeLaForma(portalDeLaFicha) !== 'espera') return false;
+    const id = activeShowcase;
+    handleCloseShowcase();
+    irALaMemoriaDesdeLaTarjeta(id);
+    return true;
   };
   const deLaMemoriaALaFicha = () => {
     const formatId = memoriaSolaId;
@@ -5401,13 +5465,13 @@ const renderDramaFeaturedWork = () => (
           <motion.div
             key="showcase-overlay"
             className="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
-            initial={{ opacity: 0 }}
+            initial={fichaDesdeElVestibulo ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-b from-black/95 via-slate-950/90 to-black/95"
-              initial={{ opacity: 0 }}
+              initial={fichaDesdeElVestibulo ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={isMobileViewport ? handleCloseShowcase : undefined}
@@ -5466,7 +5530,7 @@ const renderDramaFeaturedWork = () => (
             <motion.div
               ref={showcaseRef}
               className="relative z-10 my-10 w-[calc(100vw-2.5rem)] max-w-6xl lg:max-h-[88vh] rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl shadow-[0_35px_120px_rgba(0,0,0,0.65)] flex flex-col"
-              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              initial={fichaDesdeElVestibulo ? false : { scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
@@ -5495,7 +5559,7 @@ const renderDramaFeaturedWork = () => (
                   className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
                   aria-label="Cerrar vitrina"
                 >
-                  <X size={14} />
+                  <ArrowLeft size={14} />
                 </button>
               </div>
               <div className={`rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 ${SHOWCASE_CARD_GRADIENT[activeShowcase] ?? 'to-slate-800/20'} shadow-[0_25px_65px_rgba(15,23,42,0.65)] mb-6`}>
@@ -5520,7 +5584,7 @@ const renderDramaFeaturedWork = () => (
                           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
                           aria-label="Cerrar vitrina"
                         >
-                          <X size={14} />
+                          <ArrowLeft size={14} />
                         </button>
                       </div>
                     </div>
@@ -6950,7 +7014,7 @@ const renderDramaFeaturedWork = () => (
                   <div className="relative">
                     <div
                       ref={carrilMovilRef}
-                      className={`carril-de-vitrinas carril-de-vitrinas--movil ${carrilDeUna ? 'carril-de-vitrinas--una' : ''} ${carrilConTitulo ? 'carril-de-vitrinas--con-titulo' : ''}`}
+                      className={`carril-de-vitrinas carril-de-vitrinas--movil ${carrilDeUna ? 'carril-de-vitrinas--una' : ''} ${carrilConTitulo ? 'carril-de-vitrinas--con-titulo' : ''} ${soloSuTarjeta ? 'carril-de-vitrinas--sola' : ''}`}
                       aria-label="Las nueve formas"
                       onScroll={carrilDeUna ? (e) => setTarjetaVisible(Math.round(e.currentTarget.scrollLeft / pasoDeUna())) : undefined}
                     >
@@ -6999,7 +7063,7 @@ const renderDramaFeaturedWork = () => (
             ) : null}
             <div
               ref={enCarril ? carrilRef : undefined}
-              className={enCarril ? 'carril-de-vitrinas' : 'grid grid-cols-3 gap-8 min-h-[720px]'}
+              className={enCarril ? `carril-de-vitrinas ${soloSuTarjeta ? 'carril-de-vitrinas--sola' : ''}` : 'grid grid-cols-3 gap-8 min-h-[720px]'}
               aria-label={enCarril ? 'Las nueve formas' : undefined}
             >
               {(enCarril ? listaDelCarril : visibleShowcases).map((format, index) => {
@@ -7217,7 +7281,8 @@ const renderDramaFeaturedWork = () => (
                 return copia === 1 && tarjetaGiradaId === format.id ? renderDorsoDeLaTarjeta(format, tarjeta) : tarjeta;
               })}
             </div>
-            <div className={enCarril && modoCarril === 'boton' ? 'carril-flechas-a-los-lados' : 'flex items-center justify-center gap-3 mt-6'}>
+            {/* Con su tarjeta sola no hay a dónde moverse. */}
+            <div className={`${enCarril && modoCarril === 'boton' ? 'carril-flechas-a-los-lados' : 'flex items-center justify-center gap-3 mt-6'}${soloSuTarjeta ? ' invisible' : ''}`}>
               <button
                 type="button"
                 disabled={isShowcaseOpenTransitionActive}
@@ -7248,9 +7313,13 @@ const renderDramaFeaturedWork = () => (
                     question={VITRANA_QUESTION_BY_SHOWCASE[memoriaSolaId]}
                     isMobileViewport={isMobileViewport}
                     onCerrar={cerrarLaMemoriaSola}
-                    onExplorar={deLaMemoriaALaFicha}
-                    onNavigateToRecommendation={(id) => { cerrarLaMemoriaSola(); saltarALaTarjeta(id); }}
-                    onRequireLogin={() => setShowMobilePortalLogin(true)}
+                    onAbrirMiniverso={abrirMiniversoDesdeElVestibulo}
+                    onTransicionHecha={cerrarLaMemoriaSola}
+                    onRequireLogin={(info) => {
+                      const forma = info?.showcaseId ? formats.find((f) => f.id === info.showcaseId) : null;
+                      setLoginDeLaForma(forma ? { arte: forma.image, nombre: info.forma ?? forma.title } : null);
+                      setShowMobilePortalLogin(true);
+                    }}
                   />
                 ) : null}
               </AnimatePresence>
@@ -7294,7 +7363,12 @@ const renderDramaFeaturedWork = () => (
       ) : null}
       {showMobilePortalLogin && hasLoadedMobilePortalLogin ? (
         <Suspense fallback={null}>
-          <LoginOverlay onClose={() => setShowMobilePortalLogin(false)} />
+          <LoginOverlay
+            onClose={() => { setShowMobilePortalLogin(false); setLoginDeLaForma(null); }}
+            arte={loginDeLaForma?.arte ?? null}
+            ceja={loginDeLaForma ? `Para cruzar a ${loginDeLaForma.nombre}` : null}
+            titulo={loginDeLaForma?.nombre ?? null}
+          />
         </Suspense>
       ) : null}
 

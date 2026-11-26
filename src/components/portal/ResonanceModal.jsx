@@ -519,7 +519,7 @@ function FondoQueSeFunde({ url, className, opacidad, ...resto }) {
   );
 }
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null, onExplorarMiniverso = null }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, enElVestibulo = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null, onExplorarMiniverso = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -2102,6 +2102,98 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     </AnimatePresence>
   );
 
+  // El cuaderno en el vestíbulo sideral (Carlos, 26 nov 2026): abierto desde
+  // «Hilar mi memoria», la Memoria se dibuja sola, sin la ventana del método
+  // (ni póster, ni cabina, ni cierre): el vestíbulo pone el manto estelar, el
+  // perímetro y la flecha de regreso. Lo demás —el regreso, la última
+  // pregunta— sigue en la ventana de siempre, dentro del mismo perímetro.
+  const vistaCuadernoEnElVestibulo = enElVestibulo && open && !checking
+    && !(l1Done && l2NarrativeOpened && !l2ConvDone && convQuestion !== null)
+    && !ultimaPreguntaOpen && holograficoOpen && !bitacoraOpen;
+  const cuadernoHolografico = (
+                    <CuadernoHolografico
+                      enElVestibulo={enElVestibulo && vistaCuadernoEnElVestibulo}
+                      portal={portal}
+                      onDownloadSouvenir={l3Rec?.step3 ? handleDownloadSouvenir : null}
+                      souvenirGenerando={isSouvenirGenerating}
+                      isMobileViewport={isMobileViewport}
+                      readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
+                      bloqueEnLaCabina={!enPantallaChica}
+                      alFondoDelPozo={enElPozo}
+                      /* El día del regreso, en escritorio, de este lado solo
+                         el título y el póster oscuro (Carlos, 19 nov 2026). */
+                      soloElTitulo={regresoEnEscritorio}
+                      /* En teléfono no hay gato a un lado que dé el aviso de
+                         la espera: lo da el bloque morado, al pie de la
+                         Memoria (Carlos, 15 nov 2026). */
+                      /* El bloque morado de la espera es un acordeón, como el
+                         de otra forma (Carlos, 16 nov 2026): cerrado enseña el
+                         nombre de la forma y un renglón; desplegado, la
+                         instrucción y solo lo que falte pedir. Si el número ya
+                         se dejó en la tarjeta, aquí no se vuelve a pedir; si el
+                         recuerdo ya se bajó, no se vuelve a ofrecer. */
+                      /* En escritorio el bloque es el mismo (Carlos, 17 nov
+                         2026: «en el escritorio también necesitamos ver la
+                         homogeneidad»; «repartir la información del copy para
+                         que no se repita lo que hay en el bloque morado y en el
+                         globo del gato»). Allá el gato dice lo que viene —los
+                         tres días y el aviso— y el bloque guarda lo de la
+                         forma: cómo quedó la escena y el recuerdo. */
+                      /* 18 nov 2026 (Carlos): el globo queda para el día del
+                         regreso, así que en escritorio el bloque vuelve a ser
+                         el de teléfono —la instrucción, el número y el
+                         recuerdo—. Y el día del regreso el bloque sigue ahí,
+                         con la ceja «El Regreso»: el nombre de la forma ya no
+                         queda suelto fuera de él, y el recuerdo deja el pie de
+                         la cabina para vivir en el bloque, como en la espera. */
+                      avisoDeEspera={!bitacoraCompleted ? {
+                        regreso: !!bitacoraAvailable,
+                        titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
+                        instruccion: bitacoraAvailable ? null : bitacoraConsented
+                          ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
+                          : dramaturgy.bambalinasCajaTexto,
+                        telefono: bitacoraConsented || bitacoraAvailable ? null : {
+                          valor: phoneInput,
+                          onCambio: setPhoneInput,
+                          onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
+                          placeholder: dramaturgy.bambalinasCajaPlaceholder,
+                          boton: dramaturgy.bambalinasCajaAvisar,
+                        },
+                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt ? {
+                          titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : dramaturgy.souvenirCta,
+                          ocupado: isSouvenirGenerating,
+                          onRecuerdo: handleDownloadSouvenir,
+                        } : null,
+                      } : null}
+                      onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
+                      /* «Explorar miniverso», en la bandeja del bloque morado:
+                         vuelve a la ficha (Carlos, 24 nov 2026). */
+                      onExplorarMiniverso={onExplorarMiniverso ?? handleClose}
+                      huellaOpen={huellaOpen}
+                      onHuellaOpenChange={setHuellaOpen}
+                      onUltimaPregunta={abrirUltimaPregunta}
+                      ultimaPreguntaVista={ultimaPreguntaVista}
+                      regresoRecien={regresoRecien}
+                      recommendedFormatId={l3Rec?.recommended_format_id ?? null}
+                      onNavigate={(showcaseId) => { if (enElVestibulo) { onNavigateToRecommendation?.(showcaseId); return; } setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
+                      /* En Desktop este modal vive DENTRO de la vitrina de
+                         Transmedia.jsx: cerrarlo a él no cierra la vitrina, que
+                         se queda encima con el `overflow-hidden` puesto en el
+                         body, así que el salto al acto final ocurre pero no se
+                         ve. onBeforeNavigate (handleCloseShowcase) libera las
+                         dos cosas. Mismo patrón que el CTA del Apuntador en
+                         RelatedReadingTooltipButton (Carlos, 21 sep 2026). */
+                      onGoToSite={(hash) => {
+                        setHuellaOpen(false);
+                        handleClose();
+                        onBeforeNavigate?.();
+                        navigate(hash ? { pathname: '/', hash } : '/');
+                      }}
+                      onPosterChange={setHolograficoPoster}
+                      onRequireLogin={onRequireLogin}
+                    />
+  );
+
   const modal = (
     <AnimatePresence>
       {open && (
@@ -2365,86 +2457,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <CuadernoHolografico
-                      portal={portal}
-                      onDownloadSouvenir={l3Rec?.step3 ? handleDownloadSouvenir : null}
-                      souvenirGenerando={isSouvenirGenerating}
-                      isMobileViewport={isMobileViewport}
-                      readOnly={bitacoraCompleted || !bitacoraAvailable || !enPantallaChica}
-                      bloqueEnLaCabina={!enPantallaChica}
-                      alFondoDelPozo={enElPozo}
-                      /* El día del regreso, en escritorio, de este lado solo
-                         el título y el póster oscuro (Carlos, 19 nov 2026). */
-                      soloElTitulo={regresoEnEscritorio}
-                      /* En teléfono no hay gato a un lado que dé el aviso de
-                         la espera: lo da el bloque morado, al pie de la
-                         Memoria (Carlos, 15 nov 2026). */
-                      /* El bloque morado de la espera es un acordeón, como el
-                         de otra forma (Carlos, 16 nov 2026): cerrado enseña el
-                         nombre de la forma y un renglón; desplegado, la
-                         instrucción y solo lo que falte pedir. Si el número ya
-                         se dejó en la tarjeta, aquí no se vuelve a pedir; si el
-                         recuerdo ya se bajó, no se vuelve a ofrecer. */
-                      /* En escritorio el bloque es el mismo (Carlos, 17 nov
-                         2026: «en el escritorio también necesitamos ver la
-                         homogeneidad»; «repartir la información del copy para
-                         que no se repita lo que hay en el bloque morado y en el
-                         globo del gato»). Allá el gato dice lo que viene —los
-                         tres días y el aviso— y el bloque guarda lo de la
-                         forma: cómo quedó la escena y el recuerdo. */
-                      /* 18 nov 2026 (Carlos): el globo queda para el día del
-                         regreso, así que en escritorio el bloque vuelve a ser
-                         el de teléfono —la instrucción, el número y el
-                         recuerdo—. Y el día del regreso el bloque sigue ahí,
-                         con la ceja «El Regreso»: el nombre de la forma ya no
-                         queda suelto fuera de él, y el recuerdo deja el pie de
-                         la cabina para vivir en el bloque, como en la espera. */
-                      avisoDeEspera={!bitacoraCompleted ? {
-                        regreso: !!bitacoraAvailable,
-                        titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
-                        instruccion: bitacoraAvailable ? null : bitacoraConsented
-                          ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
-                          : dramaturgy.bambalinasCajaTexto,
-                        telefono: bitacoraConsented || bitacoraAvailable ? null : {
-                          valor: phoneInput,
-                          onCambio: setPhoneInput,
-                          onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
-                          placeholder: dramaturgy.bambalinasCajaPlaceholder,
-                          boton: dramaturgy.bambalinasCajaAvisar,
-                        },
-                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt ? {
-                          titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : dramaturgy.souvenirCta,
-                          ocupado: isSouvenirGenerating,
-                          onRecuerdo: handleDownloadSouvenir,
-                        } : null,
-                      } : null}
-                      onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
-                      /* «Explorar miniverso», en la bandeja del bloque morado:
-                         vuelve a la ficha (Carlos, 24 nov 2026). */
-                      onExplorarMiniverso={onExplorarMiniverso ?? handleClose}
-                      huellaOpen={huellaOpen}
-                      onHuellaOpenChange={setHuellaOpen}
-                      onUltimaPregunta={abrirUltimaPregunta}
-                      ultimaPreguntaVista={ultimaPreguntaVista}
-                      regresoRecien={regresoRecien}
-                      recommendedFormatId={l3Rec?.recommended_format_id ?? null}
-                      onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
-                      /* En Desktop este modal vive DENTRO de la vitrina de
-                         Transmedia.jsx: cerrarlo a él no cierra la vitrina, que
-                         se queda encima con el `overflow-hidden` puesto en el
-                         body, así que el salto al acto final ocurre pero no se
-                         ve. onBeforeNavigate (handleCloseShowcase) libera las
-                         dos cosas. Mismo patrón que el CTA del Apuntador en
-                         RelatedReadingTooltipButton (Carlos, 21 sep 2026). */
-                      onGoToSite={(hash) => {
-                        setHuellaOpen(false);
-                        handleClose();
-                        onBeforeNavigate?.();
-                        navigate(hash ? { pathname: '/', hash } : '/');
-                      }}
-                      onPosterChange={setHolograficoPoster}
-                      onRequireLogin={onRequireLogin}
-                    />
+                    {cuadernoHolografico}
                   </motion.div>
                 ) : bitacoraOpen ? (
                   /* ── El regreso en teléfono: la cabina se dibuja en su propia
@@ -3053,10 +3066,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     return <div data-en-el-foco-en-la-tarjeta>{enElFoco}</div>;
   }
 
+  if (vistaCuadernoEnElVestibulo) return cuadernoHolografico;
+  if (enElVestibulo && !enPantallaChica) {
+    // Fuera del cuaderno, la ventana de siempre, con su marco, en el perímetro.
+    return (
+      <div className="cuaderno-vestibulo__ventana" data-vestibulo-ventana>
+        {modal}
+      </div>
+    );
+  }
+
   return (
     <>
       {enPantallaChica && typeof document !== 'undefined'
-        ? createPortal(modal, document.body)
+        /* Desde el vestíbulo, la ventana del método va por encima de su capa. */
+        ? createPortal(enElVestibulo ? <div className="relative z-[160]">{modal}</div> : modal, document.body)
         : modal}
       {/* ── La última pregunta del gato, en móvil: su propia capa, como la cabina
           del regreso. El gato arriba con lo que la persona dejó; abajo, la hoja

@@ -1056,6 +1056,9 @@ const Hero = () => {
     if (!user) return;
     const continuation = consumePendingContinuation();
     if (!continuation?.showcaseId) return;
+    // Si entró desde el cuaderno del vestíbulo sideral, se queda ahí: el
+    // bloque de la forma ya deja interpretarla, con su transición.
+    if (document.documentElement.hasAttribute('data-vestibulo')) return;
     try {
       localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
     } catch {}

@@ -344,7 +344,12 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 // corresponde a la forma»), el hilo y las esferas se apagan. Primero se quedó
 // la esfera de la forma; esa misma noche se fue también (Carlos: «quizás se
 // vería mejor sin el icono»).
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false }) {
+// En el vestíbulo sideral (Carlos, 26 nov 2026) la constelación ocupa el
+// perímetro de la ficha y deja al centro el hueco del bloque morado: desde el
+// primer trazo es un garabato que esquiva ese hueco, con la elegida encima de
+// la esquina del bloque (`vestibulo`: proporciones del marco). El bloque llega
+// como `children`, entre las esferas de atrás y la elegida.
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, children = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -365,11 +370,20 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
   // «todo se reacomoda y eso es molesto. Se pierde la atención lo que
   // sucedió»). Hasta ese día, abrir el bloque sembraba otro garabato.
   const disposicion = useRef({ clave: null });
-  const clave = `${enOndas ? 'ondas' : 'acostada'}|${vuelta}|${marco?.clave ?? W}`;
+  const clave = `${vestibulo ? 'vestibulo' : enOndas ? 'ondas' : 'acostada'}|${vuelta}|${marco?.clave ?? W}`;
   if (W > 0 && H > 0 && disposicion.current.clave !== clave) {
-    const ondasNuevas = enOndas ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null;
+    const ondasNuevas = enOndas && !vestibulo ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null;
     let garabatoNuevo = null;
-    if (vuelta > 0) {
+    if (vestibulo) {
+      garabatoNuevo = trazarGarabato(W, H, semillaBase.current + vuelta, {
+        D: Math.round(vestibulo.D * H),
+        d: Math.round(vestibulo.d * H),
+        cuantas: N - 1,
+        izquierda: 64,
+        hueco: { x0: vestibulo.hueco.x0 * W, x1: vestibulo.hueco.x1 * W, y0: vestibulo.hueco.y0 * H, y1: vestibulo.hueco.y1 * H },
+        anclaEn: { x: vestibulo.ancla.x * W, y: vestibulo.ancla.y * H },
+      });
+    } else if (vuelta > 0) {
       // Las esferas conservan el tamaño que tenían en la figura de siempre.
       const D = ondasNuevas ? ondasNuevas.ancla.d : Math.round(0.21 * W);
       const d = ondasNuevas ? ondasNuevas.lugares[0].d : Math.max(44, Math.round(0.115 * W));
@@ -472,7 +486,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               // de un dedo; en ondas, la regla ya lo cuida.
               minWidth: enPixeles || alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
-              zIndex: alFrente ? 4 : 3,
+              zIndex: alFrente ? (vestibulo ? 5 : 4) : 3,
               cursor: alFrente || apagada ? 'default' : 'pointer',
               opacity: apagada ? 0 : 1,
               pointerEvents: apagada ? 'none' : undefined,
@@ -504,9 +518,20 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
           </button>
         );
       })}
+      {children ? <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4 }}>{children}</div> : null}
     </motion.div>
   );
 }
+
+// El vestíbulo en escritorio, en proporciones de la caja de la constelación:
+// el hueco del bloque al centro, la elegida en su esquina de abajo a la
+// derecha (encima del bloque), y los diámetros contra el alto de la caja.
+const VESTIBULO_EN_ESCRITORIO = {
+  hueco: { x0: 0.25, x1: 0.75, y0: 0.18, y1: 0.74 },
+  ancla: { x: 0.735, y: 0.76 },
+  D: 0.27,
+  d: 0.155,
+};
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
@@ -772,6 +797,8 @@ function HolograficoPanel({
   soloElTitulo = false,
   nodoBandeja = null,
   onExplorarMiniverso = null,
+  enElVestibulo = false,
+  nodoLinea = null,
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
@@ -794,7 +821,9 @@ function HolograficoPanel({
   // En escritorio el bloque morado va siempre desplegado y sin chevron
   // (Carlos, 18 nov 2026): ahí sobra espacio y abrir y cerrar solo movía la
   // constelación.
-  const siempreAbierto = bloqueEnLaCabina;
+  // En el vestíbulo sideral el bloque va siempre abierto al centro de la
+  // constelación, en teléfono y en escritorio (maqueta aprobada, 26 nov 2026).
+  const siempreAbierto = bloqueEnLaCabina || enElVestibulo;
   const bloqueRef = useRef(null);
 
   // La invitación a la cuenta (Carlos, 18 nov 2026: «el momento donde un
@@ -814,7 +843,7 @@ function HolograficoPanel({
       forma: entry?.form ?? entry?.name ?? null,
       presentation: 'narrative-video',
     });
-    onRequireLogin?.();
+    onRequireLogin?.({ showcaseId: entry?.showcase ?? null, forma: entry?.form ?? entry?.name ?? null });
   };
 
   const homeProgress = readResonanceProgress(homeKey);
@@ -928,7 +957,9 @@ function HolograficoPanel({
         travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${nombre}`}
         travelFormLabel={nombre}
         onTravel={() => onOpenVideo(entry.showcase)}
-        onSinSesion={() => setInvitacion(true)}
+        /* En el vestíbulo, sin sesión, «Interpretar» abre de una vez la
+           pantalla del login con la imagen de la forma (26 nov 2026). */
+        onSinSesion={enElVestibulo ? entrarConCorreo : () => setInvitacion(true)}
         /* Texto C, elegido por Carlos (18 nov 2026): la convención teatral
            (interpretar, acto final) y lo que de verdad pasa (se guarda, un
            texto tuyo). Antes de La Réplica no se dice «réplica». */
@@ -950,17 +981,29 @@ function HolograficoPanel({
     const cuerpo = esEspera ? cuerpoDeEspera : cuerpoDeOtra;
     const marcas = esEspera ? { 'data-aviso-de-espera': true } : { 'data-bloque-de-otra-forma': true };
 
+    // En el vestíbulo la línea vive fuera del bloque, abajo de la
+    // constelación, y solo para la forma activa: las demás no llevan línea
+    // (Carlos, 26 nov 2026: «No tiene caso ni siquiera que esté allí»).
+    const lineaEnSuLugar = enElVestibulo ? (
+      esEspera && nodoLinea ? createPortal(
+        <div data-linea-de-la-espera data-linea-en-el-vestibulo>{linea}</div>,
+        nodoLinea,
+      ) : null
+    ) : (
+      /* Con la bandeja abierta la línea se desvanece en su lugar (no se
+         quita: nada se mueve) para que su texto no se lea a través del
+         vidrio (24 nov 2026). */
+      <div
+        className={`transition-opacity duration-300 ${abierto ? 'pointer-events-none opacity-0' : ''}`}
+        {...(esEspera ? { 'data-linea-de-la-espera': true } : { 'data-linea-de-otra-forma': true })}
+      >
+        <Fundido k={centerKey}>{linea}</Fundido>
+      </div>
+    );
+
     return (
       <div className="flex flex-col gap-5">
-        {/* Con la bandeja abierta la línea se desvanece en su lugar (no se
-            quita: nada se mueve) para que su texto no se lea a través del
-            vidrio (24 nov 2026). */}
-        <div
-          className={`transition-opacity duration-300 ${abierto ? 'pointer-events-none opacity-0' : ''}`}
-          {...(esEspera ? { 'data-linea-de-la-espera': true } : { 'data-linea-de-otra-forma': true })}
-        >
-          <Fundido k={centerKey}>{linea}</Fundido>
-        </div>
+        {lineaEnSuLugar}
         {/* Antes del regreso el libreto no pregunta nada: lo que pasa lo dice
             el bloque morado. La pregunta y «Es tu turno» aparecen cuando la
             pregunta ya volvió. */}
@@ -1042,7 +1085,7 @@ function HolograficoPanel({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.18 }}
-        className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4"
+        className={enElVestibulo ? '' : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4'}
       >
         {familia === 'recorrido' ? recorrido() : isHome ? (
           homeBitacora ? (
@@ -1140,9 +1183,24 @@ const CuadernoHolografico = ({
   alFondoDelPozo = false,
   soloElTitulo = false,
   onExplorarMiniverso = null,
+  enElVestibulo = false,
 }) => {
   const navigate = useNavigate();
   const [nodoBandeja, setNodoBandeja] = useState(null);
+  const [nodoLinea, setNodoLinea] = useState(null);
+  // En el vestíbulo, el cuaderno se acomoda en columna por debajo de 1024 px
+  // (constelación arriba, la línea, el bloque abajo) y, en escritorio, con el
+  // bloque al centro de la constelación.
+  const [enColumna, setEnColumna] = useState(() => typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches);
+  useEffect(() => {
+    if (!enElVestibulo || typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(max-width: 1023px)');
+    const alCambiar = (e) => setEnColumna(e.matches);
+    query.addEventListener('change', alCambiar);
+    return () => query.removeEventListener('change', alCambiar);
+  }, [enElVestibulo]);
+  const alCentro = enElVestibulo && !enColumna;
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
   const [centerKey, setCenterKey] = useState(portal);
@@ -1216,6 +1274,14 @@ const CuadernoHolografico = ({
       const caja = entries[0]?.contentRect;
       if (!caja) return;
       setAnchoDeLaCaja(Math.floor(caja.width));
+      // En el vestíbulo, en escritorio, la constelación toma el perímetro
+      // entero (menos la franja de la línea), sin proporción fija.
+      if (alCentro) {
+        setEnOndas(false);
+        setLado(Math.max(0, Math.floor(caja.width)));
+        setAlto(Math.max(0, Math.floor(caja.height)));
+        return;
+      }
       // La figura es 4:3 y se deja achatar hasta 2:1 cuando el bloque se abre
       // y le quita altura: así las esferas no se encogen (14 nov 2026).
       // En pantallas angostas las esferas se acomodan por regla en todo el
@@ -1233,7 +1299,89 @@ const CuadernoHolografico = ({
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [alCentro]);
+
+  const panel = (
+    <HolograficoPanel
+      centerKey={centerKey}
+      homeKey={portal}
+      onDownloadSouvenir={onDownloadSouvenir}
+      souvenirGenerando={souvenirGenerando}
+      onStartBitacora={onStartBitacora}
+      onUltimaPregunta={onUltimaPregunta}
+      ultimaPreguntaVista={ultimaPreguntaVista}
+      regresoRecien={regresoRecien}
+      recommendedFormatId={recommendedFormatId}
+      onNavigateToRecommendation={onNavigate}
+      onGoToSite={onGoToSite}
+      onOpenVideo={handleOpenVideo}
+      onRequireLogin={onRequireLogin}
+      readOnly={readOnly}
+      bloqueEnLaCabina={bloqueEnLaCabina}
+      avisoDeEspera={avisoDeEspera}
+      alFondoDelPozo={alFondoDelPozo}
+      soloElTitulo={soloElTitulo}
+      nodoBandeja={nodoBandeja}
+      onExplorarMiniverso={onExplorarMiniverso}
+      enElVestibulo={enElVestibulo}
+      nodoLinea={nodoLinea}
+    />
+  );
+
+  // ── El cuaderno en el vestíbulo sideral (Carlos, 26 nov 2026; maqueta
+  // «Cuaderno en el vestíbulo sideral», aprobada). Sin marco ni póster: el
+  // fondo es el manto estelar del vestíbulo. Las esferas viven en el
+  // perímetro de la ficha; el bloque morado, al centro (en escritorio), con
+  // solo la elegida por encima; la línea de la forma, abajo y solo para la
+  // forma activa.
+  if (enElVestibulo) {
+    const video = (
+      <VideoNarrativeAutoplay
+        open={videoOpen}
+        onClose={() => setVideoOpen(false)}
+        onNavigate={handleVideoNavigate}
+        formatId={videoFormatId}
+        isMobileViewport={isMobileViewport}
+      />
+    );
+    if (alCentro) {
+      return (
+        <div ref={scrollContainerRef} className="cuaderno-vestibulo relative h-full touch-manipulation" data-cuaderno-en-el-vestibulo>
+          <div ref={marcoRef} className="absolute inset-x-0 top-0" style={{ bottom: '13%' }}>
+            <div className="relative" style={{ width: lado || '100%', height: alto || '100%' }}>
+              <Constellation
+                centerKey={centerKey}
+                onSelect={handleSelect}
+                marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
+                vestibulo={VESTIBULO_EN_ESCRITORIO}
+              >
+                <div className="cuaderno-vestibulo__bloque pointer-events-auto">{panel}</div>
+              </Constellation>
+            </div>
+          </div>
+          <div ref={setNodoLinea} className="cuaderno-vestibulo__linea" />
+          {video}
+        </div>
+      );
+    }
+    return (
+      <div ref={scrollContainerRef} className="cuaderno-vestibulo cuaderno-vestibulo--columna relative flex h-full touch-manipulation flex-col" data-cuaderno-en-el-vestibulo>
+        <div ref={marcoRef} className="relative flex items-center justify-center px-3 pt-14" style={{ flex: '0 0 42%' }}>
+          <div className="relative" style={{ width: lado || '100%', height: alto || '100%' }}>
+            <Constellation
+              centerKey={centerKey}
+              onSelect={handleSelect}
+              marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
+              enOndas={enOndas}
+            />
+          </div>
+        </div>
+        <div ref={setNodoLinea} className="cuaderno-vestibulo__linea" />
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">{panel}</div>
+        {video}
+      </div>
+    );
+  }
 
   return (
     <div ref={scrollContainerRef} className="relative flex h-full touch-manipulation flex-col overflow-hidden">

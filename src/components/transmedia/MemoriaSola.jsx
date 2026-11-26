@@ -1,66 +1,168 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import ResonanceModal from '@/components/portal/ResonanceModal';
 
 // La Memoria por sí sola (Carlos, 24 nov 2026). «Hilar mi memoria», en el
 // bloque de bambalinas de la tarjeta, abre la Memoria con la constelación en
-// su propia capa, sin pasar por la ficha: antes se abría la ficha y, encima,
-// el método, así que la ficha se alcanzaba a ver primero. De aquí, «Explorar
-// miniverso» lleva a la ficha; la palomita regresa a la galería.
-// En escritorio va en un marco del tamaño de la ficha; en teléfono la ventana
-// del método ya ocupa toda la pantalla (se ancla sola al body, por debajo de
-// 1024), así que ahí no lleva marco: el marco la tapaba.
-const PANTALLA_CHICA = '(max-width: 1023px)';
-const esPantallaChica = () =>
-  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-  && window.matchMedia(PANTALLA_CHICA).matches;
+// su propia capa, sin pasar por la ficha.
+//
+// Desde el 26 nov 2026 es el cuaderno en el vestíbulo sideral (maqueta
+// «Cuaderno en el vestíbulo sideral», aprobada por Carlos): el proscenio se
+// aleja y se desenfoca, queda el manto estelar a pantalla completa y el
+// cuaderno vive dentro del perímetro de la ficha, sin marco: las esferas, el
+// bloque morado al centro y la línea de la forma abajo. La flecha de regreso
+// cierra el cuaderno y baja al proscenio, donde solo queda su tarjeta.
+
+// El manto: puntos fijos (la misma figura en cada visita) que titilan.
+const ESTRELLAS = Array.from({ length: 140 }, (_, i) => ({
+  id: i,
+  left: ((i * 61 + 17) % 997) / 9.97,
+  top: ((i * 89 + 31) % 991) / 9.91,
+  size: i % 7 === 0 ? 2 : i % 3 === 0 ? 1.5 : 1,
+  opacity: 0.25 + ((i * 13) % 7) * 0.1,
+  delay: ((i * 37) % 50) / 10,
+  duration: 3 + ((i * 17) % 40) / 10,
+}));
+
+function MantoEstelar() {
+  const estrellas = useMemo(() => ESTRELLAS, []);
+  return (
+    <div aria-hidden="true" className="vestibulo-sideral__manto">
+      {estrellas.map((s) => (
+        <span
+          key={s.id}
+          className="vestibulo-sideral__estrella"
+          style={{
+            left: `${s.left}%`,
+            top: `${s.top}%`,
+            width: s.size,
+            height: s.size,
+            '--star-opacity': s.opacity,
+            animationDelay: `${s.delay}s`,
+            animationDuration: `${s.duration}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Al abrir el miniverso (escritorio): el contenido se apaga, el perímetro se
+// dibuja con el trazo del título, la esfera elegida viaja al emblema de la
+// ficha (que ya se abrió debajo, en su lugar) y el vestíbulo se desvanece.
+const CURVA_DEL_VIAJE = [0.65, 0, 0.25, 1];
+
 export default function MemoriaSola({
   portal,
   question,
   isMobileViewport,
   onCerrar,
-  onExplorar,
-  onNavigateToRecommendation,
+  onAbrirMiniverso,
+  onTransicionHecha,
   onRequireLogin,
 }) {
-  const [chica, setChica] = useState(esPantallaChica);
+  const capaRef = useRef(null);
+  const [viaje, setViaje] = useState(null);
+  const [retirandose, setRetirandose] = useState(false);
+  const relojes = useRef([]);
+  useEffect(() => () => relojes.current.forEach((t) => window.clearTimeout(t)), []);
+  const abrirMiniverso = (showcaseId = null) => {
+    if (viaje) return;
+    const esfera = capaRef.current?.querySelector('[data-cuaderno-en-el-vestibulo] button[aria-current="true"]');
+    const caja = esfera?.getBoundingClientRect();
+    const src = esfera?.querySelector('img')?.getAttribute('src') ?? null;
+    if (!onAbrirMiniverso?.(showcaseId)) return;
+    setViaje({ src, desde: caja ? { left: caja.left, top: caja.top, width: caja.width } : null, hasta: null });
+    let intentos = 0;
+    const buscar = () => {
+      const destino = document.querySelector('[data-emblema-de-la-ficha]');
+      const r = destino?.getBoundingClientRect();
+      if (r && r.width > 0) {
+        setViaje((v) => (v ? { ...v, hasta: { left: r.left, top: r.top, width: r.width } } : v));
+        return;
+      }
+      intentos += 1;
+      if (intentos < 60) window.requestAnimationFrame(buscar);
+    };
+    relojes.current.push(window.setTimeout(() => window.requestAnimationFrame(buscar), 350));
+    relojes.current.push(window.setTimeout(() => setRetirandose(true), 1900));
+    relojes.current.push(window.setTimeout(() => onTransicionHecha?.(), 2500));
+  };
+  // El proscenio se aleja hacia el centro de lo que se está viendo.
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const query = window.matchMedia(PANTALLA_CHICA);
-    const alCambiar = (e) => setChica(e.matches);
-    query.addEventListener('change', alCambiar);
-    return () => query.removeEventListener('change', alCambiar);
+    if (typeof document === 'undefined') return undefined;
+    const raiz = document.documentElement;
+    raiz.style.setProperty('--vestibulo-origen-y', `${window.scrollY + window.innerHeight / 2}px`);
+    raiz.setAttribute('data-vestibulo', '');
+    return () => raiz.removeAttribute('data-vestibulo');
   }, []);
+
   if (typeof document === 'undefined') return null;
-  const modal = (
-    <ResonanceModal
-      open
-      portal={portal}
-      question={question}
-      startInHolografico
-      isMobileViewport={isMobileViewport}
-      onClose={onCerrar}
-      onExplorarMiniverso={onExplorar}
-      onNavigateToRecommendation={onNavigateToRecommendation}
-      onBeforeNavigate={onCerrar}
-      onRequireLogin={onRequireLogin}
-    />
-  );
-  if (chica) return modal;
   return createPortal(
     <motion.div
-      className="fixed inset-0 z-[140] flex items-center justify-center"
+      ref={capaRef}
+      className={`vestibulo-sideral fixed inset-0 z-[150]${viaje ? ' vestibulo-sideral--abriendo' : ''}`}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: retirandose ? 0 : 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: retirandose ? 0.55 : 0.9, ease: 'easeOut' }}
+      style={{ pointerEvents: retirandose ? 'none' : undefined }}
       data-memoria-sola
+      data-vestibulo-sideral
     >
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/95 via-slate-950/90 to-black/95" />
-      <div className="relative z-10 h-[88vh] w-[calc(100vw-2.5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-white/15 shadow-[0_35px_120px_rgba(0,0,0,0.65)]">
-        {modal}
+      <MantoEstelar />
+      <div className="vestibulo-sideral__perimetro">
+        <motion.div
+          className="vestibulo-sideral__contenido h-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+        >
+          <ResonanceModal
+            open
+            portal={portal}
+            question={question}
+            startInHolografico
+            enElVestibulo
+            isMobileViewport={isMobileViewport}
+            onClose={onCerrar}
+            onExplorarMiniverso={() => abrirMiniverso(null)}
+            onNavigateToRecommendation={(showcaseId) => abrirMiniverso(showcaseId)}
+            onBeforeNavigate={onCerrar}
+            onRequireLogin={onRequireLogin}
+          />
+        </motion.div>
+        <motion.button
+          type="button"
+          onClick={onCerrar}
+          className="vestibulo-sideral__volver"
+          aria-label="Volver"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 1.1 }}
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+        </motion.button>
+        {viaje ? (
+          <svg className="vestibulo-sideral__marco" aria-hidden="true">
+            <rect x="0" y="0" width="100%" height="100%" rx="28" ry="28" pathLength="1" />
+          </svg>
+        ) : null}
       </div>
+      {viaje?.desde && viaje.src ? (
+        <motion.span
+          aria-hidden="true"
+          className="vestibulo-sideral__viajera"
+          initial={viaje.desde}
+          animate={viaje.hasta ?? viaje.desde}
+          transition={{ duration: 0.95, ease: CURVA_DEL_VIAJE }}
+          style={{ height: 'auto' }}
+        >
+          <img src={viaje.src} alt="" />
+        </motion.span>
+      ) : null}
     </motion.div>,
     document.body,
   );
