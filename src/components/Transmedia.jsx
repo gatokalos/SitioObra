@@ -2237,8 +2237,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       }
       return;
     }
+    // El día del regreso, «Termina la escena» lleva al vestíbulo sideral y
+    // ahí aparece el gato en la cabina (Carlos, 26 nov 2026).
+    if (elRegresoYaVolvio(formatId)) {
+      irALaMemoriaDesdeLaTarjeta(formatId);
+      return;
+    }
     if (!laTarjetaTieneDorso(formatId)) {
-      if (elRegresoYaVolvio(formatId)) setRegresoPendienteId(formatId);
       handleFormatClick(formatId);
       return;
     }

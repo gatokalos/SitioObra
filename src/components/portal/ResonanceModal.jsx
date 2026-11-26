@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bell, CalendarDays, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Bell, CalendarDays, Check, ChevronDown, Compass, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { bajarElTelonHaciaLaReplica } from '@/lib/telonDelPozo';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -31,6 +32,8 @@ export { readGlobalConsent, writeGlobalConsent };
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
+// En escritorio, la cabina del regreso es la del hero (App.jsx): la misma imagen.
+const CABINA_DE_ESCRITORIO_URL = '/assets/gato-cabina-desktop-crt-v1.webp';
 // El gato del fondo del pozo, el del primer acto, en su versión ligera (65 KB).
 const GATO_DEL_POZO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-neo@1920.webp';
 // El túnel del descenso del primer acto (105 KB); en la caída va dos veces.
@@ -1519,12 +1522,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Ya no hay «Es tu turno»: el día que la pregunta vuelve, el gato la hace.
   const regresoEnEscritorio = bitacoraOpen && !enPantallaChica;
   useEffect(() => {
-    if (!open || enPantallaChica) return;
+    // Desde el vestíbulo, en teléfono también: aparece el gato en la cabina.
+    if (!open || (enPantallaChica && !enElVestibulo)) return;
     if (bitacoraAvailable && !bitacoraCompleted && !bitacoraOpen && !ultimaPreguntaOpen) {
       setBitacoraStep('p1');
       setBitacoraOpen(true);
     }
-  }, [open, enPantallaChica, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
+  }, [open, enPantallaChica, enElVestibulo, bitacoraAvailable, bitacoraCompleted, bitacoraOpen, ultimaPreguntaOpen]);
   // El globo del gato se reserva para el día del regreso (Carlos, 18 nov 2026:
   // «reservar el globo de texto del gato para el día de regreso y poner la
   // cabina del gato en oscuridad porque se pelea con el bloque morado»).
@@ -1569,14 +1573,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const sinMovimiento = useReducedMotion();
   const [caidaHecha, setCaidaHecha] = useState(false);
   useEffect(() => { if (!open) setCaidaHecha(false); }, [open]);
-  const hayCaida = enElPozo && regresoRecien && !sinMovimiento;
+  // El día del regreso, como en el iPhone y en todos los aparatos (Carlos, 26
+  // nov 2026): la cabina a pantalla completa hace las preguntas y, al
+  // terminar, esa misma torre cae al pozo, sin cambiar de cabina. Al fondo, la
+  // tarjeta del nombre; de ahí, el telón hacia La Réplica.
+  const caidaEnLaCabina = bitacoraCompleted && holograficoOpen && !bitacoraOpen && regresoRecien;
+  const hayCaida = enElPozo && regresoRecien && !sinMovimiento && !caidaEnLaCabina;
   const cayendo = hayCaida && !caidaHecha;
   // En teléfono, lo mismo a pantalla completa (Carlos, 15 nov 2026: «el usuario
   // no tendría que volver a ver la memoria después de contestar las preguntas
   // diferidas. Debería de hacerse el scroll de la torre. Llegar hasta abajo y
   // ver lo que ya se muestra en el escritorio»). El pozo cubre la Memoria: la
   // tarjeta arriba, el gato Neo al fondo y el recuerdo al pie.
-  const pozoEnTelefono = enPantallaChica && bitacoraCompleted && holograficoOpen && !bitacoraOpen;
+  const pozoEnTelefono = enPantallaChica && bitacoraCompleted && holograficoOpen && !bitacoraOpen && !caidaEnLaCabina;
   const hayCaidaEnTelefono = pozoEnTelefono && regresoRecien && !sinMovimiento;
   const cayendoEnTelefono = hayCaidaEnTelefono && !caidaHecha;
   const laCaida = (
@@ -1602,7 +1611,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Del pozo se pasa directo al acto final (Carlos, 14 nov 2026: «nos vamos a
   // saltar esos pasos de globo de texto dentro del pozo»): la palabra elegida
   // y la respuesta tentativa viajan a La Réplica igual que antes.
-  const pasarDelPozoAlActoFinal = (carga) => {
+  const pasarDelPozoAlActoFinal = (carga, { conTelon = false } = {}) => {
     if (!carga?.texto) return;
     lsPatch(portal, { ultima_pregunta_abierta: true });
     setUltimaPreguntaVista(true);
@@ -1614,6 +1623,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       huella: { anonId: carga.anonId, sessionId: carga.sessionId, campo: carga.campo, original: carga.original },
       termino,
     });
+    if (conTelon) {
+      // El gato de neón se va, la cabecera de La Réplica se compone al fondo
+      // del pozo y el sitio aparece debajo, ya en esa sección (26 nov 2026).
+      bajarElTelonHaciaLaReplica({ fondo: GATO_DEL_POZO_URL });
+      window.setTimeout(() => irAlSitio('#provoca'), 2300);
+      return;
+    }
     irAlSitio('#provoca');
   };
 
@@ -2971,7 +2987,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             />
             {/* La tarjeta del pozo, arriba, sobre la grieta. Llega cuando la
                 caída termina. */}
-            {enElPozo && centroConMemoria && !cayendo ? (
+            {enElPozo && centroConMemoria && !cayendo && !caidaEnLaCabina ? (
               <div className="absolute inset-x-5 top-[4.5rem] z-20" hidden={ultimaPreguntaOpen}>
                 <LoQueQuedo
                   key={formaAlCentro}
@@ -3066,22 +3082,24 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     return <div data-en-el-foco-en-la-tarjeta>{enElFoco}</div>;
   }
 
-  if (vistaCuadernoEnElVestibulo) return cuadernoHolografico;
-  if (enElVestibulo && !enPantallaChica) {
-    // Fuera del cuaderno, la ventana de siempre, con su marco, en el perímetro.
-    return (
-      <div className="cuaderno-vestibulo__ventana" data-vestibulo-ventana>
-        {modal}
-      </div>
-    );
-  }
 
   return (
     <>
-      {enPantallaChica && typeof document !== 'undefined'
-        /* Desde el vestíbulo, la ventana del método va por encima de su capa. */
-        ? createPortal(enElVestibulo ? <div className="relative z-[160]">{modal}</div> : modal, document.body)
-        : modal}
+      {/* Con la cabina del regreso encima, debajo solo quedan las estrellas
+          (y no se dibuja dos veces la tarjeta del pozo). */}
+      {enElVestibulo && (bitacoraOpen || caidaEnLaCabina)
+        ? null
+        : vistaCuadernoEnElVestibulo
+          ? cuadernoHolografico
+          : enElVestibulo && !enPantallaChica
+          /* Fuera del cuaderno, la ventana de siempre, con su marco, en el
+             perímetro. Las capas de abajo (la cabina, la última pregunta) se
+             dibujan igual. */
+          ? <div className="cuaderno-vestibulo__ventana" data-vestibulo-ventana>{modal}</div>
+          : enPantallaChica && typeof document !== 'undefined'
+            /* Desde el vestíbulo, la ventana del método va por encima de su capa. */
+            ? createPortal(enElVestibulo ? <div className="relative z-[160]">{modal}</div> : modal, document.body)
+            : modal}
       {/* ── La última pregunta del gato, en móvil: su propia capa, como la cabina
           del regreso. El gato arriba con lo que la persona dejó; abajo, la hoja
           con las palabras de la obra y la salida al acto final (22 oct 2026). */}
@@ -3133,14 +3151,54 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           exactamente la pantalla, sin adivinar el modelo de teléfono. Es lo
           que daba la ruta separada de la versión anterior, pero sin cambiar de
           ruta: no se pierde el estado ni se recarga nada (Carlos, 18 sep 2026). */}
-      {open && bitacoraOpen && typeof document !== 'undefined'
+      {open && (bitacoraOpen || caidaEnLaCabina) && typeof document !== 'undefined'
         ? createPortal(
-            <div
-              className="fixed inset-0 z-[300] overscroll-contain bg-[rgb(5,3,9)] lg:hidden"
+            <motion.div
+              className="cabina-del-regreso fixed inset-0 z-[300] overscroll-contain bg-[rgb(5,3,9)]"
               style={{ height: '100dvh' }}
               role="dialog"
               aria-modal="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: enElVestibulo ? 1.2 : 0.3, ease: 'easeOut' }}
+              data-cabina-del-regreso={caidaEnLaCabina ? (caidaHecha || sinMovimiento ? 'al-fondo' : 'cayendo') : 'preguntas'}
             >
+          {/* Una sola torre: la cabina arriba, el túnel dos veces y el gato de
+              neón al fondo. Las preguntas se hacen sobre el primer tramo; al
+              terminar, la misma torre cae (7 s), como la del primer acto. */}
+          <div aria-hidden="true" className="torre-del-regreso">
+            <motion.div
+              className="torre-del-regreso__torre"
+              initial={false}
+              animate={{ y: caidaEnLaCabina ? '-75%' : '0%' }}
+              transition={{ duration: sinMovimiento ? 0 : 7, ease: [0.65, 0, 0.35, 1] }}
+              onAnimationComplete={() => { if (caidaEnLaCabina) setCaidaHecha(true); }}
+            >
+              <img src={enPantallaChica ? CAT_CABINA_URL : CABINA_DE_ESCRITORIO_URL} alt="" className="torre-del-regreso__tramo torre-del-regreso__tramo--cabina" />
+              <img src={TUNEL_DEL_POZO_URL} alt="" className="torre-del-regreso__tramo" />
+              <img src={TUNEL_DEL_POZO_URL} alt="" className="torre-del-regreso__tramo" />
+              <img src={GATO_DEL_POZO_URL} alt="" className="torre-del-regreso__tramo" />
+            </motion.div>
+          </div>
+          {caidaEnLaCabina && !caidaHecha && !sinMovimiento ? (
+            <p className="caida-al-pozo__linea">La pregunta te trajo hasta aquí.</p>
+          ) : null}
+          {caidaEnLaCabina && (caidaHecha || sinMovimiento) ? (
+            <div className="pozo-en-telefono__contenido torre-del-regreso__fondo" hidden={ultimaPreguntaOpen}>
+              <LoQueQuedo
+                key={portal}
+                enElPozo
+                gradiente={PORTAL_GRADIENT[portal]}
+                portal={portal}
+                entry={CATALOG.find((f) => f.key === portal)}
+                late={!ultimaPreguntaVista}
+                regresoRecien={regresoRecien}
+                onUltimaPregunta={(carga) => pasarDelPozoAlActoFinal(carga, { conTelon: true })}
+                onGoToSite={irAlSitio}
+              />
+            </div>
+          ) : null}
+          {bitacoraOpen ? (<>
         {/* ── Móvil: la cabina ──
             El gato al fondo y la pregunta en su burbuja. Antes esto
             era un formulario sobre un póster: tres preguntas sin
@@ -3148,12 +3206,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             ya existían en index.css, portadas de la Bienvenida y sin
             usar desde entonces (Carlos, 18 sep 2026). */}
         <div className="relative flex h-full flex-col overflow-hidden pt-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] pb-[max(5rem,calc(env(safe-area-inset-bottom)+4rem))]">
-          <img
-            src={CAT_CABINA_URL}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -inset-y-[6rem] inset-x-0 h-[calc(100%+12rem)] w-full object-cover object-top"
-          />
+          {/* La cabina es el primer tramo de la torre (arriba). */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
@@ -3217,28 +3270,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           </div>
         </div>
 
-        <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
-          <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-            En escena
-          </p>
-          <p
-            className="font-display leading-snug question-voice"
-            style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
-          >
-            {preguntaDelPaso}
-          </p>
-        </div>
-
-        <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px question-divider-voice" />
+          </>) : null}
               {/* Los controles de la tarjeta quedan debajo de esta capa, así que
                   la cabina lleva los suyos. */}
               <button
                 type="button"
                 onClick={handleClose}
-                aria-label="Cerrar"
+                aria-label="Volver"
                 className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-200 backdrop-blur-md transition hover:border-white/35 hover:text-white"
               >
-                <X size={18} />
+                <ArrowLeft size={18} />
               </button>
 
               {import.meta.env.DEV && (
@@ -3261,7 +3302,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   </button>
                 </div>
               )}
-            </div>,
+            </motion.div>,
             document.body,
           )
         : null}
