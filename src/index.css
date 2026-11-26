@@ -9032,15 +9032,11 @@ header.fixed {
   left: 27%;
   width: 46%;
   top: 19%;
-  min-height: 46%;
   max-height: 54%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-.cuaderno-vestibulo__bloque > div,
-.cuaderno-vestibulo__bloque > div > div { flex: 1; display: flex; flex-direction: column; }
-.cuaderno-vestibulo__bloque .bloque-forma { flex: 1; }
 /* La línea de la forma, abajo y en limpio (sin fondo). */
 .cuaderno-vestibulo__linea {
   position: absolute;

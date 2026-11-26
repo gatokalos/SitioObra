@@ -957,9 +957,10 @@ function HolograficoPanel({
         travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${nombre}`}
         travelFormLabel={nombre}
         onTravel={() => onOpenVideo(entry.showcase)}
-        /* En el vestíbulo, sin sesión, «Interpretar» abre de una vez la
-           pantalla del login con la imagen de la forma (26 nov 2026). */
-        onSinSesion={enElVestibulo ? entrarConCorreo : () => setInvitacion(true)}
+        /* Sin sesión, la explicación primero, siempre (Carlos, 26 nov
+           2026: «es menester. No se negocia»); de ahí, «Iniciar sesión» abre
+           el login, que en el vestíbulo lleva la imagen de la forma. */
+        onSinSesion={() => setInvitacion(true)}
         /* Texto C, elegido por Carlos (18 nov 2026): la convención teatral
            (interpretar, acto final) y lo que de verdad pasa (se guarda, un
            texto tuyo). Antes de La Réplica no se dice «réplica». */
