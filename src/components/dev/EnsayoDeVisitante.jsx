@@ -57,6 +57,8 @@ const recargar = (hash = '#transmedia') => {
 };
 
 const PASOS = [
+  // El carril en dos tiempos (26 nov 2026): nada contestado en ninguna forma.
+  { id: 'carril', titulo: 'El carril en dos tiempos', nota: 'Nada contestado: solo la recomendada a color; las otras ocho, en blanco y negro.' },
   { id: 'pregunta', titulo: 'La pregunta', nota: 'La tarjeta gira y pide la primera intuición.' },
   { id: 'preparacion', titulo: 'Preparación', nota: 'Ya contestó; elige qué busca.' },
   { id: 'habitar', titulo: 'Habitar la forma', nota: 'Ya eligió; falta entrar al artefacto.' },
@@ -83,7 +85,7 @@ const registroDelPaso = (paso, forma) => {
   const enTarjeta = RECORRIDO_EN_TARJETA.has(forma.showcase);
   const opcion = LEVEL2_QUESTIONS[forma.key]?.options?.[0] ?? null;
   const r = {};
-  if (paso === 'pregunta') return null;
+  if (paso === 'pregunta' || paso === 'carril') return null;
   Object.assign(r, { l1: ahora, l1_answer: RESPUESTA_DE_ENSAYO[forma.key] ?? 'algo que estaba dormido' });
   if (paso === 'preparacion') return r;
   Object.assign(r, { l2_option: opcion, l2_ts: ahora });
@@ -182,6 +184,10 @@ const EnsayoDeVisitante = () => {
       if (conReplicas) window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY);
       else window.sessionStorage.setItem(IR_A_LA_TARJETA_KEY, '1');
     } catch { /* sin almacenamiento */ }
+    // Cada salto vuelve al tiempo 1 del carril; el del carril, además, borra
+    // lo contestado en las nueve formas.
+    quitar('gatoencerrado:curiosidad-gano');
+    if (paso === 'carril') CATALOG.forEach((f) => quitar(`gatoencerrado:resonance:${f.key}`));
     const registro = registroDelPaso(paso, forma);
     const clave = `gatoencerrado:resonance:${forma.key}`;
     if (registro) poner(clave, JSON.stringify(registro)); else quitar(clave);

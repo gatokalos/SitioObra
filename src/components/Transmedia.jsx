@@ -37,6 +37,7 @@ import {
   PawPrint,
   QrCode,
   GalleryHorizontalEnd,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -1977,11 +1978,55 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const dorsoEnTelefono =
     import.meta.env.VITE_DORSO_MOVIL !== '0' &&
     !(import.meta.env.DEV && safeGetItem('gatoencerrado:dev-dorso-movil') === '0');
+  // El carril en dos tiempos (Carlos, 25–26 nov 2026; maqueta «Carril en dos
+  // tiempos»). Tiempo 1: solo la recomendada tiene color; las otras ocho están
+  // en blanco y negro, con el verso nítido en gris. El hover (escritorio) asoma
+  // su pregunta y emborrona el verso; en teléfono la pregunta ya está. Tocar
+  // una apagada no la voltea: el color regresa, el verso se aclara y la
+  // pregunta se funde en el aviso, con «Si la curiosidad no mata…» de bisagra
+  // en la costura entre la foto y el verso. Ese botón es el gran revelado: las
+  // nueve se encienden en ola desde la elegida (tiempo 2), los frentes quedan
+  // limpios —la pregunta ya solo vive en el dorso— y cualquier tarjeta gira
+  // para contestarse ahí, también sin cuenta. Al contestar una sin cuenta, las
+  // demás quedan en espera (sin cuenta, una sola forma).
+  const CURIOSIDAD_KEY = 'gatoencerrado:curiosidad-gano';
+  const AVISO_DE_CURIOSIDAD = 'No siempre nos quedamos con lo primero. Mirar es libre. Elegir es quedarse.';
+  const BOTON_DE_CURIOSIDAD = 'Si la curiosidad no mata…';
+  const [curiosidadGano, setCuriosidadGano] = useState(() => safeGetItem(CURIOSIDAD_KEY) === '1');
+  const [avisoDeCuriosidadId, setAvisoDeCuriosidadId] = useState(null);
+  const [olaDeCuriosidad, setOlaDeCuriosidad] = useState(null);
+  const formaContestadaId = useMemo(
+    () => formats.find((f) => SHOWCASE_TO_PORTAL[f.id] && readResonanceProgress(SHOWCASE_TO_PORTAL[f.id]).l1Done)?.id ?? null,
+    [registroDeLaTarjetaTick, isAuthenticated, activeShowcase] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const dosTiempos = enCarril && Boolean(recommendedShowcaseId) && !formaContestadaId;
+  const vitrinaApagada = (formatId) => dosTiempos && !curiosidadGano && formatId !== recommendedShowcaseId;
+  const vitrinaEnEspera = (formatId) =>
+    enCarril && !isAuthenticated && hasBienvenidaPass && Boolean(formaContestadaId) && formatId !== formaContestadaId;
+  const encenderLasNueve = (formatId) => {
+    setCuriosidadGano(true);
+    safeSetItem(CURIOSIDAD_KEY, '1');
+    setAvisoDeCuriosidadId(null);
+    setOlaDeCuriosidad(formatId);
+    window.setTimeout(() => setOlaDeCuriosidad(null), 2600);
+  };
+  // La ola sale de la tarjeta elegida hacia los dos lados del carril.
+  const retrasoDeLaOla = (formatId) => {
+    if (!olaDeCuriosidad) return '0s';
+    const desde = formats.findIndex((f) => f.id === olaDeCuriosidad);
+    const hasta = formats.findIndex((f) => f.id === formatId);
+    const d = Math.abs(desde - hasta);
+    return `${(0.15 + Math.min(d, formats.length - d) * 0.13).toFixed(2)}s`;
+  };
   const laTarjetaLlevaElRecorrido = (formatId) => {
     if (isVitrinaCarouselViewport && !dorsoEnTelefono) return false;
     if (!VITRANA_QUESTION_BY_SHOWCASE[formatId] || !SHOWCASE_TO_PORTAL[formatId]) return false;
     if (isAuthenticated) return true;
-    return hasBienvenidaPass && formatId === recommendedShowcaseId;
+    if (!hasBienvenidaPass) return false;
+    // Sin cuenta, una sola forma: la que ya empezó a contestar.
+    if (formaContestadaId) return formatId === formaContestadaId;
+    // Antes de contestar: la recomendada y, si la curiosidad ganó, las nueve.
+    return formatId === recommendedShowcaseId || (dosTiempos && curiosidadGano);
   };
   const pideIntuicionEnLaTarjeta = (formatId) =>
     laTarjetaLlevaElRecorrido(formatId) &&
@@ -2027,6 +2072,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     // DorsoPrimeraIntuicion).
     if (tarjetaGiradaId) setTarjetaGiradaId(null);
     // Al volver a la recomendada, la otra que estuviera encendida se apaga.
+    setAvisoDeCuriosidadId(null);
     setTarjetaConLoginId(null);
     setDesktopVitranaRevealId(null);
     setMobileVitranaRevealId(null);
@@ -2104,6 +2150,24 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return () => window.clearTimeout(olvido);
   }, [regresoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
   const entrarPorLaTarjeta = (formatId) => {
+    // En espera: no se abre.
+    if (vitrinaEnEspera(formatId)) return;
+    // Tiempo 1: el toque en una apagada enciende el aviso; otro toque lo apaga.
+    if (vitrinaApagada(formatId)) {
+      if (avisoDeCuriosidadId === formatId) {
+        setAvisoDeCuriosidadId(null);
+        return;
+      }
+      setTarjetaGiradaId(null);
+      setAvisoDeCuriosidadId(formatId);
+      if (!isAuthenticated) {
+        registrarVitrinaBloqueada(formatId, {
+          recomendada: recommendedShowcaseId,
+          pantalla: isVitrinaCarouselViewport ? 'movil' : 'escritorio',
+        });
+      }
+      return;
+    }
     if (!laTarjetaTieneDorso(formatId)) {
       if (elRegresoYaVolvio(formatId)) setRegresoPendienteId(formatId);
       handleFormatClick(formatId);
@@ -2269,6 +2333,86 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     ABRIR_ARTEFACTO_POR_VITRINA[artefactoPendienteId]?.();
     setArtefactoPendienteId(null);
   }, [artefactoPendienteId, activeShowcase, showcaseOpenTransition.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Lo que los dos tiempos le ponen a cada tarjeta (index.css, «El carril en
+  // dos tiempos»): la foto en blanco y negro encima de la de color, el vidrio
+  // con la pregunta y el aviso, la bisagra, el velo del verso y la espera.
+  // Textos del aviso y del botón: de Carlos (25–26 nov 2026); «En espera» y
+  // «La del gato», de la maqueta aprobada.
+  const curiosidadDeLaTarjeta = (format) => {
+    const enEspera = vitrinaEnEspera(format.id);
+    if (!dosTiempos && !enEspera) return null;
+    const apagada = vitrinaApagada(format.id);
+    const conAviso = apagada && avisoDeCuriosidadId === format.id;
+    const curiosa = dosTiempos && curiosidadGano;
+    const encendiendose = Boolean(olaDeCuriosidad) && olaDeCuriosidad !== format.id;
+    return {
+      clase: [
+        'vitrina-dos-tiempos',
+        apagada ? 'vitrina-apagada' : '',
+        conAviso ? 'vitrina-con-aviso' : '',
+        enEspera ? 'vitrina-en-espera' : '',
+        curiosa ? 'vitrina-curiosa' : '',
+        encendiendose ? 'vitrina-encendiendose' : '',
+      ].filter(Boolean).join(' '),
+      estilo: { '--ola-retraso': retrasoDeLaOla(format.id) },
+      sinDestaque: curiosa || enEspera,
+      foto: (
+        <>
+          {format.image ? (
+            <img
+              src={format.image}
+              alt=""
+              aria-hidden="true"
+              className="vitrina-curiosidad__gris showcase-parallax-media absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : null}
+          {dosTiempos ? (
+            <div className="vitrina-curiosidad__capa" aria-hidden={conAviso ? undefined : 'true'}>
+              <p className="vitrina-curiosidad__pregunta">
+                <span className="vitrina-seed-question" style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.65rem)' }}>
+                  {VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+                </span>
+              </p>
+              <p className="vitrina-curiosidad__aviso">{AVISO_DE_CURIOSIDAD}</p>
+            </div>
+          ) : null}
+          {curiosa && format.id === recommendedShowcaseId ? (
+            <span className="vitrina-curiosidad__marca">La del gato</span>
+          ) : null}
+          {enEspera ? (
+            <span className="vitrina-espera__chip">
+              <Lock size={13} strokeWidth={2} aria-hidden="true" /> En espera
+            </span>
+          ) : null}
+        </>
+      ),
+      bisagra: dosTiempos ? (
+        <div className="vitrina-bisagra">
+          <span
+            role="button"
+            tabIndex={conAviso ? 0 : -1}
+            aria-hidden={conAviso ? undefined : 'true'}
+            className="vitrina-bisagra__boton"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (conAviso) encenderLasNueve(format.id);
+            }}
+            onKeyDown={(e) => {
+              if (!conAviso || (e.key !== 'Enter' && e.key !== ' ')) return;
+              e.preventDefault();
+              e.stopPropagation();
+              encenderLasNueve(format.id);
+            }}
+          >
+            {BOTON_DE_CURIOSIDAD}
+          </span>
+        </div>
+      ) : null,
+      velo: <div aria-hidden="true" className="vitrina-curiosidad__velo" />,
+    };
+  };
   // El frente se queda debajo, invisible, solo para dar la medida: así el
   // dorso mide exactamente lo mismo, en teléfono y en escritorio.
   const renderDorsoDeLaTarjeta = (format, frente, className = '') => (
@@ -6489,8 +6633,10 @@ const renderDramaFeaturedWork = () => (
               const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
               const isVitrinaRevelada =
-                mobileVitranaRevealId === format.id ||
-                (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId);
+                (mobileVitranaRevealId === format.id ||
+                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId)) &&
+                !vitrinaEnEspera(format.id);
+              const curiosidad = curiosidadDeLaTarjeta(format);
               return (
                 <>
                   {isRecommendedTile && !enCarril ? (
@@ -6531,13 +6677,13 @@ const renderDramaFeaturedWork = () => (
                         ? { opacity: 1, y: 0, rotateY: tarjetaGirandoId === format.id ? 90 : 0 }
                         : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.01 : 1, rotateY: tarjetaGirandoId === format.id ? 90 : 0 }
                     }
-                    style={{ transformPerspective: 1400 }}
+                    style={{ transformPerspective: 1400, ...(curiosidad?.estilo ?? {}) }}
                     whileTap={isShowcaseOpenTransitionActive ? undefined : { scale: 0.985, y: -2 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.28, ease: 'easeOut' }}
-                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px] ${
+                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px] ${curiosidad?.clase ?? ''} ${
                       isDimmedTile ? 'opacity-70' : ''
                     } ${
-                      isRecommendedTile
+                      isRecommendedTile && !curiosidad?.sinDestaque
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
                         : ''
                     } ${
@@ -6558,7 +6704,7 @@ const renderDramaFeaturedWork = () => (
                       {/* Nueve puntitos discretos al pie de la imagen: dicen que son
                           nueve y cuál es esta (Carlos, 24 nov 2026). Las orillas de
                           las vecinas, a los lados, dicen que se desliza. */}
-                      {enCarril && carrilDeUna ? (
+                      {enCarril && carrilDeUna && avisoDeCuriosidadId !== format.id ? (
                         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex justify-center gap-1.5">
                           {formats.map((f) => (
                             <span key={f.id} className={`h-1 w-1 rounded-full ${f.id === format.id ? 'bg-white/85' : 'bg-white/30'}`} />
@@ -6574,6 +6720,7 @@ const renderDramaFeaturedWork = () => (
                           decoding="async"
                         />
                       ) : null}
+                      {curiosidad?.foto}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <AnimatePresence>
@@ -6595,7 +6742,9 @@ const renderDramaFeaturedWork = () => (
                         ) : null}
                       </AnimatePresence>
                     </div>
+                    {curiosidad?.bisagra}
                     <div className="relative vitrina-pozo-glass__meta overflow-hidden">
+                      {curiosidad?.velo}
                       <div className="absolute inset-0 pointer-events-none">
                         <div
                           aria-hidden="true"
@@ -6628,7 +6777,7 @@ const renderDramaFeaturedWork = () => (
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                     </div>
-                    <div className="relative z-10 px-6 pb-6 pt-4 space-y-4 min-[700px]:max-lg:space-y-3">
+                    <div className={`vitrina-curiosidad__verso relative z-10 px-6 pb-6 space-y-4 min-[700px]:max-lg:space-y-3 ${curiosidad ? 'pt-7' : 'pt-4'}`}>
                       <div className="flex items-center gap-3">
                         <Icon
                           size={24}
@@ -6785,7 +6934,7 @@ const renderDramaFeaturedWork = () => (
                       {listaDelCarril.map((f) => (
                         <div
                           key={`${f.id}-${f.__copia}`}
-                          className={`carril-de-vitrinas__lugar ${copiasDelCarril === 3 && recommendedShowcaseId && f.id !== recommendedShowcaseId ? 'carril-vecina' : ''}`}
+                          className={`carril-de-vitrinas__lugar ${copiasDelCarril === 3 && recommendedShowcaseId && f.id !== recommendedShowcaseId && !dosTiempos && !vitrinaEnEspera(f.id) ? 'carril-vecina' : ''}`}
                         >
                           {vitrinaMovil(f, f.__copia)}
                         </div>
@@ -6840,10 +6989,12 @@ const renderDramaFeaturedWork = () => (
                   VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
                 const isRecommendedTile = recommendedShowcaseId === format.id;
                 const isVitrinaRevelada =
-                  desktopVitranaRevealId === format.id ||
-                  // Las vitrinas no compiten (Carlos, 13 nov 2026): si la persona
-                  // enciende otra, la recomendada se apaga hasta que la suelte.
-                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId);
+                  (desktopVitranaRevealId === format.id ||
+                    // Las vitrinas no compiten (Carlos, 13 nov 2026): si la persona
+                    // enciende otra, la recomendada se apaga hasta que la suelte.
+                    (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId)) &&
+                  // En espera (dos tiempos): ni pregunta ni botón.
+                  !vitrinaEnEspera(format.id);
                 const isFocusCenterTile = enCarril
                   ? format.id === (focusLockShowcaseId ?? recommendedShowcaseId)
                   : index === 1;
@@ -6855,6 +7006,7 @@ const renderDramaFeaturedWork = () => (
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
                 const deCanto = tarjetaGirandoId === format.id ? 90 : 0;
+                const curiosidad = curiosidadDeLaTarjeta(format);
                 const tarjeta = (
                   <motion.button
                     key={`${format.id}-${copia}`}
@@ -6867,10 +7019,10 @@ const renderDramaFeaturedWork = () => (
                         ? { opacity: 1, y: 0, rotateY: deCanto }
                         : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1, rotateY: deCanto }
                     }
-                    style={{ transformPerspective: 1400 }}
+                    style={{ transformPerspective: 1400, ...(curiosidad?.estilo ?? {}) }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.32, delay: (index % formats.length) * 0.03, ease: 'easeOut' }}
-                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
-                      isRecommendedTile
+                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${curiosidad?.clase ?? ''} ${
+                      isRecommendedTile && !curiosidad?.sinDestaque
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
                         : ''
                     } ${
@@ -6882,7 +7034,7 @@ const renderDramaFeaturedWork = () => (
                     } ${
                       isShowcaseOpenTransitionActive ? 'pointer-events-none' : ''
                     } ${
-                      enCarril && copiasDelCarril === 3 && recommendedShowcaseId && !isRecommendedTile ? 'carril-vecina' : ''
+                      enCarril && copiasDelCarril === 3 && recommendedShowcaseId && !isRecommendedTile && !curiosidad ? 'carril-vecina' : ''
                     }`}
                     onClick={() => {
                       if (isShowcaseOpenTransitionActive) return;
@@ -6900,6 +7052,7 @@ const renderDramaFeaturedWork = () => (
                           decoding="async"
                         />
                       ) : null}
+                      {curiosidad?.foto}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
                       {isFocusSideTile ? (
                         <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px]" />
@@ -6925,7 +7078,9 @@ const renderDramaFeaturedWork = () => (
                         ) : null}
                       </AnimatePresence>
                     </div>
+                    {curiosidad?.bisagra}
                     <div className="relative vitrina-pozo-glass__meta p-6 overflow-hidden min-h-[240px]">
+                      {curiosidad?.velo}
                       <div
                         aria-hidden="true"
                         className="absolute inset-0 opacity-80 pointer-events-none"
@@ -6956,7 +7111,7 @@ const renderDramaFeaturedWork = () => (
                         }}
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
-                      <div className="relative z-10 space-y-4">
+                      <div className="vitrina-curiosidad__verso relative z-10 space-y-4">
                       <div className="flex items-center gap-3">
                         <Icon size={24} className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`} />
                         <div>
