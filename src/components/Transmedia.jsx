@@ -1982,16 +1982,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // tiempos»). Tiempo 1: solo la recomendada tiene color; las otras ocho están
   // en blanco y negro, con el verso nítido en gris. El hover (escritorio) asoma
   // su pregunta y emborrona el verso; en teléfono la pregunta ya está. Tocar
-  // una apagada no la voltea: el color regresa, el verso se aclara y la
-  // pregunta se funde en el aviso, con «Si la curiosidad no mata…» de bisagra
-  // en la costura entre la foto y el verso. Ese botón es el gran revelado: las
-  // nueve se encienden en ola desde la elegida (tiempo 2), los frentes quedan
-  // limpios —la pregunta ya solo vive en el dorso— y cualquier tarjeta gira
-  // para contestarse ahí, también sin cuenta. Al contestar una sin cuenta, las
-  // demás quedan en espera (sin cuenta, una sola forma).
+  // una apagada no la voltea ni le da color: como una bola 8, la pregunta se
+  // hunde y sube el aviso; después nace «Explorar otras formas…», de bisagra
+  // en la costura entre la foto y el verso. Todo sigue en gris hasta tocarlo.
+  // La carta del gato se queda volteada hasta entonces. Ese botón es el gran
+  // revelado: el gato suelta su recomendación, su carta vuelve al frente y las
+  // nueve se encienden en ola desde la elegida, iguales (tiempo 2); los
+  // frentes quedan limpios —la pregunta ya solo vive en el dorso— y cualquier
+  // tarjeta gira para contestarse ahí, también sin cuenta. Al contestar una
+  // sin cuenta, las demás quedan en espera (sin cuenta, una sola forma).
+  // (Carlos, 26 nov 2026.)
   const CURIOSIDAD_KEY = 'gatoencerrado:curiosidad-gano';
-  const AVISO_DE_CURIOSIDAD = 'No siempre nos quedamos con lo primero. Mirar es libre. Elegir es quedarse.';
-  const BOTON_DE_CURIOSIDAD = 'Si la curiosidad no mata…';
+  const AVISO_DE_CURIOSIDAD = 'No siempre nos quedamos con lo primero, ¿cierto? Mirar es libre. Elegir es quedarse.';
+  const BOTON_DE_CURIOSIDAD = 'Explorar otras formas…';
   const [curiosidadGano, setCuriosidadGano] = useState(() => safeGetItem(CURIOSIDAD_KEY) === '1');
   const [avisoDeCuriosidadId, setAvisoDeCuriosidadId] = useState(null);
   const [olaDeCuriosidad, setOlaDeCuriosidad] = useState(null);
@@ -2004,6 +2007,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const vitrinaEnEspera = (formatId) =>
     enCarril && !isAuthenticated && hasBienvenidaPass && Boolean(formaContestadaId) && formatId !== formaContestadaId;
   const encenderLasNueve = (formatId) => {
+    // El gato suelta su recomendación: su carta vuelve al frente y ya no gira sola.
+    giroSoloHechoRef.current = true;
+    if (tarjetaGiradaId === recommendedShowcaseId) setTarjetaGiradaId(null);
     setCuriosidadGano(true);
     safeSetItem(CURIOSIDAD_KEY, '1');
     setAvisoDeCuriosidadId(null);
@@ -2158,7 +2164,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         setAvisoDeCuriosidadId(null);
         return;
       }
-      setTarjetaGiradaId(null);
       setAvisoDeCuriosidadId(formatId);
       if (!isAuthenticated) {
         registrarVitrinaBloqueada(formatId, {
@@ -2336,8 +2341,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // Lo que los dos tiempos le ponen a cada tarjeta (index.css, «El carril en
   // dos tiempos»): la foto en blanco y negro encima de la de color, el vidrio
   // con la pregunta y el aviso, la bisagra, el velo del verso y la espera.
-  // Textos del aviso y del botón: de Carlos (25–26 nov 2026); «En espera» y
-  // «La del gato», de la maqueta aprobada.
+  // Textos del aviso y del botón: de Carlos (26 nov 2026); «En espera», de la
+  // maqueta aprobada.
   const curiosidadDeLaTarjeta = (format) => {
     const enEspera = vitrinaEnEspera(format.id);
     if (!dosTiempos && !enEspera) return null;
@@ -2378,17 +2383,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               <p className="vitrina-curiosidad__aviso">{AVISO_DE_CURIOSIDAD}</p>
             </div>
           ) : null}
-          {curiosa && format.id === recommendedShowcaseId ? (
-            <span className="vitrina-curiosidad__marca">La del gato</span>
-          ) : null}
-          {enEspera ? (
-            <span className="vitrina-espera__chip">
-              <Lock size={13} strokeWidth={2} aria-hidden="true" /> En espera
-            </span>
-          ) : null}
         </>
       ),
-      bisagra: dosTiempos ? (
+      bisagra: enEspera ? (
+        <div className="vitrina-bisagra">
+          <span className="vitrina-espera__chip">
+            <Lock size={13} strokeWidth={2} aria-hidden="true" /> En espera
+          </span>
+        </div>
+      ) : dosTiempos ? (
         <div className="vitrina-bisagra">
           <span
             role="button"
@@ -2413,6 +2416,24 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       velo: <div aria-hidden="true" className="vitrina-curiosidad__velo" />,
     };
   };
+  // En el carril, el botón de la recomendada («Improvisa una respuesta») va de
+  // bisagra, con su estilo de siempre (Carlos, 26 nov 2026).
+  const botonDeSiempreEnLaBisagra = (format, revelada) =>
+    enCarril && revelada && recommendedShowcaseId === format.id && !isAuthenticated ? (
+      <div className="vitrina-bisagra">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            entrarPorLaTarjeta(format.id);
+          }}
+          className="vitrina-bisagra__fija group inline-flex items-center gap-2 rounded-full border border-fuchsia-300/70 bg-fuchsia-500/30 px-4 py-2 text-sm font-semibold text-fuchsia-50 shadow-[0_0_18px_rgba(217,70,239,0.35)] transition hover:bg-fuchsia-500/45"
+        >
+          {rotuloDeLaVitrina(format.id)}
+          <ArrowRight size={16} className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
+        </button>
+      </div>
+    ) : null;
   // El frente se queda debajo, invisible, solo para dar la medida: así el
   // dorso mide exactamente lo mismo, en teléfono y en escritorio.
   const renderDorsoDeLaTarjeta = (format, frente, className = '') => (
@@ -6634,7 +6655,7 @@ const renderDramaFeaturedWork = () => (
               const isRecommendedTile = recommendedShowcaseId === format.id;
               const isVitrinaRevelada =
                 (mobileVitranaRevealId === format.id ||
-                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId)) &&
+                  (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !mobileVitranaRevealId && !(dosTiempos && curiosidadGano))) &&
                 !vitrinaEnEspera(format.id);
               const curiosidad = curiosidadDeLaTarjeta(format);
               return (
@@ -6743,6 +6764,7 @@ const renderDramaFeaturedWork = () => (
                       </AnimatePresence>
                     </div>
                     {curiosidad?.bisagra}
+                    {botonDeSiempreEnLaBisagra(format, isVitrinaRevelada)}
                     <div className="relative vitrina-pozo-glass__meta overflow-hidden">
                       {curiosidad?.velo}
                       <div className="absolute inset-0 pointer-events-none">
@@ -6777,7 +6799,7 @@ const renderDramaFeaturedWork = () => (
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                     </div>
-                    <div className={`vitrina-curiosidad__verso relative z-10 px-6 pb-6 space-y-4 min-[700px]:max-lg:space-y-3 ${curiosidad ? 'pt-7' : 'pt-4'}`}>
+                    <div className={`vitrina-curiosidad__verso relative z-10 px-6 pb-6 space-y-4 min-[700px]:max-lg:space-y-3 ${enCarril ? 'pt-7' : 'pt-4'}`}>
                       <div className="flex items-center gap-3">
                         <Icon
                           size={24}
@@ -6796,7 +6818,7 @@ const renderDramaFeaturedWork = () => (
                           {format.vitrinaCopy}
                         </p>
                       ) : null}
-                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (
+                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (enCarril ? null :
                         <button
                           type="button"
                           onClick={(e) => {
@@ -6992,7 +7014,7 @@ const renderDramaFeaturedWork = () => (
                   (desktopVitranaRevealId === format.id ||
                     // Las vitrinas no compiten (Carlos, 13 nov 2026): si la persona
                     // enciende otra, la recomendada se apaga hasta que la suelte.
-                    (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId)) &&
+                    (isRecommendedTile && hasBienvenidaPass && !isAuthenticated && !desktopVitranaRevealId && !(dosTiempos && curiosidadGano))) &&
                   // En espera (dos tiempos): ni pregunta ni botón.
                   !vitrinaEnEspera(format.id);
                 const isFocusCenterTile = enCarril
@@ -7079,6 +7101,7 @@ const renderDramaFeaturedWork = () => (
                       </AnimatePresence>
                     </div>
                     {curiosidad?.bisagra}
+                    {botonDeSiempreEnLaBisagra(format, isVitrinaRevelada)}
                     <div className="relative vitrina-pozo-glass__meta p-6 overflow-hidden min-h-[240px]">
                       {curiosidad?.velo}
                       <div
@@ -7131,7 +7154,7 @@ const renderDramaFeaturedWork = () => (
                           {format.instruccion}
                         </p>
                       )}
-                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (
+                      {isVitrinaRevelada && isRecommendedTile && !isAuthenticated ? (enCarril ? null :
                         <button
                           type="button"
                           onClick={(e) => {
