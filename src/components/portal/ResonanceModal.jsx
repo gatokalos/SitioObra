@@ -918,7 +918,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const etiquetaDeSalida =
     bitacoraStep === 'p1' ? 'No, por ahora'
       : bitacoraStep === 'p2' ? 'Prefiero no contarlo'
-        : bitacoraStep === 'p3' ? 'Nada de esto se movió esta vez'
+        // «Esta vez no» (Carlos, 27 nov 2026): cabe en un renglón y deja abierto
+        // que en otros tres días sí. Antes: «Nada de esto se movió esta vez».
+        : bitacoraStep === 'p3' ? 'Esta vez no'
           : bitacoraStep === 'palabra-1' ? 'No se parece'
           : bitacoraStep === 'palabra-2' ? 'Tampoco'
           : bitacoraStep === 'palabras' ? 'Ninguna'
