@@ -9357,12 +9357,14 @@ header.fixed {
 .cabina-del-regreso .cabina-bubble--en-flujo {
   display: flex;
   flex-direction: column;
-  min-height: 9rem;
+  min-height: 8rem;
 }
 .cabina-del-regreso .cabina-bubble--en-flujo > .flex.flex-col { flex: 1 1 auto; }
 .cabina-del-regreso .cabina-globo-botones { margin-top: auto; }
+/* Un intermedio (Carlos, 27 nov 2026: «que no sean tan chiquitas, pero
+   tampoco tan standard»): en escritorio, cerca de dos quintos de su ancho. */
 @media (min-width: 1024px) {
   .cabina-del-regreso .cabina-bubble--en-flujo {
-    min-height: clamp(10.5rem, calc(576 * var(--s) * 0.55), 16rem);
+    min-height: clamp(8.5rem, calc(576 * var(--s) * 0.42), 12rem);
   }
 }
