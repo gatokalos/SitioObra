@@ -41,18 +41,21 @@ const aparecer = async (buscar, maximo = 9000) => {
   return null;
 };
 
-export function bajarElTelonHaciaLaReplica({ fondo }) {
+// Carlos, 27 nov 2026: la cabecera ya no se compone al centro para luego
+// viajar a su lugar («tiene un movimiento inclinado… ¿por qué tiene que
+// aparecer en medio y no mejor aparece donde ya tiene su lugar fijo?»). Ahora
+// aparece donde va a quedarse: el sitio baja a #provoca bajo el telón, se
+// espera a que la cabecera esté quieta y la copia nace encima, en su sitio.
+export function bajarElTelonHaciaLaReplica({ fondo, encuadre = 'center' }) {
   if (typeof document === 'undefined') return;
-  const inicio = performance.now();
   const telon = document.createElement('div');
   telon.className = 'telon-del-pozo';
   telon.setAttribute('aria-hidden', 'true');
-  telon.innerHTML = `<div class="telon-del-pozo__noche"><div class="telon-del-pozo__gato" style="background-image:url('${fondo}')"></div></div>`;
+  telon.innerHTML = `<div class="telon-del-pozo__noche"><div class="telon-del-pozo__gato" style="background-image:url('${fondo}');background-position:${encuadre}"></div></div>`;
   document.body.appendChild(telon);
 
-  // La copia de la cabecera, centrada en la pantalla con su propio alto.
-  const componer = (original) => {
-    const caja = original.getBoundingClientRect();
+  // La copia de la cabecera, exactamente sobre la de verdad.
+  const componer = (original, caja) => {
     const copia = original.cloneNode(true);
     // Sin los estilos sueltos que trae del sitio (las entradas animadas).
     copia.removeAttribute('style');
@@ -60,45 +63,29 @@ export function bajarElTelonHaciaLaReplica({ fondo }) {
     copia.removeAttribute('id');
     copia.classList.add('telon-del-pozo__cabecera');
     copia.style.width = `${caja.width}px`;
-    copia.style.left = `${(window.innerWidth - caja.width) / 2}px`;
-    copia.style.top = '0px';
+    copia.style.left = `${caja.left}px`;
+    copia.style.top = `${caja.top}px`;
     telon.appendChild(copia);
-    const alto = copia.getBoundingClientRect().height;
-    copia.style.top = `${Math.max(24, (window.innerHeight - alto) / 2)}px`;
     return copia;
   };
 
   const run = async () => {
-    // Desde el sitio la cabecera ya está; desde el enlace del aviso aparece
-    // cuando el sitio monta debajo del telón.
+    // Mientras el gato se va, el sitio baja a #provoca (desde el enlace del
+    // aviso, la cabecera aparece cuando el sitio monta debajo).
+    await esperar(2600);
     const original = document.querySelector(CABECERA) ?? await aparecer(() => document.querySelector(CABECERA));
-    const copia = original ? componer(original) : null;
-    const compuesta = performance.now();
-    // El gato se va y la cabecera llega (CSS, al montar): se deja ver entera.
-    await esperar(Math.max(2600 - (compuesta - inicio), copia ? 2400 : 0));
-    if (!copia || !original) {
+    if (!original) {
       telon.classList.add('telon-del-pozo--fuera');
       await esperar(1300);
       telon.remove();
       return;
     }
-    // La de verdad no se ve hasta que la copia llega: así no hay dos.
+    // La de verdad no se ve mientras la copia está encima: así no hay dos.
     original.style.visibility = 'hidden';
-    const real = await quieta(() => original.getBoundingClientRect());
-    copia.style.animation = 'none';
-    copia.style.opacity = '1';
-    const llevar = (destino, segundos) => {
-      const actual = copia.getBoundingClientRect();
-      const previo = new DOMMatrixReadOnly(getComputedStyle(copia).transform === 'none' ? undefined : getComputedStyle(copia).transform);
-      copia.style.transition = `transform ${segundos}s cubic-bezier(0.65, 0, 0.25, 1)`;
-      copia.style.transform = `translate(${previo.m41 + destino.left - actual.left}px, ${previo.m42 + destino.top - actual.top}px)`;
-    };
-    if (real) llevar(real, 1);
-    await esperar(1050);
-    // Por si el sitio se acomodó mientras tanto, el último ajuste.
-    const final = original.getBoundingClientRect();
-    llevar(final, 0.2);
-    await esperar(220);
+    const caja = await quieta(() => original.getBoundingClientRect());
+    const copia = componer(original, caja ?? original.getBoundingClientRect());
+    // Llega en su lugar (1.1 s) y se deja leer.
+    await esperar(1100 + 2200);
     original.style.visibility = '';
     copia.remove();
     telon.classList.add('telon-del-pozo--fuera');

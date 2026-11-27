@@ -255,7 +255,7 @@ const momentosDe = (sesion, termino, nombreForma = 'la obra', { recien = false }
 // la constelación y va al panel derecho, sobre el gato del fondo del pozo, como
 // una tarjeta de vidrio: las siete palabras de la obra a la vista y el botón
 // dorado. De ahí se pasa directo al acto final, sin los globos del gato.
-const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, gradiente = 'from-emerald-400 via-teal-500 to-cyan-500', onUltimaPregunta, onGoToSite }) => {
+const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = false, enElPozo = false, gradiente = 'from-emerald-400 via-teal-500 to-cyan-500', onUltimaPregunta, onPedirPalabra, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -339,19 +339,28 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     void cargarPropuesta();
   }, [enElPozo, sesion, replicaPublicada]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Lo que viaja al acto final con una palabra dada.
+  const cargaCon = (t) => ({
+    anonId,
+    sessionId: sesion.id,
+    campo: palabra.campo,
+    original: palabra.texto,
+    texto: palabra.texto,
+    termino: t,
+    respuestas: propuesta?.respuestas ?? {},
+    borradorId: propuesta?.borradorId ?? null,
+    momentos: momentosDe(sesion, t === FUERA_DE_LA_LISTA ? null : t, entry?.form ?? entry?.name ?? 'la obra', { recien: regresoRecien }),
+  });
   const pasarAlActoFinal = () => {
     if (!sesion || !palabra) return;
-    onUltimaPregunta?.({
-      anonId,
-      sessionId: sesion.id,
-      campo: palabra.campo,
-      original: palabra.texto,
-      texto: palabra.texto,
-      termino,
-      respuestas: propuesta?.respuestas ?? {},
-      borradorId: propuesta?.borradorId ?? null,
-      momentos: momentosDe(sesion, termino === FUERA_DE_LA_LISTA ? null : termino, entry?.form ?? entry?.name ?? 'la obra', { recien: regresoRecien }),
-    });
+    onUltimaPregunta?.(cargaCon(termino));
+  };
+  // Sin palabra elegida (cerró la cabina a media elección, o contestó antes del
+  // 27 nov 2026): el gato la pregunta en su cabina, un nombre a la vez, y de
+  // ahí baja el telón al acto final. Es el mismo paso de todos, no uno nuevo.
+  const pedirPalabra = () => {
+    if (!sesion || !palabra || !propuesta) return;
+    onPedirPalabra?.({ propuesta, armarCarga: cargaCon });
   };
 
   const retirarReplica = async () => {
@@ -437,9 +446,11 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     );
     return (
       <section className="bloque-forma bloque-forma--pozo tarjeta-del-pozo" data-bloque-en-el-pozo={portal}>
-        {!replicaPublicada && palabraElegida && sesion ? (
-          /* La palabra ya se eligió en la cabina (Carlos, 27 nov 2026): aquí
-             solo la Memoria con su palomita, como las otras fases, y el botón. */
+        {!replicaPublicada && sesion && (palabraElegida || onPedirPalabra) ? (
+          /* La palabra se elige en la cabina (Carlos, 27 nov 2026): aquí la
+             Memoria con su palomita, como las otras fases, una frase que siga
+             la historia y el botón. Si aún no hay palabra, el botón lleva al
+             gato, que la pregunta. */
           <>
             <header className="tarjeta-del-pozo__cabecera">
               <span className="relative">
@@ -449,10 +460,23 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
                 </span>
               </span>
               <span className="tarjeta-del-pozo__titulos">
-                <h3 className="tarjeta-del-pozo__titulo">Memoria</h3>
+                <span className="huella-puerta__eyebrow">Memoria</span>
+                <h3 className="tarjeta-del-pozo__titulo">
+                  {!palabraElegida ? (
+                    <>
+                      <span className="block">Lo que aquí dijiste,</span>
+                      <span className="block">todavía no tiene nombre.</span>
+                    </>
+                  ) : palabraElegida === FUERA_DE_LA_LISTA ? 'El nombre lo pones tú.' : (
+                    <>Ya tiene nombre: <em>{palabraElegida}</em>.</>
+                  )}
+                </h3>
               </span>
             </header>
-            <button type="button" onClick={pasarAlActoFinal} disabled={!palabra || cargando || !propuesta} className="tarjeta-del-pozo__salida">
+            <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">
+              Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras.
+            </p>
+            <button type="button" onClick={palabraElegida ? pasarAlActoFinal : pedirPalabra} disabled={!palabra || cargando || !propuesta} className="tarjeta-del-pozo__salida">
               Pasar al acto final
               <ArrowRight size={16} aria-hidden="true" />
             </button>

@@ -9148,7 +9148,7 @@ header.fixed {
   animation: telon-gato-se-va 1.6s ease 0.2s both;
 }
 @keyframes telon-gato-se-va { from { opacity: 1; } to { opacity: 0.1; } }
-.telon-del-pozo__cabecera { position: fixed; margin: 0; animation: telon-cabecera-llega 1.1s ease 1.1s both; }
+.telon-del-pozo__cabecera { position: fixed; margin: 0; animation: telon-cabecera-llega 1.1s ease both; }
 @keyframes telon-cabecera-llega { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
 .telon-del-pozo--fuera .telon-del-pozo__noche { opacity: 0; }
 .telon-del-pozo--fuera .telon-del-pozo__cabecera { opacity: 0 !important; }
@@ -9349,5 +9349,20 @@ header.fixed {
   .cabina-globo-botones > .cabina-escritura-alterna {
     padding-inline: 0.6rem;
     letter-spacing: 0.08em;
+  }
+}
+/* El globo nunca flaquito (Carlos, 27 nov 2026: «hay que mantener un mínimo
+   de altura»). Con poco texto conserva su cuerpo: la pregunta arriba y los
+   botones abajo. En escritorio, poco más de la mitad de su ancho. */
+.cabina-del-regreso .cabina-bubble--en-flujo {
+  display: flex;
+  flex-direction: column;
+  min-height: 9rem;
+}
+.cabina-del-regreso .cabina-bubble--en-flujo > .flex.flex-col { flex: 1 1 auto; }
+.cabina-del-regreso .cabina-globo-botones { margin-top: auto; }
+@media (min-width: 1024px) {
+  .cabina-del-regreso .cabina-bubble--en-flujo {
+    min-height: clamp(10.5rem, calc(576 * var(--s) * 0.55), 16rem);
   }
 }

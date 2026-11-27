@@ -838,6 +838,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // El cursor que parpadea en el globo mientras no se ha tocado el campo.
   const [campoEnfocado, setCampoEnfocado] = useState(false);
   const propuestaPedida = useRef(false);
+  // Cuando la palabra se pide desde el fondo del pozo (quien llegó ahí sin
+  // elegirla): al elegirla, baja el telón al acto final con esta carga.
+  const armarCargaDesdeElPozo = useRef(null);
+  const [palabraDesdeElPozo, setPalabraDesdeElPozo] = useState(false);
+  const pasarAlActoFinalRef = useRef(null);
 
 
   // La primera pregunta nombra la forma cuando la ventana es de una sola
@@ -1565,8 +1570,32 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // La palabra elegida se queda para el fondo del pozo y el acto final; luego, la caída.
   const elegirPalabra = useCallback((termino) => {
     guardarPalabraElegida(portal, termino);
+    const armar = armarCargaDesdeElPozo.current;
+    if (armar) {
+      armarCargaDesdeElPozo.current = null;
+      pasarAlActoFinalRef.current?.(armar(termino), { conTelon: true, desdeLaCabina: true });
+      setPalabraDesdeElPozo(false);
+      setBitacoraOpen(false);
+      setBitacoraStep('p1');
+      return;
+    }
     cerrarElActo();
   }, [portal, cerrarElActo]);
+  const pedirPalabraDesdeElPozo = useCallback(({ propuesta, armarCarga }) => {
+    armarCargaDesdeElPozo.current = armarCarga;
+    propuestaPedida.current = true;
+    setPropuestaDelGato(propuesta);
+    setPalabraDesdeElPozo(true);
+    setBitacoraStep('palabra-1');
+    setBitacoraOpen(true);
+  }, []);
+  // La flecha del globo, si la palabra se pidió desde el pozo: de vuelta a él.
+  const volverAlPozo = useCallback(() => {
+    armarCargaDesdeElPozo.current = null;
+    setPalabraDesdeElPozo(false);
+    setBitacoraOpen(false);
+    setBitacoraStep('p1');
+  }, []);
 
   // Avanzar desde P2 o P3: lo llama el botón dentro del campo y el de saltar.
   // Saltar no manda texto: no hay respuesta inventada (§1.5 del handoff).
@@ -1727,7 +1756,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Del pozo se pasa directo al acto final (Carlos, 14 nov 2026: «nos vamos a
   // saltar esos pasos de globo de texto dentro del pozo»): la palabra elegida
   // y la respuesta tentativa viajan a La Réplica igual que antes.
-  const pasarDelPozoAlActoFinal = (carga, { conTelon = false } = {}) => {
+  const pasarDelPozoAlActoFinal = (carga, { conTelon = false, desdeLaCabina = false } = {}) => {
     if (!carga?.texto) return;
     lsPatch(portal, { ultima_pregunta_abierta: true });
     setUltimaPreguntaVista(true);
@@ -1742,12 +1771,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (conTelon) {
       // El gato de neón se va, la cabecera de La Réplica se compone al fondo
       // del pozo y el sitio aparece debajo, ya en esa sección (26 nov 2026).
-      bajarElTelonHaciaLaReplica({ fondo: GATO_DEL_POZO_URL });
+      // Desde la cabina (la palabra se pidió desde el pozo), el telón cubre
+      // con la misma cabina, con su encuadre, para que nada brinque.
+      bajarElTelonHaciaLaReplica(desdeLaCabina
+        ? { fondo: enPantallaChica ? CAT_CABINA_URL : CABINA_DE_ESCRITORIO_URL, encuadre: enPantallaChica ? 'center top' : '50% 28%' }
+        : { fondo: GATO_DEL_POZO_URL });
       window.setTimeout(() => irAlSitio('#provoca'), 2300);
       return;
     }
     irAlSitio('#provoca');
   };
+  pasarAlActoFinalRef.current = pasarDelPozoAlActoFinal;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -3114,6 +3148,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   late={!ultimaPreguntaVista}
                   regresoRecien={regresoRecien}
                   onUltimaPregunta={pasarDelPozoAlActoFinal}
+                  onPedirPalabra={pedirPalabraDesdeElPozo}
                   onGoToSite={irAlSitio}
                 />
               </div>
@@ -3178,6 +3213,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     late={!ultimaPreguntaVista}
                     regresoRecien={regresoRecien}
                     onUltimaPregunta={pasarDelPozoAlActoFinal}
+                    onPedirPalabra={pedirPalabraDesdeElPozo}
                     onGoToSite={irAlSitio}
                   />
                   {/* El recuerdo deja el fondo del pozo también en teléfono
@@ -3310,6 +3346,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 late={!ultimaPreguntaVista}
                 regresoRecien={regresoRecien}
                 onUltimaPregunta={(carga) => pasarDelPozoAlActoFinal(carga, { conTelon: true })}
+                onPedirPalabra={pedirPalabraDesdeElPozo}
                 onGoToSite={irAlSitio}
               />
             </div>
@@ -3347,7 +3384,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             <div className={`cabina-bubble cabina-bubble--en-flujo${bitacoraEscribiendo ? ' cabina-bubble--escribiendo' : ''} relative z-10 mt-3 shrink-0`}>
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={palabraDesdeElPozo ? volverAlPozo : handleClose}
                 aria-label="Volver"
                 className="cabina-bubble__volver"
               >
