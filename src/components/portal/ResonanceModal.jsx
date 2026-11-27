@@ -21,12 +21,13 @@ import {
   CATALOG,
 } from '@/lib/bitacoraShared';
 import FarewellVideoPanel from './FarewellVideoPanel';
-import LoQueQuedo from './LoQueQuedo';
+import LoQueQuedo, { pedirPropuestaDelGato, guardarPalabraElegida } from './LoQueQuedo';
+import { encenderPantallita, apagarPantallita } from '@/lib/pantallita';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
 import { getResonanceDramaturgy, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { ECO_SIN_ESPEJO, esIntuicionLarga, buildL1Acknowledgment, buildL2Acknowledgment } from '@/lib/ecosDelRecorrido';
-import { escribirBorradorDeReplica } from '@/lib/provocaDraft';
+import { escribirBorradorDeReplica, PALABRAS_DE_LA_OBRA, FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
 
 export { readGlobalConsent, writeGlobalConsent };
 
@@ -522,6 +523,67 @@ function FondoQueSeFunde({ url, className, opacidad, ...resto }) {
   );
 }
 
+// La pantallita del mueble de la cabina (Carlos, 27 nov 2026): si ninguno de
+// los dos nombres que propone el gato se acerca, la pantalla azul del mueble se
+// enciende (como la del panel del Protagonista) y muestra las demás palabras en
+// cortito. Se coloca sobre la pantalla pintada: en las dos imágenes de la cabina
+// su centro cae en el 50 % del ancho y el 67 % del alto.
+const CENTRO_DE_LA_PANTALLA_PINTADA = { x: 0.5, y: 0.671 };
+function PantallitaDePalabras({ palabras, onElegir }) {
+  const ref = useRef(null);
+  const [lugar, setLugar] = useState(null);
+  const [eligiendo, setEligiendo] = useState(false);
+  useEffect(() => {
+    const colocar = () => {
+      const img = document.querySelector('.cabina-del-regreso .torre-del-regreso__tramo--cabina');
+      const el = ref.current;
+      if (!img || !el || !img.naturalWidth) return;
+      const caja = img.getBoundingClientRect();
+      const escala = Math.max(caja.width / img.naturalWidth, caja.height / img.naturalHeight);
+      const [px, py] = window.getComputedStyle(img).objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+      const ancho = img.naturalWidth * escala;
+      const alto = img.naturalHeight * escala;
+      const x = caja.left + (caja.width - ancho) * (Number.isFinite(px) ? px : 0.5) + ancho * CENTRO_DE_LA_PANTALLA_PINTADA.x;
+      const y = caja.top + (caja.height - alto) * (Number.isFinite(py) ? py : 0) + alto * CENTRO_DE_LA_PANTALLA_PINTADA.y;
+      // Que no tape la salida de abajo ni se salga por arriba.
+      const mitad = el.offsetHeight / 2;
+      const top = Math.min(Math.max(y, mitad + 16), window.innerHeight - mitad - 110);
+      setLugar({ left: x, top });
+    };
+    colocar();
+    window.addEventListener('resize', colocar);
+    return () => window.removeEventListener('resize', colocar);
+  }, []);
+  useEffect(() => {
+    if (lugar && ref.current && !ref.current.dataset.encendida) {
+      ref.current.dataset.encendida = '1';
+      encenderPantallita(ref.current);
+    }
+  }, [lugar]);
+  const elegir = async (p) => {
+    if (eligiendo) return;
+    setEligiendo(true);
+    await apagarPantallita(ref.current);
+    onElegir(p);
+  };
+  return (
+    <div
+      ref={ref}
+      className="pantallita-de-palabras"
+      data-pantallita-de-palabras
+      style={lugar ? { left: lugar.left, top: lugar.top } : { visibility: 'hidden' }}
+      role="group"
+      aria-label="Las demás palabras de la obra"
+    >
+      {palabras.map((p) => (
+        <button key={p} type="button" disabled={eligiendo} onClick={() => void elegir(p)} className="pantallita-de-palabras__palabra">
+          {p}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, enElVestibulo = false, startInBitacora = false, bitacoraVentana = null, bitacoraVia = null, soloEnElFoco = false, onIrALaMemoria = null, onExplorarMiniverso = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
@@ -770,6 +832,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraP2Question, setBitacoraP2Question]         = useState(null);
   const [bitacoraP3Question, setBitacoraP3Question]         = useState(null);
   const [bitacoraQuestionLoading, setBitacoraQuestionLoading] = useState(false);
+  // Los dos nombres que propone el gato, pedidos mientras se contesta el
+  // permiso: así, al terminar, ya están (Carlos, 27 nov 2026).
+  const [propuestaDelGato, setPropuestaDelGato] = useState(null);
+  const propuestaPedida = useRef(false);
 
 
   // La primera pregunta nombra la forma cuando la ventana es de una sola
@@ -791,8 +857,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
   // de escritorio deben decir exactamente lo mismo.
+  // Elegir la palabra en la cabina, un nombre a la vez (Carlos, 27 nov 2026):
+  // el gato pregunta por el primero, luego por el segundo y, si ninguno se
+  // acerca, se enciende la pantallita del mueble con las demás.
+  const terminosDelGato = propuestaDelGato?.terminos ?? [];
+  const esperandoPropuesta = bitacoraStep.startsWith('palabra') && !propuestaDelGato;
   const preguntaDelPaso =
-    bitacoraStep === 'compartir'
+    bitacoraStep === 'palabra-1'
+      ? `Lo que dijiste todavía no tiene nombre. ¿Se parece a ${terminosDelGato[0] ?? '…'}?`
+      : bitacoraStep === 'palabra-2'
+      ? `¿Y a ${terminosDelGato[1] ?? '…'}?`
+      : bitacoraStep === 'palabras'
+      ? (terminosDelGato.length ? 'Entonces, ¿cuál se acerca más?' : 'Lo que dijiste todavía no tiene nombre. ¿Cuál de estas se acerca más?')
+      : bitacoraStep === 'compartir'
       ? 'Lo que escribiste puede acompañar a alguien que se lo esté preguntando. ¿Dejas que lo encuentre, sin tu nombre?'
       : bitacoraStep === 'p1'
       ? preguntaP1
@@ -812,7 +889,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         ? 'También puede ser que nada haya cambiado.'
         : bitacoraStep === 'compartir'
           ? 'Si algún día retiras lo que dejaste, se borra.'
-          : null;
+          : bitacoraStep === 'palabras'
+            ? 'Tócala en la pantalla.'
+            : null;
+  // En el globo, el nombre propuesto se distingue del resto de la frase.
+  const preguntaEnElGlobo = esperandoPropuesta
+    ? 'El gato está buscando un nombre…'
+    : bitacoraStep === 'palabra-1'
+      ? <>Lo que dijiste todavía no tiene nombre. ¿Se parece a <em className="cabina-bubble__palabra">{terminosDelGato[0]}</em>?</>
+      : bitacoraStep === 'palabra-2'
+        ? <>¿Y a <em className="cabina-bubble__palabra">{terminosDelGato[1]}</em>?</>
+        : preguntaDelPaso;
 
   // Un solo estilo en toda la cabina del regreso (Carlos, 28 oct 2026: «dos
   // botones para avanzar para algo tan simple… ya tenemos el otro estilo de
@@ -824,11 +911,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     bitacoraStep === 'p1' ? 'Sí, algo regresó'
       : bitacoraStep === 'p2' ? 'Continuar'
         : bitacoraStep === 'p3' ? 'Terminar'
+          : bitacoraStep.startsWith('palabra') ? 'Sí, eso'
           : 'Que lo encuentre';
   const etiquetaDeSalida =
     bitacoraStep === 'p1' ? 'No, por ahora'
       : bitacoraStep === 'p2' ? 'Prefiero no contarlo'
         : bitacoraStep === 'p3' ? 'Nada de esto se movió esta vez'
+          : bitacoraStep === 'palabra-1' ? 'No se parece'
+          : bitacoraStep === 'palabra-2' ? 'Tampoco'
+          : bitacoraStep === 'palabras' ? 'Ninguna'
           : 'Prefiero que no';
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
@@ -1454,8 +1545,24 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       } catch (_) {}
     }
     setBitacoraSubmitting(false);
+    setBitacoraStep('palabra-1');
+  }, [isDevAuth, user?.id]);
+
+  // La propuesta se pide al llegar al permiso (las respuestas ya se guardaron).
+  useEffect(() => {
+    if (bitacoraStep !== 'compartir' || propuestaPedida.current) return;
+    propuestaPedida.current = true;
+    void pedirPropuestaDelGato({ portal, anonId: ensureAnonId(), isDevAuth }).then(setPropuestaDelGato);
+  }, [bitacoraStep, portal, isDevAuth]);
+  // Sin nombres propuestos, directo a la pantallita con todas.
+  useEffect(() => {
+    if (bitacoraStep === 'palabra-1' && propuestaDelGato && !propuestaDelGato.terminos.length) setBitacoraStep('palabras');
+  }, [bitacoraStep, propuestaDelGato]);
+  // La palabra elegida se queda para el fondo del pozo y el acto final; luego, la caída.
+  const elegirPalabra = useCallback((termino) => {
+    guardarPalabraElegida(portal, termino);
     cerrarElActo();
-  }, [isDevAuth, user?.id, cerrarElActo]);
+  }, [portal, cerrarElActo]);
 
   // Avanzar desde P2 o P3: lo llama el botón dentro del campo y el de saltar.
   // Saltar no manda texto: no hay respuesta inventada (§1.5 del handoff).
@@ -1490,14 +1597,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const avanzarPaso = () => {
     if (bitacoraStep === 'p1') return responderP1Si();
     if (bitacoraStep === 'compartir') return void responderCompartir(true);
+    if (bitacoraStep === 'palabra-1') return elegirPalabra(terminosDelGato[0]);
+    if (bitacoraStep === 'palabra-2') return elegirPalabra(terminosDelGato[1]);
     return avanzarDesdePregunta();
   };
   const declinarPaso = () => {
     if (bitacoraStep === 'p1') return responderP1No();
     if (bitacoraStep === 'compartir') return void responderCompartir(false);
+    if (bitacoraStep === 'palabra-1') return setBitacoraStep(terminosDelGato.length > 1 ? 'palabra-2' : 'palabras');
+    if (bitacoraStep === 'palabra-2') return setBitacoraStep('palabras');
+    if (bitacoraStep === 'palabras') return elegirPalabra(FUERA_DE_LA_LISTA);
     return avanzarDesdePregunta({ saltando: true });
   };
-  const avanceDeshabilitado = bitacoraSubmitting || bitacoraQuestionLoading
+  const avanceDeshabilitado = bitacoraSubmitting || bitacoraQuestionLoading || esperandoPropuesta
     || (bitacoraStep === 'p2' && !bitacoraP2.trim())
     || (bitacoraStep === 'p3' && !bitacoraP3.trim());
 
@@ -3239,10 +3351,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               </button>
               <div className="flex flex-col gap-2">
                 <p
-                  className={`cabina-bubble__pregunta pr-7${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
+                  className={`cabina-bubble__pregunta pr-7${bitacoraQuestionLoading || esperandoPropuesta ? ' cabina-bubble__texto--leyendo' : ''}`}
                   style={{ whiteSpace: 'pre-line' }}
                 >
-                  {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
+                  {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaEnElGlobo}
                 </p>
                 {bitacoraEscribiendo ? (
                   <textarea
@@ -3259,15 +3371,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
                 {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
                     abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
-                <div className="flex justify-end">
-                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
-                    {etiquetaDeAvance}
-                    <span aria-hidden="true">→</span>
-                  </button>
-                </div>
+                {/* Con la pantallita encendida se escoge en ella: sin botón aquí. */}
+                {bitacoraStep !== 'palabras' ? (
+                  <div className="flex justify-end">
+                    <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+                      {etiquetaDeAvance}
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
+
+          {bitacoraStep === 'palabras' ? (
+            <PantallitaDePalabras
+              palabras={PALABRAS_DE_LA_OBRA.filter((p) => !terminosDelGato.includes(p))}
+              onElegir={elegirPalabra}
+            />
+          ) : null}
 
           {/* El gato ocupa lo que sobre entre la burbuja y las
               respuestas: así manda el alto real y no un porcentaje. */}
@@ -3277,7 +3399,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           <div className="cabina-respuestas-zona relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
             <button
               type="button"
-              disabled={bitacoraSubmitting || bitacoraQuestionLoading}
+              disabled={bitacoraSubmitting || bitacoraQuestionLoading || esperandoPropuesta}
               onClick={declinarPaso}
               className="cabina-respuesta-salida"
             >

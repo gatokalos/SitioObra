@@ -9,7 +9,7 @@
 // quedó se lee después de las preguntas del regreso (D-34), y lo dice el gato.
 // «Retirar lo que escribí» vive en La Réplica (D-38), no aquí.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
+import { ArrowRight, BookOpen, Check, ChevronDown } from 'lucide-react';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { PALABRAS_DE_LA_OBRA, FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
@@ -83,6 +83,50 @@ const guardarPropuestaLocal = (portal, propuesta) => {
     localStorage.setItem(llave, JSON.stringify(r));
   } catch { /* sin almacenamiento */ }
 };
+// La palabra que la persona eligió en la cabina, un nombre a la vez (Carlos,
+// 27 nov 2026). Con ella, el fondo del pozo ya no pide nada: «Memoria» con su
+// palomita y el botón al acto final.
+export const guardarPalabraElegida = (portal, termino) => {
+  try {
+    const llave = `gatoencerrado:resonance:${portal}`;
+    const r = JSON.parse(localStorage.getItem(llave)) ?? {};
+    if (termino) r.palabra_elegida = termino; else delete r.palabra_elegida;
+    localStorage.setItem(llave, JSON.stringify(r));
+  } catch { /* sin almacenamiento */ }
+};
+const palabraElegidaLocal = (portal) => {
+  const t = registroLocal(portal).palabra_elegida;
+  return t && (PALABRAS_DE_LA_OBRA.includes(t) || t === FUERA_DE_LA_LISTA) ? t : null;
+};
+
+// La propuesta del gato: la que ya guardó este navegador o, si no, la que lee
+// el modelo del recorrido (POST /api/huella/ultima-pregunta). La usan la cabina
+// (para proponer un nombre a la vez) y la Memoria. Si falla, sin palabras: la
+// persona escoge entre todas.
+export const pedirPropuestaDelGato = async ({ portal, anonId, isDevAuth }) => {
+  if (isDevAuth) return PROPUESTA_DE_EJEMPLO;
+  const guardada = registroLocal(portal).ultima_propuesta;
+  if (Array.isArray(guardada?.terminos)) {
+    const validos = guardada.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t));
+    return { terminos: validos, respuestas: guardada.respuestas ?? {}, borradorId: guardada.borradorId ?? null };
+  }
+  try {
+    const res = await fetch(`${OBRA_API_URL}/api/huella/ultima-pregunta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ anon_id: anonId, miniverso_id: portal }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error();
+    const terminos = Array.isArray(data.terminos) ? data.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t)) : [];
+    const nueva = { terminos, respuestas: data.respuestas ?? {}, borradorId: data.borrador_id ?? null };
+    guardarPropuestaLocal(portal, nueva);
+    return nueva;
+  } catch {
+    return { terminos: [], respuestas: {}, borradorId: null };
+  }
+};
+
 // Las preguntas que el servidor no guarda, desde este navegador si las tiene.
 const conPreguntasLocales = (sesiones, portal) => {
   const r = registroLocal(portal);
@@ -223,6 +267,8 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
   const [termino, setTermino] = useState(null);
   // En el pozo las palabras que el gato no sugirió esperan plegadas.
   const [otrasAbiertas, setOtrasAbiertas] = useState(false);
+  // Si la palabra ya se eligió en la cabina, el pozo no la vuelve a pedir.
+  const [palabraElegida] = useState(() => palabraElegidaLocal(portal));
 
   const fetchHuella = useCallback(async () => {
     if (isDevAuth) {
@@ -261,34 +307,11 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
   // la palabra se pone en el acto final.
   const cargarPropuesta = async () => {
     if (propuesta || cargando) return;
-    if (isDevAuth) { setPropuesta(PROPUESTA_DE_EJEMPLO); setTermino(PROPUESTA_DE_EJEMPLO.terminos[0]); return; }
-    const guardada = registroLocal(portal).ultima_propuesta;
-    if (Array.isArray(guardada?.terminos)) {
-      const validos = guardada.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t));
-      setPropuesta({ terminos: validos, respuestas: guardada.respuestas ?? {}, borradorId: guardada.borradorId ?? null });
-      setTermino(validos[0] ?? null);
-      return;
-    }
     setCargando(true);
-    try {
-      const res = await fetch(`${OBRA_API_URL}/api/huella/ultima-pregunta`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anon_id: anonId, miniverso_id: portal }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error();
-      const terminos = Array.isArray(data.terminos) ? data.terminos.filter((t) => PALABRAS_DE_LA_OBRA.includes(t)) : [];
-      const nueva = { terminos, respuestas: data.respuestas ?? {}, borradorId: data.borrador_id ?? null };
-      setPropuesta(nueva);
-      guardarPropuestaLocal(portal, nueva);
-      setTermino(terminos[0] ?? null);
-    } catch {
-      setPropuesta({ terminos: [], respuestas: {}, borradorId: null });
-      setTermino(null);
-    } finally {
-      setCargando(false);
-    }
+    const nueva = await pedirPropuestaDelGato({ portal, anonId, isDevAuth });
+    setPropuesta(nueva);
+    setTermino(palabraElegidaLocal(portal) ?? nueva.terminos[0] ?? null);
+    setCargando(false);
   };
 
   const alternar = () => {
@@ -344,6 +367,7 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
       setReplicas([]);
       // El borrador de la propuesta pudo haberse usado: que el gato proponga de nuevo.
       guardarPropuestaLocal(portal, null);
+      guardarPalabraElegida(portal, null);
       setPropuesta(null);
     } catch {
       await fetchReplicas();
@@ -413,7 +437,27 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     );
     return (
       <section className="bloque-forma bloque-forma--pozo tarjeta-del-pozo" data-bloque-en-el-pozo={portal}>
-        {replicaPublicada ? (
+        {!replicaPublicada && palabraElegida && sesion ? (
+          /* La palabra ya se eligió en la cabina (Carlos, 27 nov 2026): aquí
+             solo la Memoria con su palomita, como las otras fases, y el botón. */
+          <>
+            <header className="tarjeta-del-pozo__cabecera">
+              <span className="relative">
+                {nodoDeMemoria}
+                <span className="palomita-de-escena" data-palomita aria-hidden="true">
+                  <Check size={10} strokeWidth={3.2} />
+                </span>
+              </span>
+              <span className="tarjeta-del-pozo__titulos">
+                <h3 className="tarjeta-del-pozo__titulo">Memoria</h3>
+              </span>
+            </header>
+            <button type="button" onClick={pasarAlActoFinal} disabled={!palabra || cargando || !propuesta} className="tarjeta-del-pozo__salida">
+              Pasar al acto final
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </>
+        ) : replicaPublicada ? (
           <>
             <header className="tarjeta-del-pozo__cabecera">
               {nodoDeMemoria}
