@@ -9288,3 +9288,40 @@ header.fixed {
   background: rgba(27, 29, 34, 0.07);
 }
 .cabina-escritura-alterna:disabled { cursor: not-allowed; opacity: 0.3; }
+/* El globo de la cabina del regreso, quieto y claro (Carlos, 27 nov 2026):
+   no flota, porque ahí también se contesta uno mismo; la raya aparece solo
+   cuando toca escribir, con un cursor que parpadea; la pista entra debajo un
+   momento después, como los subtítulos rotativos del hero (desenfoque que se
+   aclara), y la pregunta se queda. */
+.cabina-del-regreso .cabina-bubble--en-flujo {
+  animation: cabina-bubble-en-flujo-in 0.6s ease-out;
+}
+.cabina-del-regreso .cabina-bubble:not(.cabina-bubble--escribiendo) .cabina-bubble__pregunta {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.cabina-bubble__pista--subtitulo {
+  animation: pista-como-subtitulo 1.8s cubic-bezier(0.2, 1, 0.2, 1) 0.9s both;
+}
+@keyframes pista-como-subtitulo {
+  from { opacity: 0; filter: blur(14px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.cabina-bubble__cursor {
+  position: absolute;
+  left: 0;
+  top: 0.22rem;
+  width: 2px;
+  height: 1.1rem;
+  background: #1b1d22;
+  pointer-events: none;
+  animation: cursor-del-globo 1.05s steps(1, end) infinite;
+}
+@keyframes cursor-del-globo {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+.cabina-bubble__campo--con-cursor { text-indent: 0.55rem; }
+@media (prefers-reduced-motion: reduce) {
+  .cabina-bubble__pista--subtitulo { animation: none; }
+}

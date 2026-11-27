@@ -835,6 +835,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Los dos nombres que propone el gato, pedidos mientras se contesta el
   // permiso: así, al terminar, ya están (Carlos, 27 nov 2026).
   const [propuestaDelGato, setPropuestaDelGato] = useState(null);
+  // El cursor que parpadea en el globo mientras no se ha tocado el campo.
+  const [campoEnfocado, setCampoEnfocado] = useState(false);
   const propuestaPedida = useRef(false);
 
 
@@ -3356,18 +3358,30 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 >
                   {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaEnElGlobo}
                 </p>
+                {/* La raya y el cursor solo cuando toca escribir: «aquí te
+                    toca a ti». Cuando se contesta con botones, la pista entra
+                    debajo un momento después, como los subtítulos del hero, y
+                    la pregunta se queda (Carlos, 27 nov 2026: la raya hacía
+                    parecer que el gato preguntaba dos cosas). */}
                 {bitacoraEscribiendo ? (
-                  <textarea
-                    disabled={bitacoraQuestionLoading}
-                    aria-label={preguntaDelPaso}
-                    value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
-                    onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
-                    rows={3}
-                    placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
-                    className="cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50"
-                  />
-                ) : instruccionDelPaso ? (
-                  <p className="cabina-bubble__pista">{instruccionDelPaso}</p>
+                  <div className="relative">
+                    {!(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3) && !campoEnfocado && !bitacoraQuestionLoading ? (
+                      <span aria-hidden="true" className="cabina-bubble__cursor" />
+                    ) : null}
+                    <textarea
+                      disabled={bitacoraQuestionLoading}
+                      aria-label={preguntaDelPaso}
+                      value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
+                      onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
+                      onFocus={() => setCampoEnfocado(true)}
+                      onBlur={() => setCampoEnfocado(false)}
+                      rows={3}
+                      placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
+                      className={`cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50${!(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3) && !campoEnfocado ? ' cabina-bubble__campo--con-cursor' : ''}`}
+                    />
+                  </div>
+                ) : instruccionDelPaso && !bitacoraQuestionLoading ? (
+                  <p key={bitacoraStep} className="cabina-bubble__pista cabina-bubble__pista--subtitulo">{instruccionDelPaso}</p>
                 ) : null}
                 {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
                     abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
