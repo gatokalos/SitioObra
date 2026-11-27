@@ -165,7 +165,10 @@ const EnsayoDeVisitante = () => {
     recargar(window.location.hash || '');
   };
 
-  const saltar = (paso) => {
+  // puerta (27 nov 2026): por dónde se llega al paso. Sin puerta, a la
+  // tarjeta, como siempre; 'cinta', por la portada; 'enlace', por el enlace
+  // del aviso (sin `via`, para que no anote la llegada en el servidor).
+  const saltar = (paso, puerta = null) => {
     // El salto conserva la identidad elegida: cuenta de prueba o visitante con
     // pase (la de siempre si no hay ninguna). Con cuenta, las nueve tarjetas
     // giran; sin cuenta, solo la recomendada.
@@ -207,8 +210,33 @@ const EnsayoDeVisitante = () => {
     } else {
       quitar('gatoencerrado:mis-replicas');
     }
+    if (puerta === 'cinta') {
+      try {
+        window.sessionStorage.removeItem(UMBRAL_CRUZADO_SESSION_KEY);
+        window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY);
+      } catch { /* sin almacenamiento */ }
+      window.scrollTo(0, 0);
+      recargar('');
+      return;
+    }
+    if (puerta === 'enlace') {
+      try { window.sessionStorage.removeItem(IR_A_LA_TARJETA_KEY); } catch { /* sin almacenamiento */ }
+      const anon = leer('gx_anon_id');
+      if (anon) {
+        window.location.assign(`${window.location.origin}/bitacora?t=${encodeURIComponent(anon)}&m=${forma.key}`);
+        return;
+      }
+    }
     recargar(conReplicas ? '#provoca' : '#transmedia');
   };
+
+  // Las tres puertas del día del regreso (Carlos, 27 nov 2026): las tres
+  // llevan a las estrellas y al gato en la cabina.
+  const PUERTAS_DEL_REGRESO = [
+    { id: 'cinta', titulo: 'Por la portada', nota: '«Si algo volvió a ti, pulsa el gato.» Pulsa el [#].' },
+    { id: 'acto', titulo: 'Por el Segundo acto', nota: 'Baja al Segundo acto y toca «Termina la escena».' },
+    { id: 'enlace', titulo: 'Por el enlace del correo', nota: 'Como quien abre el aviso de los tres días.' },
+  ];
 
   // El umbral del regreso (21 nov 2026): como quien vuelve otro día. Si hay
   // algo pendiente, la cinta de la portada dice su momento y el gato lo lleva.
@@ -225,7 +253,7 @@ const EnsayoDeVisitante = () => {
   const chip = 'rounded-full border px-3 py-1 text-[0.68rem] transition';
 
   return (
-    <div data-ensayo className="fixed bottom-4 left-4 z-[190] max-w-[19rem] text-left font-sans max-lg:bottom-12 max-lg:left-2 max-lg:max-w-[15.5rem]">
+    <div data-ensayo className="fixed bottom-4 left-4 z-[450] max-w-[19rem] text-left font-sans max-lg:bottom-12 max-lg:left-2 max-lg:max-w-[15.5rem]">
       {abierto ? (
         <div className="mb-2 max-h-[78vh] space-y-3 overflow-y-auto rounded-2xl border border-amber-300/30 bg-[#0d0a14]/95 p-4 text-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur">
           <div className="space-y-1.5">
@@ -292,6 +320,27 @@ const EnsayoDeVisitante = () => {
             </div>
             <p className="text-[0.64rem] leading-snug text-slate-500">
               Cada salto reescribe el recorrido de esta forma en este navegador y recarga. El método no envía respuestas; el artefacto sí es el real y registra lo que hagas dentro.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-amber-200/80">El día del regreso, por sus tres puertas</p>
+            <div className="flex flex-col gap-1">
+              {PUERTAS_DEL_REGRESO.map((puerta) => (
+                <button
+                  key={puerta.id}
+                  type="button"
+                  data-ensayo-puerta={puerta.id}
+                  onClick={() => saltar('regreso', puerta.id === 'acto' ? null : puerta.id)}
+                  className="flex flex-col rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-left text-sm text-slate-100 transition hover:border-amber-300/50 hover:bg-amber-400/10"
+                >
+                  <span className="leading-tight">{puerta.titulo}</span>
+                  <span className="text-[0.64rem] leading-snug text-slate-400">{puerta.nota}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[0.64rem] leading-snug text-slate-500">
+              Cada una deja la pregunta recién vuelta, así que se puede repetir cuantas veces quieras.
             </p>
           </div>
 
