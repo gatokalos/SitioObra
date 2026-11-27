@@ -9184,3 +9184,33 @@ header.fixed {
 /* En flujo pero como caja de la flecha (al escribir, sin transform, el
    globo dejaba de contenerla). */
 .cabina-del-regreso .cabina-bubble--en-flujo { position: relative; top: auto; left: auto; }
+/* El globo, sobre la cabeza del gato en escritorio (Carlos, 27 nov 2026). La
+   cabina es la imagen de 2560 × 1440 con cover y encuadre 50% 28%: el borde de
+   abajo del globo cae a la altura 465 de la imagen, para que el pico llegue a
+   las orejas (498). Si el globo es más alto que el espacio, crece hacia abajo. */
+@media (min-width: 1024px) {
+  .cabina-del-regreso { --s: max(calc(100vw / 2560), calc(100vh / 1440)); }
+  .cabina-del-regreso .cabina-globo-ancla {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: calc((100vh - 1440 * var(--s)) * 0.28 + 465 * var(--s) - 1rem);
+  }
+  /* Cuadradito y simétrico con la cabina (Carlos, 27 nov 2026: «todo
+     flaco… que abarque un espacio simétrico con la cabina»): del ancho del
+     arco entre las dos columnas doradas (576 de la imagen), así crece hacia
+     arriba y no a los lados. */
+  .cabina-del-regreso .cabina-bubble--en-flujo {
+    max-width: clamp(18rem, calc(576 * var(--s)), 30rem);
+    padding: 1.5rem 1.6rem 1.35rem;
+    border-radius: 30px;
+  }
+  .cabina-del-regreso .cabina-bubble__pregunta { font-size: 1.12rem; line-height: 1.5; }
+}
+/* En pantallas bajitas (laptop de 720) el globo no cabe sobre la cabeza:
+   letra y aire un poco menores para que no tape los ojos del gato. */
+@media (min-width: 1024px) and (max-height: 780px) {
+  .cabina-del-regreso .cabina-bubble--en-flujo { padding: 1.1rem 1.25rem 1rem; }
+  .cabina-del-regreso .cabina-bubble__pregunta { font-size: 1rem; line-height: 1.42; }
+  .cabina-del-regreso .cabina-bubble__pista { font-size: 0.85rem; }
+}

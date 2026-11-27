@@ -3225,42 +3225,46 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               escribe. La flecha de regreso va dentro, en su esquina, como en el
               dorso de las tarjetas: arriba no queda nada que tape al gato
               (Carlos, 27 nov 2026). */}
-          <div className={`cabina-bubble cabina-bubble--en-flujo${bitacoraEscribiendo ? ' cabina-bubble--escribiendo' : ''} relative z-10 mt-3 shrink-0`}>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="Volver"
-              className="cabina-bubble__volver"
-            >
-              <ArrowLeft size={15} />
-            </button>
-            <div className="flex flex-col gap-2">
-              <p
-                className={`cabina-bubble__pregunta pr-7${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
-                style={{ whiteSpace: 'pre-line' }}
+          {/* En escritorio el globo baja hasta la cabeza del gato: sin hueco
+              entre su pico y el gato (Carlos, 27 nov 2026). */}
+          <div className="cabina-globo-ancla relative z-10 shrink-0">
+            <div className={`cabina-bubble cabina-bubble--en-flujo${bitacoraEscribiendo ? ' cabina-bubble--escribiendo' : ''} relative z-10 mt-3 shrink-0`}>
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="Volver"
+                className="cabina-bubble__volver"
               >
-                {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
-              </p>
-              {bitacoraEscribiendo ? (
-                <textarea
-                  disabled={bitacoraQuestionLoading}
-                  aria-label={preguntaDelPaso}
-                  value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
-                  onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
-                  rows={3}
-                  placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
-                  className="cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50"
-                />
-              ) : instruccionDelPaso ? (
-                <p className="cabina-bubble__pista">{instruccionDelPaso}</p>
-              ) : null}
-              {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
-                  abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
-              <div className="flex justify-end">
-                <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
-                  {etiquetaDeAvance}
-                  <span aria-hidden="true">→</span>
-                </button>
+                <ArrowLeft size={15} />
+              </button>
+              <div className="flex flex-col gap-2">
+                <p
+                  className={`cabina-bubble__pregunta pr-7${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
+                  style={{ whiteSpace: 'pre-line' }}
+                >
+                  {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
+                </p>
+                {bitacoraEscribiendo ? (
+                  <textarea
+                    disabled={bitacoraQuestionLoading}
+                    aria-label={preguntaDelPaso}
+                    value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
+                    onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
+                    rows={3}
+                    placeholder={bitacoraStep === 'p2' ? 'Un lugar, una persona, lo que estabas haciendo…' : 'También puede ser que nada haya cambiado…'}
+                    className="cabina-bubble__campo w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45 disabled:opacity-50"
+                  />
+                ) : instruccionDelPaso ? (
+                  <p className="cabina-bubble__pista">{instruccionDelPaso}</p>
+                ) : null}
+                {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
+                    abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
+                <div className="flex justify-end">
+                  <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
+                    {etiquetaDeAvance}
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
