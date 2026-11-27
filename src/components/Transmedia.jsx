@@ -649,7 +649,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // se contesta varios minutos). Texto y tarjetas juntos solo en tabletas y
       // escritorio, si caben (Carlos, 24 nov 2026).
       const esTelefono = window.matchMedia('(max-width: 767px)').matches;
-      const modo = carrilRevelado || esTelefono ? 'boton' : conTexto >= 440 ? 'junto' : 'boton';
+      // El día del regreso, también en escritorio el botón: es un retorno, y
+      // «Termina la escena» abre directo la cabina (Carlos, 27 nov 2026).
+      const diaDelRegreso = formats.some((f) => momentoDeLaForma(SHOWCASE_TO_PORTAL[f.id]) === 'regreso');
+      const modo = carrilRevelado || esTelefono || diaDelRegreso ? 'boton' : conTexto >= 440 ? 'junto' : 'boton';
       // Mientras espera el botón: el adorno queda al centro de la pantalla
       // (como el de La Réplica), sin acercarse al texto a menos de 12 px.
       const entrada = bloque.querySelector('.carril-entrada');
