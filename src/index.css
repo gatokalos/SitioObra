@@ -9368,3 +9368,72 @@ header.fixed {
     min-height: clamp(8.5rem, calc(576 * var(--s) * 0.42), 12rem);
   }
 }
+/* El final del método en el fondo del pozo (Carlos, 27 nov 2026, opción A):
+   las cuatro fases en renglones, palomeándose una por una, y el botón con la
+   forma de «Ahora te toca…». */
+.pozo-fases {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pozo-fase {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  animation: pozo-fase-llega 0.5s ease both;
+  animation-delay: calc(var(--i) * 0.5s + 0.35s);
+}
+.pozo-fase__disco {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.pozo-fase__palomita {
+  animation: pozo-palomita 0.4s cubic-bezier(0.2, 1.8, 0.4, 1) both;
+  animation-delay: calc(var(--i) * 0.5s + 0.65s);
+}
+.pozo-fase__texto {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.45rem;
+}
+.pozo-fase__titulo {
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: #fff;
+}
+.pozo-fase__nombre {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(226, 240, 240, 0.82);
+}
+.pozo-fases__salida {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.4rem;
+  animation: pozo-fase-llega 0.6s ease both;
+  animation-delay: 2.5s;
+}
+@keyframes pozo-fase-llega {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pozo-palomita {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pozo-fase, .pozo-fase__palomita, .pozo-fases__salida { animation: none; }
+}

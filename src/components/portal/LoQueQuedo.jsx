@@ -9,7 +9,8 @@
 // quedó se lee después de las preguntas del regreso (D-34), y lo dice el gato.
 // «Retirar lo que escribí» vive en La Réplica (D-38), no aquí.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BookOpen, Check, ChevronDown } from 'lucide-react';
+import { ArrowRight, BookOpen, Check, ChevronDown, Eye, Flame, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { PALABRAS_DE_LA_OBRA, FUERA_DE_LA_LISTA } from '@/lib/provocaDraft';
@@ -447,39 +448,51 @@ const LoQueQuedo = ({ portal, entry, chip = null, late = false, regresoRecien = 
     return (
       <section className="bloque-forma bloque-forma--pozo tarjeta-del-pozo" data-bloque-en-el-pozo={portal}>
         {!replicaPublicada && sesion && (palabraElegida || onPedirPalabra) ? (
-          /* La palabra se elige en la cabina (Carlos, 27 nov 2026): aquí la
-             Memoria con su palomita, como las otras fases, una frase que siga
-             la historia y el botón. Si aún no hay palabra, el botón lleva al
-             gato, que la pregunta. */
+          /* El final del método (Carlos, 27 nov 2026, opción A «Lista
+             completa»): las cuatro fases en renglones, como el tablero de la
+             tarjeta, palomeándose una por una; bajo Memoria, el nombre. Abajo,
+             el botón con la forma de «Ahora te toca…» de La Réplica, para que
+             no parezca un paso más de la misma interfaz sino lo que nace de
+             aquí. Si aún no hay palabra, el botón lleva al gato, que la pide. */
           <>
-            <header className="tarjeta-del-pozo__cabecera">
-              <span className="relative">
-                {nodoDeMemoria}
-                <span className="palomita-de-escena" data-palomita aria-hidden="true">
-                  <Check size={10} strokeWidth={3.2} />
-                </span>
-              </span>
-              <span className="tarjeta-del-pozo__titulos">
-                <span className="huella-puerta__eyebrow">Memoria</span>
-                <h3 className="tarjeta-del-pozo__titulo">
-                  {!palabraElegida ? (
-                    <>
-                      <span className="block">Lo que aquí dijiste,</span>
-                      <span className="block">todavía no tiene nombre.</span>
-                    </>
-                  ) : palabraElegida === FUERA_DE_LA_LISTA ? 'El nombre lo pones tú.' : (
-                    <>Ya tiene nombre: <em>{palabraElegida}</em>.</>
-                  )}
-                </h3>
-              </span>
-            </header>
-            <p className="memoria-descripcion text-sm leading-relaxed text-slate-300/80">
-              Lo que sigue es el acto final: ahí le contestas a la obra con tus palabras.
-            </p>
-            <button type="button" onClick={palabraElegida ? pasarAlActoFinal : pedirPalabra} disabled={!palabra || cargando || !propuesta} className="tarjeta-del-pozo__salida">
-              Pasar al acto final
-              <ArrowRight size={16} aria-hidden="true" />
-            </button>
+            <ol className="pozo-fases" aria-label="Las cuatro fases, completas">
+              {[
+                { Icono: Eye, titulo: 'Primera intuición' },
+                { Icono: Flame, titulo: 'Sentir la escena' },
+                { Icono: Sparkles, titulo: 'El foco cambia' },
+                { Icono: BookOpen, titulo: 'Memoria' },
+              ].map(({ Icono, titulo }, i) => (
+                <li key={titulo} className="pozo-fase" style={{ '--i': i }}>
+                  <span className={`pozo-fase__disco bg-gradient-to-br ${gradiente}`} aria-hidden="true">
+                    <Icono size={16} className="text-white drop-shadow-sm" />
+                    <span className="palomita-de-escena pozo-fase__palomita">
+                      <Check size={10} strokeWidth={3.2} />
+                    </span>
+                  </span>
+                  <span className="pozo-fase__texto">
+                    <span className="pozo-fase__titulo">{titulo}</span>
+                    {i === 3 ? (
+                      <span className="pozo-fase__nombre">
+                        {!palabraElegida ? 'Lo que aquí dijiste, todavía no tiene nombre.'
+                          : palabraElegida === FUERA_DE_LA_LISTA ? 'El nombre lo pones tú.'
+                            : <>Ya tiene nombre: <em>{palabraElegida}</em>.</>}
+                      </span>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="pozo-fases__salida">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={palabraElegida ? pasarAlActoFinal : pedirPalabra}
+                disabled={!palabra || cargando || !propuesta}
+                className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary ge-chip-action--bisagra"
+              >
+                Pasar al acto final…
+              </Button>
+            </div>
           </>
         ) : replicaPublicada ? (
           <>
