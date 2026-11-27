@@ -26,7 +26,7 @@ const ESTRELLAS = Array.from({ length: 140 }, (_, i) => ({
   duration: 3 + ((i * 17) % 40) / 10,
 }));
 
-function MantoEstelar() {
+export function MantoEstelar() {
   const estrellas = useMemo(() => ESTRELLAS, []);
   return (
     <div aria-hidden="true" className="vestibulo-sideral__manto">

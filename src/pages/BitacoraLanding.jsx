@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ResonanceModal from '@/components/portal/ResonanceModal';
+import { MantoEstelar } from '@/components/transmedia/MemoriaSola';
 import { CATALOG } from '@/lib/bitacoraShared';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
@@ -41,6 +42,14 @@ const BitacoraLanding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showLogin, setShowLogin] = useState(false);
+  // La llegada por el enlace (Carlos, 26 nov 2026): primero el espacio
+  // sideral, y en él aparece el gato en la cabina, como si fuera el hero; ahí
+  // empiezan ya las preguntas.
+  const [cabinaALaVista, setCabinaALaVista] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setCabinaALaVista(true), 1400);
+    return () => window.clearTimeout(t);
+  }, []);
   const { user } = useAuth();
   const isAuthenticated = Boolean(user);
 
@@ -113,8 +122,9 @@ const BitacoraLanding = () => {
 
   if (anonId && !linkedPortal && ventana === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-400/70">
-        <p className="text-xs uppercase tracking-[0.35em]">En escena</p>
+      <div className="vestibulo-sideral fixed inset-0 z-[140] flex items-center justify-center text-slate-400/70" data-vestibulo-sideral>
+        <MantoEstelar />
+        <p className="relative text-xs uppercase tracking-[0.35em]">En escena</p>
       </div>
     );
   }
@@ -131,18 +141,18 @@ const BitacoraLanding = () => {
     );
   }
 
+  // El vestíbulo sideral a pantalla completa y, encima, la cabina del regreso
+  // (la capa de ResonanceModal en modo vestíbulo: debajo no dibuja nada más).
+  // La flecha de la cabina vuelve al sitio; al terminar, la caída al pozo y el
+  // telón llevan a La Réplica.
   return (
-    <div className="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none bg-gradient-to-b from-slate-950 via-black to-slate-900">
-      {/* El contenedor canónico: las mismas dimensiones que usa la tarjeta de
-          vitrina en Transmedia.jsx (showcaseRef) — acotada a max-w-6xl, NUNCA
-          borde a borde. ResonanceModal se posiciona con "absolute inset-0",
-          así que necesita este "relative" con tamaño real (no el viewport
-          completo) para heredar el tamaño correcto, igual que en su uso
-          normal dentro de una vitrina. */}
-      <div className="relative my-10 h-[calc(100vh-5rem)] w-[calc(100vw-2.5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/55 shadow-[0_35px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl">
+    <div className="vestibulo-sideral fixed inset-0 z-[140]" data-vestibulo-sideral data-llegada-por-el-enlace>
+      <MantoEstelar />
+      {cabinaALaVista ? (
         <ResonanceModal
           open
           startInBitacora
+          enElVestibulo
           bitacoraVentana={linkedPortal ? null : ventana}
           bitacoraVia={bitacoraVia}
           portal={portalKey}
@@ -152,7 +162,7 @@ const BitacoraLanding = () => {
           onNavigateToRecommendation={handleNavigateToRecommendation}
           onRequireLogin={() => setShowLogin(true)}
         />
-      </div>
+      ) : null}
       {showLogin ? <LoginOverlay onClose={() => setShowLogin(false)} /> : null}
     </div>
   );

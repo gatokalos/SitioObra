@@ -27,35 +27,55 @@ const quieta = async (leer, { minimo = 700, maximo = 4000 } = {}) => {
   return previa;
 };
 
+const CABECERA = '#provoca .provoca-stage-intro';
+
+// Espera a que aparezca un nodo (llegando por el enlace del aviso, el sitio
+// todavía no está montado cuando baja el telón).
+const aparecer = async (buscar, maximo = 9000) => {
+  const inicio = performance.now();
+  while (performance.now() - inicio < maximo) {
+    const nodo = buscar();
+    if (nodo && nodo.getBoundingClientRect().width > 0) return nodo;
+    await new Promise((r) => window.requestAnimationFrame(r));
+  }
+  return null;
+};
+
 export function bajarElTelonHaciaLaReplica({ fondo }) {
   if (typeof document === 'undefined') return;
-  const original = document.querySelector('#provoca .provoca-stage-intro');
+  const inicio = performance.now();
   const telon = document.createElement('div');
   telon.className = 'telon-del-pozo';
   telon.setAttribute('aria-hidden', 'true');
   telon.innerHTML = `<div class="telon-del-pozo__noche"><div class="telon-del-pozo__gato" style="background-image:url('${fondo}')"></div></div>`;
   document.body.appendChild(telon);
 
-  let copia = null;
-  if (original) {
+  // La copia de la cabecera, centrada en la pantalla con su propio alto.
+  const componer = (original) => {
     const caja = original.getBoundingClientRect();
-    copia = original.cloneNode(true);
+    const copia = original.cloneNode(true);
     // Sin los estilos sueltos que trae del sitio (las entradas animadas).
     copia.removeAttribute('style');
     copia.querySelectorAll('[style]').forEach((el) => el.removeAttribute('style'));
+    copia.removeAttribute('id');
     copia.classList.add('telon-del-pozo__cabecera');
     copia.style.width = `${caja.width}px`;
     copia.style.left = `${(window.innerWidth - caja.width) / 2}px`;
     copia.style.top = '0px';
     telon.appendChild(copia);
-    // Centrada en la pantalla, con su propio alto.
     const alto = copia.getBoundingClientRect().height;
     copia.style.top = `${Math.max(24, (window.innerHeight - alto) / 2)}px`;
-  }
+    return copia;
+  };
 
   const run = async () => {
-    // El gato se va y la cabecera llega (CSS, al montar).
-    await esperar(2600);
+    // Desde el sitio la cabecera ya está; desde el enlace del aviso aparece
+    // cuando el sitio monta debajo del telón.
+    const original = document.querySelector(CABECERA) ?? await aparecer(() => document.querySelector(CABECERA));
+    const copia = original ? componer(original) : null;
+    const compuesta = performance.now();
+    // El gato se va y la cabecera llega (CSS, al montar): se deja ver entera.
+    await esperar(Math.max(2600 - (compuesta - inicio), copia ? 2400 : 0));
     if (!copia || !original) {
       telon.classList.add('telon-del-pozo--fuera');
       await esperar(1300);
