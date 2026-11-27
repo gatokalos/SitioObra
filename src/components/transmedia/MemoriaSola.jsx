@@ -62,6 +62,7 @@ export default function MemoriaSola({
   onAbrirMiniverso,
   onTransicionHecha,
   onRequireLogin,
+  deGolpe = false,
 }) {
   const capaRef = useRef(null);
   const [viaje, setViaje] = useState(null);
@@ -104,7 +105,7 @@ export default function MemoriaSola({
     <motion.div
       ref={capaRef}
       className={`vestibulo-sideral fixed inset-0 z-[150]${viaje ? ' vestibulo-sideral--abriendo' : ''}`}
-      initial={{ opacity: 0 }}
+      initial={{ opacity: deGolpe ? 1 : 0 }}
       animate={{ opacity: retirandose ? 0 : 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: retirandose ? 0.55 : 0.9, ease: 'easeOut' }}

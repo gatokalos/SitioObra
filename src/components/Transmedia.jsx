@@ -1960,13 +1960,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // primero (Carlos). «Explorar miniverso» cierra la Memoria y abre la ficha.
   const [memoriaSolaId, setMemoriaSolaId] = useState(null);
   const vieneDeLaMemoriaRef = useRef(null);
-  const irALaMemoriaDesdeLaTarjeta = (formatId) => {
+  // deGolpe: desde la cinta del hero (fase cero, ya entre estrellas) el
+  // vestíbulo no se funde: corta de estrellas a estrellas y en él aparece el
+  // gato en la cabina (Carlos, 27 nov 2026).
+  const [vestibuloDeGolpe, setVestibuloDeGolpe] = useState(false);
+  const irALaMemoriaDesdeLaTarjeta = (formatId, { deGolpe = false } = {}) => {
     marcarFichaRevelada(SHOWCASE_TO_PORTAL[formatId]);
     setTarjetaGiradaId(null);
+    setVestibuloDeGolpe(deGolpe);
     setMemoriaSolaId(formatId);
   };
   const cerrarLaMemoriaSola = () => {
     quedarSoloSuTarjeta(memoriaSolaId);
+    setVestibuloDeGolpe(false);
     setMemoriaSolaId(null);
     setRegistroDeLaTarjetaTick((n) => n + 1);
   };
@@ -2309,7 +2315,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // si ya pasó al acto final sin escribir, se baja a La Réplica.
   const [umbralDestino, setUmbralDestino] = useState(null);
   const umbralCaminosRef = useRef(null);
-  umbralCaminosRef.current = { laTarjetaTieneDorso, saltarALaTarjeta, elRegresoYaVolvio, handleFormatClick };
+  umbralCaminosRef.current = { laTarjetaTieneDorso, saltarALaTarjeta, elRegresoYaVolvio, handleFormatClick, irALaMemoriaDesdeLaTarjeta };
   useEffect(() => {
     const tomar = () => {
       const destino = tomarElMomento();
@@ -2321,6 +2327,16 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, []);
   useEffect(() => {
     if (!umbralDestino) return undefined;
+    // El día del regreso, sin escalas: del gato de la cinta al vestíbulo
+    // sideral y la cabina, como el enlace del aviso. Sin encender el hero a la
+    // vista ni abrir la ficha (Carlos, 27 nov 2026: «la batalla campal que
+    // existe antes de poder ver lo que se necesita ver»).
+    if (umbralCaminosRef.current.elRegresoYaVolvio(umbralDestino.formatId)) {
+      const { formatId } = umbralDestino;
+      setUmbralDestino(null);
+      umbralCaminosRef.current.irALaMemoriaDesdeLaTarjeta(formatId, { deGolpe: true });
+      return undefined;
+    }
     // Deja que el [#] termine su viaje al índice antes de moverse.
     const espera = window.setTimeout(() => {
       const { formatId, momento, destino } = umbralDestino;
@@ -7340,6 +7356,7 @@ const renderDramaFeaturedWork = () => (
                 {memoriaSolaId ? (
                   <MemoriaSola
                     key={memoriaSolaId}
+                    deGolpe={vestibuloDeGolpe}
                     portal={SHOWCASE_TO_PORTAL[memoriaSolaId]}
                     question={VITRANA_QUESTION_BY_SHOWCASE[memoriaSolaId]}
                     isMobileViewport={isMobileViewport}
