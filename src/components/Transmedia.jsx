@@ -2134,6 +2134,18 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return ROTULO_DEL_MOMENTO[momentoDeLaForma(SHOWCASE_TO_PORTAL[formatId])] ?? VITRINA_TU_FORMA_LABEL;
   };
   const laTarjetaTieneDorso = (formatId) => pideIntuicionEnLaTarjeta(formatId) || tableroEnLaTarjeta(formatId);
+  // El botón del Segundo acto en teléfono es dinámico (Carlos, 27 nov 2026):
+  // con una forma ya en camino lleva el nombre de su momento —el mismo de la
+  // tarjeta— y abre directo lo que promete, sin pasar por el carril. Sin forma
+  // en camino sigue «Forma parte del tuyo», que baja a las nueve.
+  const formaDelBotonDelCarril = () => {
+    for (const momento of ['regreso', 'memoria', 'espera']) {
+      const forma = formats.find((f) => momentoDeLaForma(SHOWCASE_TO_PORTAL[f.id]) === momento);
+      if (forma) return forma.id;
+    }
+    if (recommendedShowcaseId && tableroEnLaTarjeta(recommendedShowcaseId)) return recommendedShowcaseId;
+    return null;
+  };
   const girarLaTarjeta = (formatId) => {
     if (tarjetaGirandoId || tarjetaGiradaId === formatId) return;
     // Con otra tarjeta girada, el toque ya no se ignora: la abierta se cierra
@@ -6661,15 +6673,17 @@ const renderDramaFeaturedWork = () => (
               {/* El botón, con un adorno de la familia del de La Réplica (la
                   franja de luz y el recuadro), al centro del aire que queda
                   bajo el texto (Carlos, 24 nov 2026). */}
-              {enCarril && modoCarril === 'boton' && !carrilRevelado ? (
-                <div className="carril-entrada">
+              {enCarril && modoCarril === 'boton' && !carrilRevelado ? (() => {
+                const formaDelBoton = formaDelBotonDelCarril();
+                return (
+                <div className="carril-entrada" data-forma-del-boton={formaDelBoton ?? undefined}>
                   <div className="miniverse-inline-threshold" aria-hidden="true">
                     {/* Con forma recomendada, su emblema en esfera, como en la
                         constelación: un guiño de cuál es «tu carta» antes de
                         abrir (Carlos, 24 nov 2026). Sin ella, la galería. */}
-                    {recommendedShowcaseId && PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[recommendedShowcaseId]] ? (
+                    {(formaDelBoton ?? recommendedShowcaseId) && PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[formaDelBoton ?? recommendedShowcaseId]] ? (
                       <span className="miniverse-inline-threshold__mark carril-entrada__esfera">
-                        <img src={PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[recommendedShowcaseId]]} alt="" decoding="async" />
+                        <img src={PORTAL_EMBLEM_URL[SHOWCASE_TO_PORTAL[formaDelBoton ?? recommendedShowcaseId]]} alt="" decoding="async" />
                       </span>
                     ) : (
                       <span className="miniverse-inline-threshold__mark"><GalleryHorizontalEnd size={28} strokeWidth={1.5} /></span>
@@ -6678,15 +6692,24 @@ const renderDramaFeaturedWork = () => (
                   <button
                     type="button"
                     onClick={() => {
+                      if (formaDelBoton) {
+                        // Lo que la tarjeta haría (abrir el regreso, la ficha
+                        // o girar para seguir); si es girar, la tarjeta tiene
+                        // que estar a la vista: se baja a ella y gira.
+                        if (laTarjetaTieneDorso(formaDelBoton)) saltarALaTarjeta(formaDelBoton);
+                        else entrarPorLaTarjeta(formaDelBoton);
+                        return;
+                      }
                       bajarAlCarrilRef.current = true;
                       setCarrilRevelado(true);
                     }}
                     className="ge-chip-action ge-chip-action--primary ge-chip-action--bisagra ge-mobile-cta-width provoca-share-cta"
                   >
-                    Forma parte del tuyo
+                    {formaDelBoton ? rotuloDeLaVitrina(formaDelBoton) : 'Forma parte del tuyo'}
                   </button>
                 </div>
-              ) : null}
+                );
+              })() : null}
             </motion.div>
           ) : null}
 
