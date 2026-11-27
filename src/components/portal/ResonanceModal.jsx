@@ -834,7 +834,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraQuestionLoading, setBitacoraQuestionLoading] = useState(false);
   // Los dos nombres que propone el gato, pedidos mientras se contesta el
   // permiso: así, al terminar, ya están (Carlos, 27 nov 2026).
-  const [propuestaDelGato, setPropuestaDelGato] = useState(null);
+  // Forma por forma (Carlos, 27 nov 2026: «si fuera un usuario… esperaría que
+  // me dijera: de todo lo que has dicho yo detecto esto y también esto otro»):
+  // en un regreso con varias formas, el gato propone el nombre de cada una, de
+  // la más antigua a la más reciente, que es la que lleva a La Réplica.
+  const [propuestas, setPropuestas] = useState({});
+  const [ordenDePalabras, setOrdenDePalabras] = useState([]);
+  const [turnoDePalabra, setTurnoDePalabra] = useState(0);
+  const [elegidasEnEsteRegreso, setElegidasEnEsteRegreso] = useState([]);
   // El cursor que parpadea en el globo mientras no se ha tocado el campo.
   const [campoEnfocado, setCampoEnfocado] = useState(false);
   const propuestaPedida = useRef(false);
@@ -867,15 +874,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Elegir la palabra en la cabina, un nombre a la vez (Carlos, 27 nov 2026):
   // el gato pregunta por el primero, luego por el segundo y, si ninguno se
   // acerca, se enciende la pantallita del mueble con las demás.
+  const formaEnTurno = ordenDePalabras[turnoDePalabra] ?? portal;
+  const variasFormas = ordenDePalabras.length > 1;
+  const nombreEnTurno = getResonanceDramaturgy(formaEnTurno).form;
+  const propuestaDelGato = propuestas[formaEnTurno] ?? null;
   const terminosDelGato = propuestaDelGato?.terminos ?? [];
   const esperandoPropuesta = bitacoraStep.startsWith('palabra') && !propuestaDelGato;
+  // Cómo abre el gato cada nombre. Con varias formas dice de cuál habla; si
+  // propone una palabra que la persona ya eligió para otra forma, lo nota
+  // («también»): solo repite lo que ella acaba de elegir, no infiere nada.
+  const repiteNombre = terminosDelGato[0] && elegidasEnEsteRegreso.includes(terminosDelGato[0]);
+  const abreElNombre = !variasFormas
+    ? 'Lo que dijiste todavía no tiene nombre. ¿Se parece a '
+    : turnoDePalabra === 0
+      ? `Lo que dijiste todavía no tiene nombre. En ${nombreEnTurno}, ¿se parece a `
+      : repiteNombre
+        ? `En ${nombreEnTurno} también, ¿se parece a `
+        : `Y en ${nombreEnTurno}, ¿se parece a `;
+  const preguntaPorTodas = !variasFormas
+    ? (terminosDelGato.length ? 'Entonces, ¿cuál se acerca más?' : 'Lo que dijiste todavía no tiene nombre. ¿Cuál de estas se acerca más?')
+    : terminosDelGato.length
+      ? `Entonces, en ${nombreEnTurno}, ¿cuál se acerca más?`
+      : turnoDePalabra === 0
+        ? `Lo que dijiste todavía no tiene nombre. En ${nombreEnTurno}, ¿cuál de estas se acerca más?`
+        : `Y en ${nombreEnTurno}, ¿cuál de estas se acerca más?`;
   const preguntaDelPaso =
     bitacoraStep === 'palabra-1'
-      ? `Lo que dijiste todavía no tiene nombre. ¿Se parece a ${terminosDelGato[0] ?? '…'}?`
+      ? `${abreElNombre}${terminosDelGato[0] ?? '…'}?`
       : bitacoraStep === 'palabra-2'
       ? `¿Y a ${terminosDelGato[1] ?? '…'}?`
       : bitacoraStep === 'palabras'
-      ? (terminosDelGato.length ? 'Entonces, ¿cuál se acerca más?' : 'Lo que dijiste todavía no tiene nombre. ¿Cuál de estas se acerca más?')
+      ? preguntaPorTodas
       : bitacoraStep === 'compartir'
       ? 'Lo que escribiste puede acompañar a alguien que se lo esté preguntando. ¿Dejas que lo encuentre, sin tu nombre?'
       : bitacoraStep === 'p1'
@@ -903,7 +932,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const preguntaEnElGlobo = esperandoPropuesta
     ? 'El gato está buscando un nombre…'
     : bitacoraStep === 'palabra-1'
-      ? <>Lo que dijiste todavía no tiene nombre. ¿Se parece a <em className="cabina-bubble__palabra">{terminosDelGato[0]}</em>?</>
+      ? <>{abreElNombre}<em className="cabina-bubble__palabra">{terminosDelGato[0]}</em>?</>
       : bitacoraStep === 'palabra-2'
         ? <>¿Y a <em className="cabina-bubble__palabra">{terminosDelGato[1]}</em>?</>
         : preguntaDelPaso;
@@ -1558,18 +1587,35 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, [isDevAuth, user?.id]);
 
   // La propuesta se pide al llegar al permiso (las respuestas ya se guardaron).
+  // Con varias formas, una propuesta por forma, todas a la vez.
   useEffect(() => {
     if (bitacoraStep !== 'compartir' || propuestaPedida.current) return;
     propuestaPedida.current = true;
-    void pedirPropuestaDelGato({ portal, anonId: ensureAnonId(), isDevAuth }).then(setPropuestaDelGato);
-  }, [bitacoraStep, portal, isDevAuth]);
+    const formas = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
+    const orden = [...formas.filter((f) => f !== portal).reverse(), portal];
+    setOrdenDePalabras(orden);
+    setTurnoDePalabra(0);
+    setElegidasEnEsteRegreso([]);
+    const anonId = ensureAnonId();
+    orden.forEach((forma) => {
+      void pedirPropuestaDelGato({ portal: forma, anonId, isDevAuth })
+        .then((p) => setPropuestas((previas) => ({ ...previas, [forma]: p })));
+    });
+  }, [bitacoraStep, portal, isDevAuth, bitacoraVentana]);
   // Sin nombres propuestos, directo a la pantallita con todas.
   useEffect(() => {
     if (bitacoraStep === 'palabra-1' && propuestaDelGato && !propuestaDelGato.terminos.length) setBitacoraStep('palabras');
   }, [bitacoraStep, propuestaDelGato]);
   // La palabra elegida se queda para el fondo del pozo y el acto final; luego, la caída.
   const elegirPalabra = useCallback((termino) => {
-    guardarPalabraElegida(portal, termino);
+    guardarPalabraElegida(formaEnTurno, termino);
+    // Queda otra forma de este regreso: el gato pasa a ella.
+    if (turnoDePalabra + 1 < ordenDePalabras.length) {
+      setElegidasEnEsteRegreso((previas) => [...previas, termino]);
+      setTurnoDePalabra((t) => t + 1);
+      setBitacoraStep('palabra-1');
+      return;
+    }
     const armar = armarCargaDesdeElPozo.current;
     if (armar) {
       armarCargaDesdeElPozo.current = null;
@@ -1580,15 +1626,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       return;
     }
     cerrarElActo();
-  }, [portal, cerrarElActo]);
+  }, [formaEnTurno, turnoDePalabra, ordenDePalabras.length, cerrarElActo]);
   const pedirPalabraDesdeElPozo = useCallback(({ propuesta, armarCarga }) => {
     armarCargaDesdeElPozo.current = armarCarga;
     propuestaPedida.current = true;
-    setPropuestaDelGato(propuesta);
+    setPropuestas((previas) => ({ ...previas, [portal]: propuesta }));
+    setOrdenDePalabras([portal]);
+    setTurnoDePalabra(0);
+    setElegidasEnEsteRegreso([]);
     setPalabraDesdeElPozo(true);
     setBitacoraStep('palabra-1');
     setBitacoraOpen(true);
-  }, []);
+  }, [portal]);
   // La flecha del globo, si la palabra se pidió desde el pozo: de vuelta a él.
   const volverAlPozo = useCallback(() => {
     armarCargaDesdeElPozo.current = null;
