@@ -3385,16 +3385,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 ) : null}
                 {/* El avance vive dentro de la burbuja: con el teclado abierto, lo de
                     abajo de la pantalla queda tapado (Carlos, 18 sep 2026). */}
-                {/* Al elegir la palabra, el sí y el no van juntos en el globo
+                {/* El sí y el no van juntos en el globo, en todos los pasos
                     (Carlos, 27 nov 2026: «esta diferencia kilométrica es
-                    inaceptable. Tiene que estar ahí mismo»). Con la pantallita
-                    encendida se escoge en ella: aquí solo queda «Ninguna». */}
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  {bitacoraStep.startsWith('palabra') ? (
-                    <button type="button" disabled={esperandoPropuesta} onClick={declinarPaso} className="cabina-escritura-alterna">
-                      {etiquetaDeSalida}
-                    </button>
-                  ) : null}
+                    inaceptable. Tiene que estar ahí mismo»; y luego «súbelos
+                    también al globo»). Con la pantallita encendida se escoge
+                    en ella: aquí solo queda «Ninguna». */}
+                <div className={`cabina-globo-botones${bitacoraStep === 'palabras' ? ' cabina-globo-botones--uno' : ''}`}>
+                  <button type="button" disabled={bitacoraSubmitting || bitacoraQuestionLoading || esperandoPropuesta} onClick={declinarPaso} className="cabina-escritura-alterna">
+                    {etiquetaDeSalida}
+                  </button>
                   {bitacoraStep !== 'palabras' ? (
                     <button type="button" disabled={avanceDeshabilitado} onClick={avanzarPaso} className="cabina-escritura-accion">
                       {etiquetaDeAvance}
@@ -3418,17 +3417,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           <div aria-hidden="true" className="min-h-0 flex-1" />
 
           {/* Donde estaba el chevron: aquí se responde. */}
-          <div className="cabina-respuestas-zona relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
-            {/* Al elegir la palabra, la salida ya está dentro del globo. */}
-            {!bitacoraStep.startsWith('palabra') ? (<button
-              type="button"
-              disabled={bitacoraSubmitting || bitacoraQuestionLoading || esperandoPropuesta}
-              onClick={declinarPaso}
-              className="cabina-respuesta-salida"
-            >
-              {etiquetaDeSalida}
-            </button>) : null}
-          </div>
+          {/* Abajo ya no hay salida: el no vive en el globo (27 nov 2026). */}
         </div>
 
           </>) : null}

@@ -9325,3 +9325,29 @@ header.fixed {
 @media (prefers-reduced-motion: reduce) {
   .cabina-bubble__pista--subtitulo { animation: none; }
 }
+/* El no y el sí, en dos columnas del mismo ancho: el no a la izquierda. Si
+   un texto es largo, se parte dentro de su botón y los dos crecen igual. */
+.cabina-globo-botones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.cabina-globo-botones--uno {
+  display: flex;
+  justify-content: flex-end;
+}
+.cabina-globo-botones > .cabina-escritura-accion,
+.cabina-globo-botones > .cabina-escritura-alterna {
+  justify-content: center;
+  min-height: 2.5rem;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.3;
+}
+@media (max-width: 400px) {
+  .cabina-globo-botones > .cabina-escritura-accion,
+  .cabina-globo-botones > .cabina-escritura-alterna {
+    padding-inline: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+}
