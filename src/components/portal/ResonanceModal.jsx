@@ -1723,6 +1723,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // terminar, esa misma torre cae al pozo, sin cambiar de cabina. Al fondo, la
   // tarjeta del nombre; de ahí, el telón hacia La Réplica.
   const caidaEnLaCabina = bitacoraCompleted && holograficoOpen && !bitacoraOpen && regresoRecien;
+  // «Tu memoria» después del regreso, directo al fondo del pozo a pantalla
+  // completa (Carlos, 27 nov 2026): sin la ficha dividida de antes y sin
+  // caída, porque la persona ya bajó. En teléfono ya era así (pozoEnTelefono).
+  const pozoDirecto = enElPozo && !regresoRecien;
   const hayCaida = enElPozo && regresoRecien && !sinMovimiento && !caidaEnLaCabina;
   const cayendo = hayCaida && !caidaHecha;
   // En teléfono, lo mismo a pantalla completa (Carlos, 15 nov 2026: «el usuario
@@ -3239,7 +3243,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     <>
       {/* Con la cabina del regreso encima, debajo solo quedan las estrellas
           (y no se dibuja dos veces la tarjeta del pozo). */}
-      {enElVestibulo && (bitacoraOpen || caidaEnLaCabina)
+      {(enElVestibulo && (bitacoraOpen || caidaEnLaCabina)) || pozoDirecto
         ? null
         : vistaCuadernoEnElVestibulo
           ? cuadernoHolografico
@@ -3303,7 +3307,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           exactamente la pantalla, sin adivinar el modelo de teléfono. Es lo
           que daba la ruta separada de la versión anterior, pero sin cambiar de
           ruta: no se pierde el estado ni se recarga nada (Carlos, 18 sep 2026). */}
-      {open && (bitacoraOpen || caidaEnLaCabina) && typeof document !== 'undefined'
+      {open && (bitacoraOpen || caidaEnLaCabina || pozoDirecto) && typeof document !== 'undefined'
         ? createPortal(
             <motion.div
               className="cabina-del-regreso fixed inset-0 z-[300] overscroll-contain bg-[rgb(5,3,9)]"
@@ -3313,7 +3317,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: enElVestibulo ? 1.2 : 0.3, ease: 'easeOut' }}
-              data-cabina-del-regreso={caidaEnLaCabina ? (caidaHecha || sinMovimiento ? 'al-fondo' : 'cayendo') : 'preguntas'}
+              data-cabina-del-regreso={pozoDirecto && !bitacoraOpen ? 'al-fondo' : caidaEnLaCabina ? (caidaHecha || sinMovimiento ? 'al-fondo' : 'cayendo') : 'preguntas'}
             >
           {/* Una sola torre: la cabina arriba, el túnel dos veces y el gato de
               neón al fondo. Las preguntas se hacen sobre el primer tramo; al
@@ -3322,8 +3326,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             <motion.div
               className="torre-del-regreso__torre"
               initial={false}
-              animate={{ y: caidaEnLaCabina ? '-75%' : '0%' }}
-              transition={{ duration: sinMovimiento ? 0 : 7, ease: [0.65, 0, 0.35, 1] }}
+              animate={{ y: caidaEnLaCabina || (pozoDirecto && !bitacoraOpen) ? '-75%' : '0%' }}
+              transition={{ duration: sinMovimiento || !caidaEnLaCabina ? 0 : 7, ease: [0.65, 0, 0.35, 1] }}
               onAnimationComplete={() => { if (caidaEnLaCabina) setCaidaHecha(true); }}
             >
               <img src={enPantallaChica ? CAT_CABINA_URL : CABINA_DE_ESCRITORIO_URL} alt="" className="torre-del-regreso__tramo torre-del-regreso__tramo--cabina" />
@@ -3335,7 +3339,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           {caidaEnLaCabina && !caidaHecha && !sinMovimiento ? (
             <p className="caida-al-pozo__linea">La pregunta te trajo hasta aquí.</p>
           ) : null}
-          {caidaEnLaCabina && (caidaHecha || sinMovimiento) ? (
+          {(caidaEnLaCabina && (caidaHecha || sinMovimiento)) || (pozoDirecto && !bitacoraOpen) ? (
             <div className="pozo-en-telefono__contenido torre-del-regreso__fondo" hidden={ultimaPreguntaOpen}>
               <LoQueQuedo
                 key={portal}
