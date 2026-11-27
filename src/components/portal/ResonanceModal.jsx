@@ -3205,7 +3205,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             nadie que las hiciera. La burbuja, su pico y su flotación
             ya existían en index.css, portadas de la Bienvenida y sin
             usar desde entonces (Carlos, 18 sep 2026). */}
-        <div className="relative flex h-full flex-col overflow-hidden pt-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] pb-[max(5rem,calc(env(safe-area-inset-bottom)+4rem))]">
+        <div className="relative flex h-full flex-col overflow-hidden pt-[max(1rem,calc(env(safe-area-inset-top)+0.75rem))] pb-[max(5rem,calc(env(safe-area-inset-bottom)+4rem))]">
           {/* La cabina es el primer tramo de la torre (arriba). */}
           <div
             aria-hidden="true"
@@ -3221,10 +3221,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               requiera un botón de seguir»). La pregunta se queda a la vista
               mientras se escribe; el placeholder sólo orienta y se va al
               escribir. Sin autoFocus: que primero se lea la pregunta. */}
-          <div className="cabina-bubble cabina-bubble--en-flujo cabina-bubble--escribiendo relative z-10 mt-3 shrink-0">
+          {/* Globo cuando el gato pregunta (con su pico); campo quieto cuando se
+              escribe. La flecha de regreso va dentro, en su esquina, como en el
+              dorso de las tarjetas: arriba no queda nada que tape al gato
+              (Carlos, 27 nov 2026). */}
+          <div className={`cabina-bubble cabina-bubble--en-flujo${bitacoraEscribiendo ? ' cabina-bubble--escribiendo' : ''} relative z-10 mt-3 shrink-0`}>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Volver"
+              className="cabina-bubble__volver"
+            >
+              <ArrowLeft size={15} />
+            </button>
             <div className="flex flex-col gap-2">
               <p
-                className={`cabina-bubble__pregunta${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
+                className={`cabina-bubble__pregunta pr-7${bitacoraQuestionLoading ? ' cabina-bubble__texto--leyendo' : ''}`}
                 style={{ whiteSpace: 'pre-line' }}
               >
                 {bitacoraQuestionLoading ? 'El gato está pensando la siguiente pregunta…' : preguntaDelPaso}
@@ -3271,37 +3283,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         </div>
 
           </>) : null}
-              {/* Los controles de la tarjeta quedan debajo de esta capa, así que
-                  la cabina lleva los suyos. */}
-              <button
-                type="button"
-                onClick={handleClose}
-                aria-label="Volver"
-                className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-200 backdrop-blur-md transition hover:border-white/35 hover:text-white"
-              >
-                <ArrowLeft size={18} />
-              </button>
-
-              {import.meta.env.DEV && (
-                <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleDevResetJourney}
-                    aria-label={`Reiniciar recorrido de ${portal}`}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-amber-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-amber-100/90 backdrop-blur-md"
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDevSkipToL3}
-                    aria-label={`Saltar a L3 en ${portal}`}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-cyan-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-cyan-100/90 backdrop-blur-md"
-                  >
-                    <FastForward size={14} />
-                  </button>
-                </div>
-              )}
+              {/* Sin controles arriba: la flecha va dentro del globo y, después
+                  de las preguntas, la caída y el fondo del pozo tienen su salida. */}
+              {!bitacoraOpen ? (
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="Volver"
+                  className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-200 backdrop-blur-md transition hover:border-white/35 hover:text-white"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+              ) : null}
             </motion.div>,
             document.body,
           )

@@ -9155,3 +9155,32 @@ header.fixed {
 @media (prefers-reduced-motion: reduce) {
   .telon-del-pozo__gato, .telon-del-pozo__cabecera { animation-duration: 0.01s; animation-delay: 0s; }
 }
+
+/* La flecha de regreso dentro del globo de la cabina (Carlos, 27 nov 2026):
+   en su esquina, como en el dorso de las tarjetas; del color del texto. */
+.cabina-bubble__volver {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(27, 29, 34, 0.16);
+  color: rgba(27, 29, 34, 0.62);
+  background: transparent;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+.cabina-bubble__volver:hover,
+.cabina-bubble__volver:focus-visible {
+  color: #1b1d22;
+  border-color: rgba(27, 29, 34, 0.35);
+  background: rgba(27, 29, 34, 0.05);
+  outline: none;
+}
+/* En flujo pero como caja de la flecha (al escribir, sin transform, el
+   globo dejaba de contenerla). */
+.cabina-del-regreso .cabina-bubble--en-flujo { position: relative; top: auto; left: auto; }
