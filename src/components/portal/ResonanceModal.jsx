@@ -2388,7 +2388,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                          la cabina para vivir en el bloque, como en la espera. */
                       avisoDeEspera={!bitacoraCompleted ? {
                         regreso: !!bitacoraAvailable,
-                        titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
+                        /* En teléfono la bandeja va mínima (Carlos, 27 nov
+                           2026): sin el renglón «La obra sigue en ti.» y sin
+                           el recuerdo, que ya está en la tarjeta «Tres días». */
+                        titulo: esTelefono ? null : `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
                         /* Carlos, 27 nov 2026: ya no repite lo de la tarjeta
                            «Tres días»; dice si se puede seguir en el celular.
                            Hoy la caja solo pide WhatsApp; el correo queda para
@@ -2397,7 +2400,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           ? (avisoCanal === 'correo'
                             ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
                             : esTelefono ? dramaturgy.esperaWhatsAppTelefono : dramaturgy.esperaWhatsAppEscritorio)
-                          : dramaturgy.bambalinasCajaTexto,
+                          : esTelefono ? dramaturgy.esperaSinNumero : dramaturgy.bambalinasCajaTexto,
                         /* Junto al recuerdo, la sesión, con el aparato al que
                            lleva: para volver por su cuenta, sin el enlace. */
                         sesion: user || bitacoraAvailable ? null : {
@@ -2406,14 +2409,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           onSesion: () => onRequireLogin?.(),
                         },
                         pista: bitacoraAvailable ? null : dramaturgy.pistaDeLasEsferas,
-                        telefono: bitacoraConsented || bitacoraAvailable ? null : {
+                        /* En teléfono el número ya no se vuelve a pedir aquí:
+                           si no lo dejó en la tarjeta, fue su decisión, y la
+                           bandeja gana espacio (Carlos, 27 nov 2026). */
+                        telefono: bitacoraConsented || bitacoraAvailable || esTelefono ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
                           onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
                           placeholder: dramaturgy.bambalinasCajaPlaceholder,
                           boton: dramaturgy.bambalinasCajaAvisar,
                         },
-                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt ? {
+                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt && !esTelefono ? {
                           titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : dramaturgy.souvenirCta,
                           ocupado: isSouvenirGenerating,
                           onRecuerdo: handleDownloadSouvenir,

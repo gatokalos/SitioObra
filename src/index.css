@@ -9477,3 +9477,8 @@ header.fixed {
 .cuaderno-vestibulo--columna:has(> .cuaderno-vestibulo__linea:empty) > :first-child {
   flex-basis: calc(42% + var(--alto-de-la-linea, 7.625rem)) !important;
 }
+
+/* En la bandeja del teléfono, el texto de la espera mide lo que mide (sin el
+   mínimo de tres renglones): la bandeja queda mínima y la esfera elegida solo
+   muerde su orilla, sin tapar el texto (Carlos, 27 nov 2026). */
+.bandeja-de-vidrio [data-espera-desplegada] .memoria-descripcion { min-height: 0; }

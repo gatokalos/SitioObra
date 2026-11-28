@@ -353,7 +353,7 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 // la vista —el hilo se traza de punta a punta y las esferas van llegando por
 // el orden del hilo—, y después el bloque (Carlos, 26 nov 2026: «no nos prives
 // de cómo se arma la primera vez la constelación… solo me toca ver la colita»).
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, brinquito = false, children = null }) {
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, brinquito = false, elegidaEncima = false, children = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -527,7 +527,9 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               // de un dedo; en ondas, la regla ya lo cuida.
               minWidth: enPixeles || alFrente ? undefined : '2.75rem',
               aspectRatio: '1',
-              zIndex: alFrente ? (vestibulo ? 5 : 4) : 3,
+              // En teléfono la elegida va por encima de la bandeja de vidrio;
+              // las demás, detrás (propuesta de Carlos, 27 nov 2026).
+              zIndex: alFrente ? (elegidaEncima ? 25 : vestibulo ? 5 : 4) : 3,
               cursor: alFrente || apagada ? 'default' : 'pointer',
               opacity: apagada ? 0 : 1,
               pointerEvents: apagada ? 'none' : undefined,
@@ -948,7 +950,9 @@ function HolograficoPanel({
     const cuerpoDeEspera = esEspera ? (
       <>
         <div className="bloque-forma__abierto" data-espera-desplegada>
-          <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p>
+          {/* En teléfono la bandeja va mínima y sin este renglón (Carlos, 27
+              nov 2026): así la esfera elegida solo muerde su orilla. */}
+          {avisoDeEspera.titulo ? <p className="huella-puerta__titulo text-slate-100">{avisoDeEspera.titulo.replace(/…$/, '.')}</p> : null}
           {/* En la espera, la instrucción y el aviso, en teléfono y en
               escritorio (el globo del gato queda para el regreso, 18 nov
               2026). El día del regreso ya no hay nada que anunciar: el bloque
@@ -1074,7 +1078,9 @@ function HolograficoPanel({
          quita: nada se mueve) para que su texto no se lea a través del
          vidrio (24 nov 2026). */
       <div
-        className={`transition-opacity duration-300 ${abierto ? 'pointer-events-none opacity-0' : ''}`}
+        /* Otra forma no lleva línea (Carlos, 27 nov 2026): se queda su
+           lugar, con el cielo vacío, para que la esfera grande no se mueva. */
+        className={`transition-opacity duration-300 ${abierto || esOtra ? 'pointer-events-none opacity-0' : ''}`}
         {...(esEspera ? { 'data-linea-de-la-espera': true } : { 'data-linea-de-otra-forma': true })}
       >
         <Fundido k={centerKey}>{linea}</Fundido>
@@ -1527,7 +1533,8 @@ const CuadernoHolografico = ({
       <div
         ref={marcoRef}
         className="relative flex min-h-[8rem] flex-1 items-center justify-center p-4 lg:p-6"
-        style={{ zIndex: 3 }}
+        /* Sin capa propia (antes zIndex 3): así la esfera elegida puede ir por
+           encima de la bandeja (z 20) y las demás, por debajo (27 nov 2026). */
       >
         <div
           className="relative"
@@ -1539,6 +1546,7 @@ const CuadernoHolografico = ({
             marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
             enOndas={enOndas}
             sinConstelacion={alFondoDelPozo || soloElTitulo}
+            elegidaEncima
           />
         </div>
       </div>
