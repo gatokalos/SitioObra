@@ -96,7 +96,9 @@ const LOGIN_TIGER_ART_URL =
 // Desde el cuaderno del vestíbulo sideral, «Interpretar» sin sesión abre este
 // mismo login con la imagen de la forma arriba y su nombre (maqueta aprobada
 // por Carlos, 26 nov 2026). `arte`, `ceja` y `titulo` son opcionales.
-const LoginOverlay = ({ onClose, arte = null, ceja = null, titulo = null }) => {
+// `frase` y `boton` (Carlos, 28 nov 2026): en el login de una forma no se
+// cruza a ella; es la escena que te espera, tu siguiente pie.
+const LoginOverlay = ({ onClose, arte = null, ceja = null, titulo = null, frase = null, boton = null }) => {
   const [email, setEmail] = useState(readPendingClaimEmail);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [step, setStep] = useState('email'); // 'email' | 'otp'
@@ -350,7 +352,7 @@ const LoginOverlay = ({ onClose, arte = null, ceja = null, titulo = null }) => {
                       id="tracking-overlay-desc"
                       className="mt-3 max-w-[39ch] text-lg leading-relaxed text-white/80"
                     >
-                      Aquí seguimos. Y más allá, hay algo nuevo por habitar.
+                      {frase ?? 'Aquí seguimos. Y más allá, hay algo nuevo por habitar.'}
                     </p>
                   </div>
                 </div>
@@ -380,7 +382,7 @@ const LoginOverlay = ({ onClose, arte = null, ceja = null, titulo = null }) => {
                           'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
                       }}
                     >
-                      {pendingSend ? 'Enviando código...' : 'Pasar al otro lado'}
+                      {pendingSend ? 'Enviando código...' : (boton ?? 'Pasar al otro lado')}
                     </button>
                   </form>
                 ) : (

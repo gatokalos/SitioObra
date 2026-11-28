@@ -7414,8 +7414,12 @@ const renderDramaFeaturedWork = () => (
           <LoginOverlay
             onClose={() => { setShowMobilePortalLogin(false); setLoginDeLaForma(null); }}
             arte={loginDeLaForma?.arte ?? null}
-            ceja={loginDeLaForma ? `Para cruzar a ${loginDeLaForma.nombre}` : null}
+            /* Textos elegidos por Carlos (28 nov 2026): la forma es la escena
+               que te espera, no un lugar al que se cruza. */
+            ceja={loginDeLaForma ? 'Tu siguiente escena' : null}
             titulo={loginDeLaForma?.nombre ?? null}
+            frase={loginDeLaForma ? 'Lo que digas en cada escena se guarda para tu acto final.' : null}
+            boton={loginDeLaForma ? 'Tomar mi pie' : null}
           />
         </Suspense>
       ) : null}
