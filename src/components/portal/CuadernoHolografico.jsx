@@ -1009,7 +1009,7 @@ function HolograficoPanel({
           ) : null}
           {/* Que se note que las esferas se tocan: la frase y, en la
               constelación, el brinquito (Carlos, 27 nov 2026: «con los dos»). */}
-          {avisoDeEspera.pista ? (
+          {avisoDeEspera.pista && !avisoDeEspera.pistaAlFinal ? (
             <p className="bloque-espera__pista" data-pista-de-las-esferas>{avisoDeEspera.pista}</p>
           ) : null}
         </div>
@@ -1018,8 +1018,13 @@ function HolograficoPanel({
             y no «Explorar»: explorar exige más energía (Carlos, 24 nov). */}
         {onExplorarMiniverso ? (
           <button type="button" onClick={onExplorarMiniverso} className="ultima-pregunta__salida" data-explorar-miniverso>
-            Conoce este miniverso
+            {avisoDeEspera?.salida ?? 'Conoce este miniverso'}
           </button>
+        ) : null}
+        {/* En teléfono la pista va al final, debajo de la salida (maqueta de
+            Carlos, 27 nov 2026). */}
+        {avisoDeEspera?.pista && avisoDeEspera.pistaAlFinal ? (
+          <p className="bloque-espera__pista bloque-espera__pista--al-final" data-pista-de-las-esferas>{avisoDeEspera.pista}</p>
         ) : null}
       </>
     ) : null;
