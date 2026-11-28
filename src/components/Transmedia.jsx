@@ -7419,7 +7419,7 @@ const renderDramaFeaturedWork = () => (
             ceja={loginDeLaForma ? 'Tu siguiente escena' : null}
             titulo={loginDeLaForma?.nombre ?? null}
             frase={loginDeLaForma ? 'Lo que digas en cada escena se guarda para tu acto final.' : null}
-            boton={loginDeLaForma ? 'Tomar mi pie' : null}
+            boton={loginDeLaForma ? 'Cruzar al otro lado' : null}
           />
         </Suspense>
       ) : null}
