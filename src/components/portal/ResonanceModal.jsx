@@ -23,6 +23,7 @@ import {
 import FarewellVideoPanel from './FarewellVideoPanel';
 import LoQueQuedo, { pedirPropuestaDelGato, guardarPalabraElegida } from './LoQueQuedo';
 import { encenderPantallita, apagarPantallita } from '@/lib/pantallita';
+import { writeHeroActivatedToSession } from '@/lib/heroActivation';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
 import { getResonanceDramaturgy, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
@@ -1495,6 +1496,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setHuellaOpen(false);
     handleClose();
     onBeforeNavigate?.();
+    // Rumbo a La Réplica la escena ya está cruzada: quien viene del pozo está
+    // dentro de la obra. Sin esto, un aparato que no la recuerda (el celular
+    // donde se abre el WhatsApp, o la misma computadora pasados siete días)
+    // caía en la fase cero de la portada en lugar de en #provoca (27 nov 2026).
+    // Y La Réplica está bajo candado hasta que el navegador sabe que la
+    // persona pasó por el Primer acto: quien tiene regreso ya pasó, aunque haya
+    // sido en otro aparato. App escucha este aviso y abre el candado.
+    if (hash) {
+      writeHeroActivatedToSession(true);
+      window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
+    }
     navigate(hash ? { pathname: '/', hash } : '/');
   }, [navigate, onBeforeNavigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
