@@ -2389,8 +2389,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       avisoDeEspera={!bitacoraCompleted ? {
                         regreso: !!bitacoraAvailable,
                         /* En teléfono la bandeja va mínima (Carlos, 27 nov
-                           2026): sin el renglón «La obra sigue en ti.» y sin
-                           el recuerdo, que ya está en la tarjeta «Tres días». */
+                           2026): sin el renglón «La obra sigue en ti.». */
                         titulo: esTelefono ? null : `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
                         /* Carlos, 27 nov 2026: ya no repite lo de la tarjeta
                            «Tres días»; dice si se puede seguir en el celular.
@@ -2400,26 +2399,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           ? (avisoCanal === 'correo'
                             ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
                             : esTelefono ? dramaturgy.esperaWhatsAppTelefono : dramaturgy.esperaWhatsAppEscritorio)
-                          : esTelefono ? dramaturgy.esperaSinNumero : dramaturgy.bambalinasCajaTexto,
-                        /* Junto al recuerdo, la sesión, con el aparato al que
-                           lleva: para volver por su cuenta, sin el enlace. */
-                        sesion: user || bitacoraAvailable ? null : {
-                          titulo: esTelefono ? dramaturgy.seguirEnCompu : dramaturgy.seguirEnCelular,
-                          aparato: esTelefono ? 'compu' : 'celular',
-                          onSesion: () => onRequireLogin?.(),
-                        },
+                          : dramaturgy.bambalinasCajaTexto,
+                        /* «Seguir en mi compu / celular» se quitó (Carlos, 27
+                           nov 2026): iniciar sesión no lleva el recorrido a
+                           otro aparato (las lecturas van por anon_id), así que
+                           el botón prometía algo que no pasa. Vuelve el
+                           refuerzo de antes: el número o el recuerdo. */
                         pista: bitacoraAvailable ? null : dramaturgy.pistaDeLasEsferas,
-                        /* En teléfono el número ya no se vuelve a pedir aquí:
-                           si no lo dejó en la tarjeta, fue su decisión, y la
-                           bandeja gana espacio (Carlos, 27 nov 2026). */
-                        telefono: bitacoraConsented || bitacoraAvailable || esTelefono ? null : {
+                        telefono: bitacoraConsented || bitacoraAvailable ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
                           onEnviar: () => { if (phoneInput.trim().length >= 8) void handleBitacoraConsent('whatsapp', phoneInput.trim()); },
                           placeholder: dramaturgy.bambalinasCajaPlaceholder,
                           boton: dramaturgy.bambalinasCajaAvisar,
                         },
-                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt && !esTelefono ? {
+                        recuerdo: l3Rec?.step3 && !souvenirDeliveredAt ? {
                           titulo: isSouvenirGenerating ? 'Preparando el recuerdo…' : dramaturgy.souvenirCta,
                           ocupado: isSouvenirGenerating,
                           onRecuerdo: handleDownloadSouvenir,

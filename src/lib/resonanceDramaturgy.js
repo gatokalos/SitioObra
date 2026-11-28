@@ -50,12 +50,6 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   esperaWhatsAppEscritorio: 'Cuando vuelva la pregunta te escribo por WhatsApp. Desde ese mensaje sigues en tu celular, aunque hayas empezado aquí.',
   // En teléfono, corto (Carlos, 27 nov 2026: la bandeja mínima).
   esperaWhatsAppTelefono: 'Cuando vuelva la pregunta te escribo por WhatsApp.',
-  // En teléfono, si no dejó su número en la tarjeta, la bandeja ya no insiste
-  // con el WhatsApp (Carlos, 27 nov 2026: «estoy dispuesto a sacrificar […]
-  // la insistencia de avisar por WhatsApp»). Texto de Claude, elegido por él.
-  esperaSinNumero: 'Tu recuerdo lleva la fecha en que vuelve la pregunta.',
-  seguirEnCelular: 'Seguir en mi celular',
-  seguirEnCompu: 'Seguir en mi compu',
   pistaDeLasEsferas: 'Mientras tanto, toca otra esfera: cada una es otra forma de la obra.',
   bambalinasCajaPlaceholder: 'Tu número de WhatsApp',
   bambalinasCajaAvisar: 'Avísame',

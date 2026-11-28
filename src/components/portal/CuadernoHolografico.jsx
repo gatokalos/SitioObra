@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, animate, useMotionValue } from 'framer-motion';
-import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, Laptop, Smartphone } from 'lucide-react';
+import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
@@ -991,9 +991,7 @@ function HolograficoPanel({
               </button>
             </form>
           ) : null}
-          {/* El recuerdo y, a su lado, la sesión con el aparato al que lleva
-              (Carlos, 27 nov 2026). */}
-          {avisoDeEspera.recuerdo || avisoDeEspera.sesion ? (
+          {avisoDeEspera.recuerdo ? (
             <div className="bloque-espera__acciones">
               {avisoDeEspera.recuerdo ? (
                 <button
@@ -1005,19 +1003,6 @@ function HolograficoPanel({
                 >
                   <Download size={15} aria-hidden="true" />
                   {avisoDeEspera.recuerdo.titulo}
-                </button>
-              ) : null}
-              {avisoDeEspera.sesion ? (
-                <button
-                  type="button"
-                  onClick={avisoDeEspera.sesion.onSesion}
-                  data-sesion-en-la-memoria
-                  className="caja-de-bambalinas__recuerdo"
-                >
-                  {avisoDeEspera.sesion.aparato === 'compu'
-                    ? <Laptop size={15} aria-hidden="true" />
-                    : <Smartphone size={15} aria-hidden="true" />}
-                  {avisoDeEspera.sesion.titulo}
                 </button>
               ) : null}
             </div>
