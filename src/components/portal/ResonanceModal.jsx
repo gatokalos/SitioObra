@@ -2406,11 +2406,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                            el botón prometía algo que no pasa. Vuelve el
                            refuerzo de antes: el número o el recuerdo. */
                         pista: bitacoraAvailable ? null : dramaturgy.pistaDeLasEsferas,
-                        /* Maqueta de Carlos (27 nov 2026), en teléfono: la
-                           salida dice «La obra sigue en ti…» y va antes de la
-                           pista. En escritorio el bloque ya trae ese renglón. */
+                        /* Maquetas de Carlos (27–28 nov 2026): la pista va al
+                           final, debajo de la salida, en teléfono y escritorio.
+                           En teléfono la salida dice «La obra sigue en ti…»; en
+                           escritorio sigue «Conoce este miniverso», porque el
+                           bloque ya trae ese renglón. */
                         salida: esTelefono ? `${dramaturgy.closingLine.replace(/\.$/, '')}…` : null,
-                        pistaAlFinal: esTelefono,
+                        pistaAlFinal: true,
                         telefono: bitacoraConsented || bitacoraAvailable ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,
