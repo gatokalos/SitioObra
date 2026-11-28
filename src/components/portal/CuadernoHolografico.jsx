@@ -353,7 +353,7 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 // la vista —el hilo se traza de punta a punta y las esferas van llegando por
 // el orden del hilo—, y después el bloque (Carlos, 26 nov 2026: «no nos prives
 // de cómo se arma la primera vez la constelación… solo me toca ver la colita»).
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, brinquito = false, elegidaEncima = false, children = null }) {
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, brinquito = false, elegidaEncima = false, extraAbajo = 0, children = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -367,6 +367,11 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
   }
   const W = marco?.ancho ?? 0;
   const H = marco?.alto ?? 0;
+  // En teléfono, otra forma no lleva línea: las esferas chicas bajan a ocupar
+  // su lugar, hasta la bandeja bajada, y la elegida se queda en su sitio fijo
+  // (Carlos, 27 nov 2026: «veo que el espacio no se aprovecha»).
+  const extra = Math.max(0, Math.round(extraAbajo));
+  const HT = H + extra;
   const vuelta = cambios.current;
   // La figura se traza una vez por forma elegida y por ancho de pantalla. Si
   // solo cambia el alto —el bloque morado que se abre o se cierra—, la misma
@@ -374,7 +379,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
   // «todo se reacomoda y eso es molesto. Se pierde la atención lo que
   // sucedió»). Hasta ese día, abrir el bloque sembraba otro garabato.
   const disposicion = useRef({ clave: null });
-  const clave = `${vestibulo ? 'vestibulo' : enOndas ? 'ondas' : 'acostada'}|${vuelta}|${marco?.clave ?? W}`;
+  const clave = `${vestibulo ? 'vestibulo' : enOndas ? 'ondas' : 'acostada'}|${vuelta}|${marco?.clave ?? W}|${extra > 0 ? 'abajo' : ''}`;
   if (W > 0 && H > 0 && disposicion.current.clave !== clave) {
     const ondasNuevas = enOndas && !vestibulo ? acomodarEnOndas(W, H, 0, N - 1, izquierdaReservada(W)) : null;
     let garabatoNuevo = null;
@@ -391,15 +396,18 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
       // Las esferas conservan el tamaño que tenían en la figura de siempre.
       const D = ondasNuevas ? ondasNuevas.ancla.d : Math.round(0.21 * W);
       const d = ondasNuevas ? ondasNuevas.lugares[0].d : Math.max(44, Math.round(0.115 * W));
-      garabatoNuevo = trazarGarabato(W, H, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W) });
+      garabatoNuevo = extra > 0
+        ? trazarGarabato(W, HT, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W), anclaEn: { x: W - D / 2 - 4, y: H - D / 2 - 4 } })
+        : trazarGarabato(W, H, semillaBase.current + vuelta, { D, d, cuantas: N - 1, izquierda: izquierdaReservada(W) });
     }
-    disposicion.current = { clave, ondas: ondasNuevas, garabato: garabatoNuevo, W0: W, H0: H };
+    const abajoNuevo = Boolean(garabatoNuevo && extra > 0 && !vestibulo);
+    disposicion.current = { clave, ondas: ondasNuevas, garabato: garabatoNuevo, W0: W, H0: abajoNuevo ? HT : H, abajo: abajoNuevo };
   }
-  const { ondas = null, garabato = null, W0 = W, H0 = H } = disposicion.current;
+  const { ondas = null, garabato = null, W0 = W, H0 = H, abajo = false } = disposicion.current;
   const enPixeles = garabato ?? ondas;
   // Los lugares van en proporción del marco en que se trazaron; si el marco
   // se achica, las esferas se achican en la misma medida y no se enciman.
-  const escala = W0 > 0 && H0 > 0 ? Math.min(1, W / W0, H / H0) : 1;
+  const escala = W0 > 0 && H0 > 0 ? Math.min(1, W / W0, (abajo ? HT : H) / H0) : 1;
   const figura = garabato ? 'garabato' : ondas ? 'en-ondas' : 'acostada';
   const primera = llegada && vuelta === 0;
   const trazos = garabato
@@ -459,6 +467,8 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
     <motion.div
       ref={raizRef}
       className="relative w-full h-full"
+      /* Con espacio abajo, la figura se alarga por debajo de su caja. */
+      style={abajo ? { height: HT } : undefined}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -529,7 +539,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               aspectRatio: '1',
               // En teléfono la elegida va por encima de la bandeja de vidrio;
               // las demás, detrás (propuesta de Carlos, 27 nov 2026).
-              zIndex: alFrente ? (elegidaEncima ? 25 : vestibulo ? 5 : 4) : 3,
+              zIndex: alFrente ? (elegidaEncima ? 25 : vestibulo ? 5 : 4) : (elegidaEncima ? 4 : 3),
               cursor: alFrente || apagada ? 'default' : 'pointer',
               opacity: apagada ? 0 : 1,
               pointerEvents: apagada ? 'none' : undefined,
@@ -1403,6 +1413,25 @@ const CuadernoHolografico = ({
     return () => ro.disconnect();
   }, [alCentro]);
 
+  // En teléfono, cuánto mide el lugar de la línea por debajo de la caja de la
+  // constelación: ahí bajan las esferas chicas cuando la forma del centro no
+  // lleva línea. Se mide antes de que se toque otra esfera, para que la figura
+  // se trace una sola vez (27 nov 2026).
+  const cajaRef = useRef(null);
+  const [espacioDeLaLinea, setEspacioDeLaLinea] = useState(0);
+  useEffect(() => {
+    if (enElVestibulo || !enOndas) return undefined;
+    const medir = () => {
+      const caja = cajaRef.current?.getBoundingClientRect();
+      const linea = scrollContainerRef.current?.querySelector('[data-linea-de-la-espera], [data-linea-de-otra-forma]')?.getBoundingClientRect();
+      if (!caja || !linea || linea.height <= 0) return;
+      setEspacioDeLaLinea(Math.max(0, Math.round(linea.bottom - caja.bottom - 8)));
+    };
+    const relojes = [0, 400, 1200].map((ms) => window.setTimeout(medir, ms));
+    return () => relojes.forEach((r) => window.clearTimeout(r));
+  }, [enElVestibulo, enOndas, lado, alto]);
+  const sinLineaEnElCentro = centerKey !== portal && !readResonanceProgress(centerKey).bitacoraDone;
+
   const panel = (
     <HolograficoPanel
       centerKey={centerKey}
@@ -1537,6 +1566,7 @@ const CuadernoHolografico = ({
            encima de la bandeja (z 20) y las demás, por debajo (27 nov 2026). */
       >
         <div
+          ref={cajaRef}
           className="relative"
           style={{ width: lado || '100%', height: alto || '100%', transition: cajaMedida ? 'width 0.3s ease, height 0.3s ease' : 'none' }}
         >
@@ -1547,6 +1577,7 @@ const CuadernoHolografico = ({
             enOndas={enOndas}
             sinConstelacion={alFondoDelPozo || soloElTitulo}
             elegidaEncima
+            extraAbajo={enOndas && sinLineaEnElCentro ? espacioDeLaLinea : 0}
           />
         </div>
       </div>
