@@ -2343,7 +2343,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // (ni póster, ni cabina, ni cierre): el vestíbulo pone el manto estelar, el
   // perímetro y la flecha de regreso. Lo demás —el regreso, la última
   // pregunta— sigue en la ventana de siempre, dentro del mismo perímetro.
-  const vistaCuadernoEnElVestibulo = enElVestibulo && open && !checking
+  // En teléfono no (Carlos, 27 nov 2026: «antes ya funcionaba bien»): ahí la
+  // Memoria es la ventana de siempre, con la bandeja de vidrio translúcida
+  // encima de la constelación, como antes del 26 nov. La columna sólida que
+  // la sustituyó fue un error. El gato en la cabina del regreso sigue igual.
+  const vistaCuadernoEnElVestibulo = enElVestibulo && !enPantallaChica && open && !checking
     && !(l1Done && l2NarrativeOpened && !l2ConvDone && convQuestion !== null)
     && !ultimaPreguntaOpen && holograficoOpen && !bitacoraOpen;
   const cuadernoHolografico = (
