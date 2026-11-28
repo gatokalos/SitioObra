@@ -614,6 +614,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const avisoDoneHint = avisoCanal === 'correo'
     ? dramaturgy.returnDoneHintCorreo
     : avisoCanal === 'whatsapp' ? dramaturgy.returnDoneHint : dramaturgy.returnDoneHintGenerico;
+  // Para el bloque de la espera: en el teléfono la sesión lleva a la compu, y
+  // en la compu, al celular (27 nov 2026).
+  const esTelefono = typeof isMobileViewport === 'boolean'
+    ? isMobileViewport
+    : typeof window !== 'undefined' && Boolean(window.matchMedia?.('(max-width: 768px)').matches);
   const correoEnmascarado = user?.email ? user.email.replace(/^(.)[^@]*(@.*)$/, '$1•••$2') : null;
   const dashboardLevels = LEVELS.map((level) => {
     if (level.num === 2) {
@@ -2380,9 +2385,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       avisoDeEspera={!bitacoraCompleted ? {
                         regreso: !!bitacoraAvailable,
                         titulo: `${dramaturgy.closingLine.replace(/\.$/, '')}…`,
+                        /* Carlos, 27 nov 2026: ya no repite lo de la tarjeta
+                           «Tres días»; dice si se puede seguir en el celular.
+                           Hoy la caja solo pide WhatsApp; el correo queda para
+                           los avisos viejos de la fase 2. */
                         instruccion: bitacoraAvailable ? null : bitacoraConsented
-                          ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
+                          ? (avisoCanal === 'correo'
+                            ? `En tres días, una nueva pregunta volverá a buscarte. ${avisoDoneHint}`
+                            : esTelefono ? dramaturgy.esperaWhatsAppTelefono : dramaturgy.esperaWhatsAppEscritorio)
                           : dramaturgy.bambalinasCajaTexto,
+                        /* Junto al recuerdo, la sesión, con el aparato al que
+                           lleva: para volver por su cuenta, sin el enlace. */
+                        sesion: user || bitacoraAvailable ? null : {
+                          titulo: esTelefono ? dramaturgy.seguirEnCompu : dramaturgy.seguirEnCelular,
+                          aparato: esTelefono ? 'compu' : 'celular',
+                          onSesion: () => onRequireLogin?.(),
+                        },
+                        pista: bitacoraAvailable ? null : dramaturgy.pistaDeLasEsferas,
                         telefono: bitacoraConsented || bitacoraAvailable ? null : {
                           valor: phoneInput,
                           onCambio: setPhoneInput,

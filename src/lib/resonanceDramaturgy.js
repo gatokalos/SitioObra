@@ -42,6 +42,16 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // El título es la línea de la retención; el texto lo propuso Claude con las
   // frases que ya decía el gato, y Carlos pidió proponerlo: por revisar.
   bambalinasCajaTexto: 'En tres días, una nueva pregunta volverá a buscarte. Deja tu número y yo te aviso.',
+  // El bloque de la espera en el vestíbulo (Carlos, 27 nov 2026): a las 10:40
+  // Ana no sabía si iba a poder seguir en su celular, y el texto repetía el de
+  // la tarjeta «Tres días». El enlace del WhatsApp la lleva de vuelta desde
+  // cualquier aparato, sin cuenta; la sesión es para volver por su cuenta.
+  // Textos de Claude, aprobados en maqueta («Con los dos, ármalo»).
+  esperaWhatsAppEscritorio: 'Cuando vuelva la pregunta te escribo por WhatsApp. Desde ese mensaje sigues en tu celular, aunque hayas empezado aquí.',
+  esperaWhatsAppTelefono: 'Cuando vuelva la pregunta te escribo por WhatsApp. Ábrelo aquí mismo y sigues donde quedaste.',
+  seguirEnCelular: 'Seguir en mi celular',
+  seguirEnCompu: 'Seguir en mi compu',
+  pistaDeLasEsferas: 'Mientras tanto, toca otra esfera: cada una es otra forma de la obra.',
   bambalinasCajaPlaceholder: 'Tu número de WhatsApp',
   bambalinasCajaAvisar: 'Avísame',
   // La salida no nombra al gemelo (Carlos: «no vamos a poner conoce su gemelo ahí»).

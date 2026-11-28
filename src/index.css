@@ -9437,3 +9437,43 @@ header.fixed {
 @media (prefers-reduced-motion: reduce) {
   .pozo-fase, .pozo-fase__palomita, .pozo-fases__salida { animation: none; }
 }
+
+/* ── El bloque de la espera en el vestíbulo (Carlos, 27 nov 2026) ──
+   El recuerdo y la sesión, en un renglón (en pantalla angosta se acomodan en
+   dos); debajo, la pista de que las esferas se tocan. */
+.bloque-espera__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.bloque-espera__acciones > .caja-de-bambalinas__recuerdo { margin: 0; align-self: auto; }
+.bloque-espera__pista {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: rgba(148, 163, 184, 0.85);
+}
+.bloque-espera__pista::before {
+  content: "";
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.85);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+}
+
+/* En teléfono, otra forma no lleva línea (26 nov): la constelación ocupa su
+   lugar en vez de dejar el hueco. El bloque morado no se mueve —marco y línea
+   suman lo mismo— y la esfera grande queda encima del bloque (27 nov 2026). */
+.cuaderno-vestibulo--columna:has(> .cuaderno-vestibulo__linea:empty) > .cuaderno-vestibulo__linea {
+  min-height: 0;
+  padding: 0;
+}
+.cuaderno-vestibulo--columna > :first-child { position: relative; z-index: 2; }
+.cuaderno-vestibulo--columna:has(> .cuaderno-vestibulo__linea:empty) > :first-child {
+  flex-basis: calc(42% + var(--alto-de-la-linea, 7.625rem)) !important;
+}

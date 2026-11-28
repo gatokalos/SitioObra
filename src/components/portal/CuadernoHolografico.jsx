@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, animate, useMotionValue } from 'framer-motion';
-import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check } from 'lucide-react';
+import { MessageCircle, Sparkles, BookOpen, Download, Bell, Check, Laptop, Smartphone } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoQueQuedo from '@/components/portal/LoQueQuedo';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
@@ -353,7 +353,7 @@ const izquierdaReservada = (ancho) => (import.meta.env.DEV ? (ancho >= 560 ? 320
 // la vista —el hilo se traza de punta a punta y las esferas van llegando por
 // el orden del hilo—, y después el bloque (Carlos, 26 nov 2026: «no nos prives
 // de cómo se arma la primera vez la constelación… solo me toca ver la colita»).
-function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, children = null }) {
+function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sinConstelacion = false, vestibulo = null, llegada = false, brinquito = false, children = null }) {
   const i0 = Math.max(0, CATALOG.findIndex(p => p.key === centerKey));
   const N = CATALOG.length;
   // Cada cambio de forma cuenta. La semilla base cambia en cada visita, así
@@ -420,10 +420,44 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
     const cuadro = window.requestAnimationFrame(() => window.requestAnimationFrame(() => setColocada(true)));
     return () => window.cancelAnimationFrame(cuadro);
   }, [medida, colocada]);
+
+  // El brinquito (Carlos, 27 nov 2026: «se pierde el riesgo de que el usuario
+  // no detecte que las constelaciones son interactivas… un pequeño jiggle
+  // esporádico de las esferas»): cada tanto, una esfera que no es la del
+  // centro se mece. Empieza cuando la figura ya se armó y se calla en cuanto
+  // la persona toca otra esfera: ya lo descubrió. Va con la Web Animations
+  // API y `rotate`/`scale` sueltos, para no pisar el translate de la esfera
+  // ni la animación de llegada.
+  const raizRef = useRef(null);
+  useEffect(() => {
+    if (!brinquito || !medida || vuelta > 0) return undefined;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let previa = null;
+    let intervalo = null;
+    const mecer = () => {
+      const esferas = [...(raizRef.current?.querySelectorAll('button[data-puede-brincar]') ?? [])]
+        .filter((e) => e !== previa);
+      if (!esferas.length || typeof esferas[0].animate !== 'function') return;
+      const esfera = esferas[Math.floor(Math.random() * esferas.length)];
+      previa = esfera;
+      esfera.animate([
+        { rotate: '0deg', scale: 1 },
+        { rotate: '-7deg', scale: 1.06, offset: 0.15 },
+        { rotate: '6deg', offset: 0.35 },
+        { rotate: '-4deg', offset: 0.55 },
+        { rotate: '2deg', offset: 0.75 },
+        { rotate: '0deg', scale: 1 },
+      ], { duration: 800, easing: 'ease-in-out' });
+    };
+    const inicio = window.setTimeout(() => { mecer(); intervalo = window.setInterval(mecer, 2200); }, llegada ? 4200 : 1500);
+    return () => { window.clearTimeout(inicio); if (intervalo) window.clearInterval(intervalo); };
+  }, [brinquito, medida, vuelta, llegada]);
+
   if (!medida) return <div className="relative w-full h-full" />;
 
   return (
     <motion.div
+      ref={raizRef}
       className="relative w-full h-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -504,6 +538,7 @@ function Constellation({ centerKey, onSelect, marco = null, enOndas = false, sin
               animationDelay: primera ? `${0.8 + (turno === 0 ? N : turno) * 0.17}s` : undefined,
             }}
             data-llega={primera ? '' : undefined}
+            data-puede-brincar={alFrente || apagada ? undefined : ''}
             className={`group overflow-hidden rounded-full bg-black ${primera ? 'vestibulo-esfera-llega ' : ''}${alFrente
               ? 'ring-2 ring-white/30 shadow-[0_0_60px_rgba(240,190,110,0.28)]'
               : 'border border-white/25 shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:border-white/45'}`}
@@ -942,17 +977,41 @@ function HolograficoPanel({
               </button>
             </form>
           ) : null}
-          {avisoDeEspera.recuerdo ? (
-            <button
-              type="button"
-              onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
-              disabled={avisoDeEspera.recuerdo.ocupado}
-              data-recuerdo-en-la-memoria
-              className="caja-de-bambalinas__recuerdo"
-            >
-              <Download size={15} aria-hidden="true" />
-              {avisoDeEspera.recuerdo.titulo}
-            </button>
+          {/* El recuerdo y, a su lado, la sesión con el aparato al que lleva
+              (Carlos, 27 nov 2026). */}
+          {avisoDeEspera.recuerdo || avisoDeEspera.sesion ? (
+            <div className="bloque-espera__acciones">
+              {avisoDeEspera.recuerdo ? (
+                <button
+                  type="button"
+                  onClick={() => void avisoDeEspera.recuerdo.onRecuerdo()}
+                  disabled={avisoDeEspera.recuerdo.ocupado}
+                  data-recuerdo-en-la-memoria
+                  className="caja-de-bambalinas__recuerdo"
+                >
+                  <Download size={15} aria-hidden="true" />
+                  {avisoDeEspera.recuerdo.titulo}
+                </button>
+              ) : null}
+              {avisoDeEspera.sesion ? (
+                <button
+                  type="button"
+                  onClick={avisoDeEspera.sesion.onSesion}
+                  data-sesion-en-la-memoria
+                  className="caja-de-bambalinas__recuerdo"
+                >
+                  {avisoDeEspera.sesion.aparato === 'compu'
+                    ? <Laptop size={15} aria-hidden="true" />
+                    : <Smartphone size={15} aria-hidden="true" />}
+                  {avisoDeEspera.sesion.titulo}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {/* Que se note que las esferas se tocan: la frase y, en la
+              constelación, el brinquito (Carlos, 27 nov 2026: «con los dos»). */}
+          {avisoDeEspera.pista ? (
+            <p className="bloque-espera__pista" data-pista-de-las-esferas>{avisoDeEspera.pista}</p>
           ) : null}
         </div>
         {/* La salida a la ficha (Carlos, 24 nov 2026), con el mismo botón que
@@ -1209,6 +1268,22 @@ const CuadernoHolografico = ({
   const navigate = useNavigate();
   const [nodoBandeja, setNodoBandeja] = useState(null);
   const [nodoLinea, setNodoLinea] = useState(null);
+  // En columna, otra forma no lleva línea y la constelación ocupa su lugar
+  // (index.css, 27 nov 2026). Para que el bloque morado no se mueva, el
+  // vestíbulo recuerda cuánto mide la línea cuando está y la constelación
+  // crece exactamente eso cuando no está.
+  useEffect(() => {
+    if (!nodoLinea || typeof ResizeObserver === 'undefined') return undefined;
+    const caja = nodoLinea.parentElement;
+    const medir = () => {
+      const alto = nodoLinea.getBoundingClientRect().height;
+      if (alto > 0 && nodoLinea.childElementCount > 0) caja?.style.setProperty('--alto-de-la-linea', `${alto}px`);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(nodoLinea);
+    return () => ro.disconnect();
+  }, [nodoLinea]);
   // En el vestíbulo, el cuaderno se acomoda en columna por debajo de 1024 px
   // (constelación arriba, la línea, el bloque abajo) y, en escritorio, con el
   // bloque al centro de la constelación.
@@ -1376,6 +1451,7 @@ const CuadernoHolografico = ({
                 marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
                 vestibulo={VESTIBULO_EN_ESCRITORIO}
                 llegada
+                brinquito
               >
                 <div className="cuaderno-vestibulo__bloque pointer-events-auto">{panel}</div>
               </Constellation>
@@ -1396,6 +1472,7 @@ const CuadernoHolografico = ({
               marco={lado > 0 && alto > 0 ? { ancho: lado, alto, clave: anchoDeLaCaja } : null}
               enOndas={enOndas}
               llegada
+              brinquito
             />
           </div>
         </div>
