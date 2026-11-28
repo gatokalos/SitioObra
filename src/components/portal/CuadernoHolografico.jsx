@@ -1583,7 +1583,9 @@ const CuadernoHolografico = ({
       </div>
 
       {/* Separador */}
-      <div aria-hidden className="mx-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ zIndex: 3 }} />
+      {/* Sin línea (otra forma, en teléfono) el separador se va con ella: quedaba
+          suelto y cruzaba detrás de las esferas (Carlos, 27 nov 2026). */}
+      <div aria-hidden className={`mx-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent transition-opacity duration-300${enOndas && sinLineaEnElCentro ? ' opacity-0' : ''}`} style={{ zIndex: 3 }} />
 
       {/* Panel */}
       <div className="min-h-0 overflow-y-auto" style={{ zIndex: 3 }}>
